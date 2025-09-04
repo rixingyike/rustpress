@@ -2,6 +2,15 @@
 
 一个使用Rust语言编写的静态博客生成器，类似于Zola和Hugo，可以快速将Markdown格式的文章编译成HTML文件，方便部署到GitHub Pages等静态网站托管服务。
 
+## 开发历史
+
+ - 项目初始化：确定目标与基础目录结构
+ - 集成 Tera 模板：`base.html`、`index.html`、`post.html`
+ - 实现 Markdown 编译：生成 `public/` 静态页
+ - 增加标签与归档模板：`tags.html`、`archives.html`
+ - 添加示例内容：`mdsource/` 与 `public/` 示例文件
+ - 完成首次提交并整理 `.gitignore`
+
 ## 特性
 
 - 🚀 **快速**：使用Rust语言编写，编译速度快，生成网站高效
