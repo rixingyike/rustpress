@@ -26,3 +26,4 @@ thirdparty
 # Added by cargo
 
 /target
+/thirdparts/zola/.git
