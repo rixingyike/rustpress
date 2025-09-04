@@ -9,7 +9,7 @@
         <div class="tags">
             {% set tags = page.tags | default(value=[]) %}
             {% for tag in tags %}
-            <span class="tag"><a href="/tags/{{ tag | slugify }}/">{{ tag }}</a></span>
+            <span class="tag"><a href="tags.html?tag={{ tag | urlencode }}">{{ tag }}</a></span>
             {% endfor %}
         </div>
         <div class="content">

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标签 - 我的博客</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #222;
+        }
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .post-list {
+            list-style: none;
+            padding: 0;
+        }
+        .post-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .post-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .tags {
+            margin-top: 10px;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #f1f1f1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="index.html">我的博客</a></h1>
+        <p>使用RustPress创建的博客</p>
+    </header>
+    <main>
+        
+    <h2>所有标签</h2>
+    <ul class="post-list">
+        
+        <li class="post-item">
+            <a href="tags.html?tag=Rust">Rust</a>
+            （1）
+        </li>
+        
+        <li class="post-item">
+            <a href="tags.html?tag=%E5%8D%9A%E5%AE%A2">博客</a>
+            （1）
+        </li>
+        
+        <li class="post-item">
+            <a href="tags.html?tag=%E7%BD%91%E6%96%87%E5%88%9B%E4%BD%9C">网文创作</a>
+            （1）
+        </li>
+        
+        <li class="post-item">
+            <a href="tags.html?tag=%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99">静态网站</a>
+            （1）
+        </li>
+        
+    </ul>
+
+    <hr />
+    <div id="filtered">
+        <h3 id="tag-title">标签文章</h3>
+        <ul class="post-list" id="tag-posts">
+            
+            <li class="post-item" data-tags='[&quot;Rust&quot;,&quot;博客&quot;,&quot;静态网站&quot;]'>
+                <a href="example.html">欢迎使用RustPress</a>
+            </li>
+            
+            <li class="post-item" data-tags='[&quot;网文创作&quot;]'>
+                <a href="4.html">4</a>
+            </li>
+            
+        </ul>
+    </div>
+
+    <script>
+    (function() {
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+        const tag = getParam('tag');
+        const title = document.getElementById('tag-title');
+        const list = document.getElementById('tag-posts');
+        if (!tag) {
+            title.textContent = '请选择上方任意标签查看相关文章';
+            return;
+        }
+        title.textContent = '标签：' + tag + ' 的文章';
+        const items = list.querySelectorAll('li.post-item');
+        items.forEach(function(li) {
+            let tags = [];
+            try {
+                tags = JSON.parse(li.getAttribute('data-tags') || '[]');
+            } catch (e) {}
+            if (tags.indexOf(tag) === -1) {
+                li.style.display = 'none';
+            }
+        });
+    })();
+    </script>
+ 
+    </main>
+    <footer>
+        <p>&copy; 2025 作者 - 由 <a href="https://github.com/rixingyike/rustpress">RustPress</a> 提供支持</p>
+    </footer>
+</body>
+</html>

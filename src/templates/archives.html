@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}归档 - {{ site.name }}{% endblock %}
+
+{% block content %}
+    <h2>归档</h2>
+    {% for y in archives %}
+    <h3>{{ y.year }} {{ y.count }} 篇</h3>
+    {% for m in y.months %}
+    <h4>{{ m.year_month }}</h4>
+    <ul class="post-list">
+        {% for post in m.posts %}
+        <li class="post-item">
+            <a href="{{ post.slug }}.html">{{ post.title | default(value=post.slug) }}</a>
+            {% if post.date_ymd %}
+            <span class="post-date">{{ post.date_ymd }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+

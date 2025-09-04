@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ site.name }}{% endblock %}</title>
+    <title>归档 - 我的博客</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -55,14 +55,47 @@
 </head>
 <body>
     <header>
-        <h1><a href="index.html">{{ site.name }}</a></h1>
-        <p>{{ site.description }}</p>
+        <h1><a href="index.html">我的博客</a></h1>
+        <p>使用RustPress创建的博客</p>
     </header>
     <main>
-        {% block content %}{% endblock %} 
+        
+    <h2>归档</h2>
+    
+    <h3>2024 1 篇</h3>
+    
+    <h4>2024-01</h4>
+    <ul class="post-list">
+        
+        <li class="post-item">
+            <a href="4.html">4</a>
+            
+            <span class="post-date">2024-01-21</span>
+            
+        </li>
+        
+    </ul>
+    
+    
+    <h3>2023 1 篇</h3>
+    
+    <h4>2023-07</h4>
+    <ul class="post-list">
+        
+        <li class="post-item">
+            <a href="example.html">欢迎使用RustPress</a>
+            
+            <span class="post-date">2023-07-15</span>
+            
+        </li>
+        
+    </ul>
+    
+    
+ 
     </main>
     <footer>
-        <p>&copy; {{ now | date(format="%Y") }} {{ site.author }} - 由 <a href="https://github.com/rixingyike/rustpress">RustPress</a> 提供支持</p>
+        <p>&copy; 2025 作者 - 由 <a href="https://github.com/rixingyike/rustpress">RustPress</a> 提供支持</p>
     </footer>
 </body>
 </html>

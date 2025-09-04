@@ -154,7 +154,7 @@ fn build_site(md_dir: &str, output_dir: &str, config_file: &str) -> Result<()> {
         .context("配置文件格式错误")?;
     
     // 初始化模板引擎
-    let tera = tera::Tera::new("templates/**/*")?;
+    let tera = tera::Tera::new("src/templates/**/*")?;
     
     // 添加全局上下文变量
     let mut context = tera::Context::new();
@@ -167,6 +167,29 @@ fn build_site(md_dir: &str, output_dir: &str, config_file: &str) -> Result<()> {
     // 列出指定目录下的所有Markdown文件
     let posts = list_posts(md_dir)?;
     
+    // 统计所有标签及计数
+    let mut tag_to_count: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
+    for post in &posts {
+        if let Some(tags_value) = post.get("tags") {
+            if let Some(tag_array) = tags_value.as_array() {
+                for tag in tag_array {
+                    if let Some(tag_name) = tag.as_str() {
+                        *tag_to_count.entry(tag_name.to_string()).or_insert(0) += 1;
+                    }
+                }
+            }
+        }
+    }
+    let all_tags: Vec<serde_json::Value> = tag_to_count
+        .into_iter()
+        .map(|(name, count)| {
+            let mut obj = serde_json::Map::new();
+            obj.insert("name".to_string(), serde_json::Value::String(name));
+            obj.insert("count".to_string(), serde_json::Value::from(count as u64));
+            serde_json::Value::Object(obj)
+        })
+        .collect();
+
     // 渲染首页
     let mut index_context = context.clone();
     index_context.insert("posts", &posts);
@@ -187,6 +210,58 @@ fn build_site(md_dir: &str, output_dir: &str, config_file: &str) -> Result<()> {
                 .with_context(|| format!("无法写入文章文件: {}", slug))?;
         }
     }
+
+    // 渲染标签页 tags.html
+    let mut tags_context = context.clone();
+    tags_context.insert("all_tags", &all_tags);
+    tags_context.insert("posts", &posts);
+    let tags_rendered = tera.render("tags.html", &tags_context)?;
+    std::fs::write(format!("{}/tags.html", output_dir), tags_rendered)
+        .with_context(|| format!("无法写入标签页到 {}", output_dir))?;
+
+    // 构建归档数据（按年月分组）并渲染 archives.html
+    use std::collections::BTreeMap;
+    let mut ym_to_posts: BTreeMap<String, Vec<serde_json::Value>> = BTreeMap::new();
+    for post in &posts {
+        let ym = post.get("year_month").and_then(|v| v.as_str()).unwrap_or("未知");
+        ym_to_posts.entry(ym.to_string()).or_default().push(post.clone());
+    }
+    // 生成按年月倒序的归档列表，且同时统计每年的总数用于小标题展示
+    let mut archives: Vec<serde_json::Value> = Vec::new();
+    // 年份到计数
+    let mut year_counts: BTreeMap<String, usize> = BTreeMap::new();
+    for (ym, posts_in_month) in ym_to_posts.iter() {
+        let year = if ym.len() >= 4 { &ym[0..4] } else { "未知" };
+        *year_counts.entry(year.to_string()).or_insert(0) += posts_in_month.len();
+    }
+    // 转换为展示结构：每个 year 下包含多个 month 分组
+    let mut year_to_months: BTreeMap<String, BTreeMap<String, Vec<serde_json::Value>>> = BTreeMap::new();
+    for (ym, posts_in_month) in ym_to_posts.into_iter() {
+        let year = if ym.len() >= 4 { ym[0..4].to_string() } else { "未知".to_string() };
+        year_to_months.entry(year).or_default().insert(ym, posts_in_month);
+    }
+    for (year, months_map) in year_to_months.into_iter().rev() {
+        // months_map 的 key 是 YYYY-MM，倒序
+        let mut months: Vec<serde_json::Value> = Vec::new();
+        for (ym, posts_in_month) in months_map.into_iter().rev() {
+            // 保持每月内文章按日期倒序（已全局按日期倒序过，这里可选）
+            let mut obj = serde_json::Map::new();
+            obj.insert("year_month".to_string(), serde_json::Value::String(ym));
+            obj.insert("posts".to_string(), serde_json::Value::Array(posts_in_month));
+            months.push(serde_json::Value::Object(obj));
+        }
+        let mut year_obj = serde_json::Map::new();
+        year_obj.insert("year".to_string(), serde_json::Value::String(year.clone()));
+        year_obj.insert("count".to_string(), serde_json::Value::from(*year_counts.get(&year).unwrap_or(&0) as u64));
+        year_obj.insert("months".to_string(), serde_json::Value::Array(months));
+        archives.push(serde_json::Value::Object(year_obj));
+    }
+
+    let mut archives_context = context.clone();
+    archives_context.insert("archives", &archives);
+    let archives_rendered = tera.render("archives.html", &archives_context)?;
+    std::fs::write(format!("{}/archives.html", output_dir), archives_rendered)
+        .with_context(|| format!("无法写入归档页到 {}", output_dir))?;
     
     println!("网站构建成功！静态文件已生成到 {} 目录。", output_dir);
     
@@ -316,8 +391,8 @@ fn parse_post(content: &str, path: &Path) -> Result<Option<serde_json::Value>> {
         }
     }
 
-    // 创建完整的文章对象
-    let post = match metadata_json {
+    // 创建完整的文章对象，并规范化日期相关字段
+    let mut post = match metadata_json {
         serde_json::Value::Object(mut obj) => {
             obj.insert("content".to_string(), serde_json::Value::String(html));
             obj.insert("slug".to_string(), serde_json::Value::String(slug));
@@ -330,6 +405,25 @@ fn parse_post(content: &str, path: &Path) -> Result<Option<serde_json::Value>> {
             serde_json::Value::Object(obj)
         }
     };
+
+    if let Some(obj) = post.as_object_mut() {
+        // 仅使用 createTime 作为时间来源
+        let date_src_opt = obj.get("createTime").and_then(|v| v.as_str()).map(|s| s.to_string());
+
+        if let Some(create_time) = date_src_opt {
+            let date_only = if create_time.len() >= 10 { &create_time[0..10] } else { &create_time };
+            let mut inserts: Vec<(String, serde_json::Value)> = Vec::new();
+            // 展示用简化日期 YYYY-MM-DD
+            inserts.push(("date_ymd".to_string(), serde_json::Value::String(date_only.to_string())));
+            if date_only.len() >= 7 {
+                let year = &date_only[0..4];
+                let ym = &date_only[0..7];
+                inserts.push(("year".to_string(), serde_json::Value::String(year.to_string())));
+                inserts.push(("year_month".to_string(), serde_json::Value::String(ym.to_string())));
+            }
+            for (k, v) in inserts { obj.insert(k, v); }
+        }
+    }
 
     Ok(Some(post))
 }
