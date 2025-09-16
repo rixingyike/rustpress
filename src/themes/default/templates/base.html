@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site.name }}{% endblock %}</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <!-- Lunr.js 搜索库 -->
+    <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo 和站点名称 -->
+                <div class="flex items-center space-x-3">
+                    <img src="/logo.png" alt="{{ site.name }} Logo" class="h-8 w-8 rounded-full" onerror="this.style.display='none'">
+                    <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
+                        {{ site.name }}
+                    </a>
+                </div>
+                
+                <!-- 搜索框 - 桌面版 -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 导航菜单 - 桌面版 -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="nav-link">首页</a>
+                    <a href="/archives.html" class="nav-link">归档</a>
+                    <a href="/categories.html" class="nav-link">分类</a>
+                    <a href="/tags.html" class="nav-link">标签</a>
+                    <a href="/about.html" class="nav-link">关于</a>
+                    <a href="/friends.html" class="nav-link">友链</a>
+                    <a href="/search.html" class="nav-link">搜索</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                        id="mobile-menu-btn">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                <!-- 移动端搜索框 -->
+                <div class="px-3 py-2">
+                    <div class="relative">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="mobile-search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 移动端导航链接 -->
+                <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">首页</a>
+                <a href="/archives.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">归档</a>
+                <a href="/categories.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">分类</a>
+                <a href="/tags.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">标签</a>
+                <a href="/about.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">关于</a>
+                <a href="/friends.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">友链</a>
+                <a href="/search.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">搜索</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% if site.description %}
+        <header class="text-center py-8 sm:py-12 border-b border-gray-200 mb-8">
+            <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">{{ site.description }}</p>
+        </header>
+        {% endif %}
+        
+        <main class="min-h-screen py-8">
+            {% block content %}{% endblock %} 
+        </main>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600">
+                    &copy; {{ site.start_year | default(value=now | date(format="%Y")) }}-{{ now | date(format="%Y") }} 
+                    {{ site.author | default(value=site.name) }}
+                </p>
+                {% if site.icp_license %}
+                <p>
+                    <a href="https://beian.miit.gov.cn/" 
+                       target="_blank" 
+                       rel="noopener" 
+                       class="text-gray-500 hover:text-gray-700 text-sm">
+                        {{ site.icp_license }}
+                    </a>
+                </p>
+                {% endif %}
+                <p class="text-gray-500 text-sm">
+                    由 <a href="https://github.com/rixingyike/rustpress" 
+                          target="_blank" 
+                          rel="noopener" 
+                          class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 搜索结果容器 -->
+    <div class="fixed inset-x-0 top-16 z-40 hidden" id="search-results">
+        <div class="bg-white shadow-lg border border-gray-200 rounded-lg mx-4 mt-2 max-h-96 overflow-y-auto">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+        
+        // 活跃导航链接高亮
+        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === '/' && (currentPath === '' || currentPath === 'index.html')) {
+                link.classList.add('nav-link-active');
+            } else if (href !== '/' && currentPath.includes(href.replace('.html', ''))) {
+                link.classList.add('nav-link-active');
+            }
+        });
+        
+        // Logo错误处理
+        const logo = document.querySelector('img[alt*="Logo"]');
+        if (logo) {
+            logo.addEventListener('error', function() {
+                this.style.display = 'none';
+            });
+        }
+        
+        // 搜索功能增强
+        function setupSearch(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('focus', function() {
+                    document.getElementById('search-results').classList.remove('hidden');
+                });
+                
+                input.addEventListener('blur', function() {
+                    // 延迟隐藏，允许点击搜索结果
+                    setTimeout(() => {
+                        document.getElementById('search-results').classList.add('hidden');
+                    }, 200);
+                });
+            }
+        }
+        
+        setupSearch('search-input');
+        setupSearch('mobile-search-input');
+    </script>
+    
+    <!-- 搜索功能脚本 -->
+    <script src="/js/search.js"></script>
+</body>
+</html>

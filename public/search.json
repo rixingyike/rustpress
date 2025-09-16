@@ -1,0 +1,263 @@
+[
+  {
+    "categories": [
+      "区块链技术",
+      "基础理论",
+      "核心概念"
+    ],
+    "content": "区块链技术基础与应用 区块链作为一种分布式账本技术，正在改变着金融、供应链、数字身份等多个领域。本文将深入探讨区块链的核心概念和实际应用。 区块链基础概念 什么是区块链？ 区块链是一种分布式数据库，通过密码学方法将数据块按时间顺序链接起来，形成不可篡改的数据链条。 核心特性 去中心化 ：没有单一的控制点 不可篡改 ：历史记录无法修改 透明性 ：所有交易公开可查 共识机制 ：网络参与者达成一致 技术架构 区块结构 { &quot;blockHeader&quot;: { &quot;previousHash&quot;: &quot;0x1234...&quot;, &quot;merkleRoot&quot;: &quot;0x5678...&quot;, &quot;timestamp&quot;: 1640995200, &quot;nonce&quot;: 12345, &quot;difficulty&quot;: 16 }, &quot;transactions&quot;: [ { &quot;from&quot;: &quot;0xabc...&quot;, &quot;to&quot;: &quot;0xdef...&quot;, &quot;value&quot;: 1.5, &quot;gas&quot;: 21000 } ] } 哈希函数 区块链使用SHA-256等哈希函数确保数据完整性。 import hashlib def calculate_hash(data): return hashlib.sha256(data.encode()).hexdigest() # 示例 block_data = &quot;Block 1: Alice sends 10 BTC to Bob&quot; block_hash = calculate_hash(block_data) print(f&quot;Block Hash: {block_hash}&quot;) 默克尔树 用于高效验证大量交易的数据结构。 共识机制 工作量证明(PoW) 代表 ：比特币 原理 ：通过计算难题获得记账权 优点 ：安全性高 缺点 ：能耗大 权益证明(PoS) 代表 ：以太坊2.0 原理 ：根据持有代币数量获得记账权 优点 ：能耗低 缺点 ：可能导致中心化 委托权益证明(DPoS) 代表 ：EOS 原理 ：代币持有者投票选择验证者 优点 ：交易速度快 缺点 ：去中心化程度较低 智能合约 以太坊智能合约 使用Solidity语言编写的自执行合约。 pragma solidity ^0.8.0; contract SimpleStorage { uint256 private storedData; event DataStored(uint256 data); function set(uint256 x) public { storedData = x; emit DataStored(x); } function get() public view returns (uint256) { return storedData; } } 智能合约应用 去中心化金融(DeFi) 非同质化代币(NFT) 去中心化自治组织(DAO) 供应链管理 主要区块链平台 比特币 用途 ：数字货币 特点 ：最早的区块链应用 局限 ：功能相对简单 以太坊 用途 ：智能合约平台 特点 ：图灵完备的虚拟机 生态 ：最丰富的DApp生态 其他平台 Binance Smart Chain ：高性能、低费用 Polygon ：以太坊扩容解决方案 Solana ：高吞吐量区块链 实际应用案例 1. 数字货币 最直接的区块链应用，实现点对点的价值传输。 2. 供应链追溯 // 供应链追溯智能合约示例 class SupplyChain { constructor() { this.products = new Map(); } addProduct(id, origin, timestamp) { this.products.set(id, { origin, timestamp, history: [] }); } updateLocation(id, location, timestamp) { const product = this.products.get(id); if (product) { product.history.push({ location, timestamp }); } } getProductHistory(id) { return this.products.get(id); } } 3. 数字身份 使用区块链技术实现去中心化的身份验证。 4. 投票系统 确保投票过程的透明性和不可篡改性。 挑战与限制 技术挑战 扩展性 ：交易处理速度限制 能耗 ：PoW机制的高能耗 存储 ：区块链数据持续增长 监管挑战 法律地位 ：各国监管政策不一 合规要求 ：KYC/AML等要求 税务处理 ：数字资产税务问题 发展趋势 1. 跨链技术 实现不同区块链之间的互操作性。 2. 央行数字货币(CBDC) 各国央行发行的数字货币。 3. Web3 基于区块链的下一代互联网。 4. 绿色区块链 更环保的共识机制和技术方案。 总结 区块链技术正在从概念验证阶段走向实际应用，虽然仍面临技术和监管挑战，但其在去中心化、透明性和安全性方面的优势使其在多个领域具有巨大潜力。",
+    "date": "2024-11-25",
+    "id": 0,
+    "slug": "blockchain-fundamentals",
+    "tags": [
+      "区块链",
+      "比特币",
+      "以太坊",
+      "智能合约",
+      "DeFi"
+    ],
+    "title": "区块链技术基础与应用",
+    "url": "区块链技术/基础理论/核心概念/blockchain-fundamentals.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "移动开发",
+      "跨平台开发"
+    ],
+    "content": "移动应用开发技术选型指南 移动应用开发领域技术栈众多，选择合适的技术方案对项目成功至关重要。本文将对比分析主流的移动开发技术。 技术方案对比 原生开发 iOS开发 语言 ：Swift、Objective-C IDE ：Xcode 优势 ：性能最佳、完整平台特性 劣势 ：开发成本高、维护复杂 Android开发 语言 ：Kotlin、Java IDE ：Android Studio 优势 ：性能优秀、Google生态 劣势 ：碎片化严重 跨平台开发 React Native Facebook开发的跨平台框架。 import React from 'react'; import { View, Text, StyleSheet } from 'react-native'; const App = () =&gt; { return ( &lt;View style={styles.container}&gt; &lt;Text style={styles.title}&gt;Hello React Native!&lt;/Text&gt; &lt;/View&gt; ); }; const styles = StyleSheet.create({ container: { flex: 1, justifyContent: 'center', alignItems: 'center', }, title: { fontSize: 24, fontWeight: 'bold', }, }); export default App; 优势 ： 代码复用率高 热重载开发体验好 庞大的社区支持 劣势 ： 性能不如原生 依赖第三方库 Flutter Google开发的UI工具包。 import 'package:flutter/material.dart'; void main() { runApp(MyApp()); } class MyApp extends StatelessWidget { @override Widget build(BuildContext context) { return MaterialApp( title: 'Flutter Demo', home: Scaffold( appBar: AppBar( title: Text('Hello Flutter'), ), body: Center( child: Text( 'Hello World!', style: TextStyle(fontSize: 24), ), ), ), ); } } 优势 ： 高性能渲染引擎 一致的UI体验 快速开发周期 劣势 ： 相对较新的生态 包体积较大 技术选型考虑因素 1. 项目需求 性能要求 ：游戏类应用建议原生开发 开发周期 ：快速上线可选择跨平台 团队技能 ：考虑团队现有技术栈 2. 用户体验 界面复杂度 ：复杂UI可能需要原生开发 平台特性 ：需要深度集成平台特性选择原生 响应速度 ：对性能敏感的应用选择原生 3. 维护成本 代码维护 ：跨平台减少重复代码 人员配置 ：跨平台可以减少开发人员 更新频率 ：频繁更新适合跨平台 开发流程 1. 需求分析 明确功能需求和非功能需求。 2. 技术选型 根据项目特点选择合适的技术栈。 3. 架构设计 设计应用的整体架构。 4. 开发实现 按照敏捷开发方式进行迭代开发。 5. 测试部署 进行充分的测试并发布到应用商店。 性能优化 通用优化策略 图片优化 ：使用合适的图片格式和尺寸 网络优化 ：减少网络请求，使用缓存 内存管理 ：避免内存泄漏 代码分割 ：按需加载代码 React Native优化 使用FlatList处理长列表 避免在render中创建新对象 使用InteractionManager延迟执行 Flutter优化 使用const构造函数 避免不必要的widget重建 使用ListView.builder处理长列表 发布流程 iOS App Store 开发者账号注册 应用信息配置 审核提交 发布上线 Google Play Store 开发者控制台 应用包上传 商店信息填写 发布管理 总结 移动应用开发技术选型需要综合考虑项目需求、团队能力、维护成本等多个因素。没有最好的技术，只有最适合的技术。",
+    "date": "2024-10-18",
+    "id": 1,
+    "slug": "mobile-app-development",
+    "tags": [
+      "移动开发",
+      "React Native",
+      "Flutter",
+      "原生开发"
+    ],
+    "title": "移动应用开发技术选型指南",
+    "url": "编程语言/移动开发/跨平台开发/mobile-app-development.html"
+  },
+  {
+    "categories": [
+      "数据与安全",
+      "网络安全",
+      "基础防护"
+    ],
+    "content": "网络安全基础知识 在数字化时代，网络安全已成为个人和企业必须重视的重要议题。本文将介绍网络安全的基础概念和防护措施。 常见安全威胁 1. 恶意软件 病毒 ：自我复制的恶意程序 木马 ：伪装成正常软件的恶意程序 勒索软件 ：加密用户文件并要求赎金 间谍软件 ：窃取用户信息的程序 2. 网络攻击 DDoS攻击 ：分布式拒绝服务攻击 中间人攻击 ：拦截通信数据 SQL注入 ：利用数据库漏洞 XSS攻击 ：跨站脚本攻击 加密技术 对称加密 使用相同密钥进行加密和解密。 from cryptography.fernet import Fernet # 生成密钥 key = Fernet.generate_key() cipher_suite = Fernet(key) # 加密 plaintext = b&quot;Hello, World!&quot; ciphertext = cipher_suite.encrypt(plaintext) # 解密 decrypted_text = cipher_suite.decrypt(ciphertext) 非对称加密 使用公钥和私钥对进行加密和解密。 哈希函数 将任意长度的数据映射为固定长度的哈希值。 身份认证 多因素认证(MFA) 知识因素 ：密码、PIN码 持有因素 ：手机、硬件令牌 生物因素 ：指纹、面部识别 单点登录(SSO) 用户只需登录一次即可访问多个系统。 网络防护 防火墙 监控和控制网络流量的安全系统。 入侵检测系统(IDS) 监控网络活动，检测可疑行为。 虚拟专用网络(VPN) 在公共网络上建立安全的私有连接。 安全最佳实践 定期更新软件 ：及时安装安全补丁 使用强密码 ：复杂且唯一的密码 备份数据 ：定期备份重要数据 员工培训 ：提高安全意识 访问控制 ：最小权限原则 法律法规 数据保护法规 GDPR ：欧盟通用数据保护条例 CCPA ：加州消费者隐私法案 网络安全法 ：中国网络安全法 总结 网络安全是一个持续的过程，需要技术、管理和法律的综合保障。每个人都应该具备基本的网络安全意识和防护能力。",
+    "date": "2024-09-03",
+    "id": 2,
+    "slug": "cybersecurity-basics",
+    "tags": [
+      "网络安全",
+      "加密",
+      "防护",
+      "渗透测试"
+    ],
+    "title": "网络安全基础知识",
+    "url": "数据与安全/网络安全/基础防护/cybersecurity-basics.html"
+  },
+  {
+    "categories": [
+      "数据与安全",
+      "数据库技术",
+      "性能优化"
+    ],
+    "content": "数据库性能优化实战 数据库性能优化是后端开发中的重要技能。本文将从多个角度探讨数据库性能优化的策略和实践。 性能优化层次 1. 硬件层面 CPU ：选择合适的CPU核心数和频率 内存 ：足够的RAM用于缓存热数据 存储 ：SSD相比HDD有显著性能提升 网络 ：低延迟的网络连接 2. 数据库配置 缓冲池大小 ：合理设置InnoDB缓冲池 连接数 ：根据业务需求调整最大连接数 日志配置 ：优化redo log和binlog设置 3. 数据库设计 表结构设计 ：合理的数据类型选择 索引设计 ：创建高效的索引策略 分区分表 ：处理大数据量的策略 索引优化 索引类型 B-Tree索引 ：最常用的索引类型 哈希索引 ：等值查询性能优秀 全文索引 ：文本搜索场景 空间索引 ：地理位置数据 索引设计原则 -- 复合索引的最左前缀原则 CREATE INDEX idx_user_age_city ON users(age, city); -- 覆盖索引减少回表 CREATE INDEX idx_user_info ON users(id, name, email); -- 避免在索引列上使用函数 -- 错误示例 SELECT * FROM users WHERE YEAR(created_at) = 2024; -- 正确示例 SELECT * FROM users WHERE created_at &gt;= '2024-01-01' AND created_at &lt; '2025-01-01'; 查询优化 SQL优化技巧 1. 避免SELECT * -- 不推荐 SELECT * FROM users WHERE age &gt; 25; -- 推荐 SELECT id, name, email FROM users WHERE age &gt; 25; 2. 合理使用LIMIT -- 深分页优化 SELECT id, name FROM users WHERE id &gt; 1000 ORDER BY id LIMIT 20; 3. 子查询优化 -- 使用EXISTS替代IN SELECT * FROM orders o WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = o.user_id AND u.status = 'active'); 执行计划分析 使用EXPLAIN分析查询执行计划： EXPLAIN SELECT * FROM users u JOIN orders o ON u.id = o.user_id WHERE u.age &gt; 25; 缓存策略 1. 查询缓存 MySQL的查询缓存可以缓存SELECT语句的结果。 2. 应用层缓存 使用Redis或Memcached进行应用层缓存。 import redis r = redis.Redis(host='localhost', port=6379, db=0) def get_user(user_id): # 先从缓存获取 cached_user = r.get(f&quot;user:{user_id}&quot;) if cached_user: return json.loads(cached_user) # 缓存未命中，查询数据库 user = db.query(&quot;SELECT * FROM users WHERE id = %s&quot;, user_id) # 写入缓存 r.setex(f&quot;user:{user_id}&quot;, 3600, json.dumps(user)) return user 分库分表 垂直分割 按业务模块分割数据库。 水平分割 按数据量分割表。 -- 按用户ID分表 CREATE TABLE users_0 LIKE users; CREATE TABLE users_1 LIKE users; -- ... -- 分表路由逻辑 table_suffix = user_id % 10 table_name = f&quot;users_{table_suffix}&quot; 监控和诊断 关键指标 QPS/TPS ：每秒查询/事务数 响应时间 ：查询平均响应时间 连接数 ：当前活跃连接数 缓存命中率 ：缓冲池命中率 慢查询日志 -- 开启慢查询日志 SET GLOBAL slow_query_log = 'ON'; SET GLOBAL long_query_time = 2; -- 分析慢查询 SELECT * FROM mysql.slow_log ORDER BY start_time DESC LIMIT 10; 总结 数据库性能优化是一个系统性工程，需要从硬件、配置、设计、查询等多个层面进行综合考虑。持续的监控和优化是保证数据库高性能运行的关键。",
+    "date": "2024-08-14",
+    "id": 3,
+    "slug": "database-optimization",
+    "tags": [
+      "数据库",
+      "性能优化",
+      "MySQL",
+      "PostgreSQL",
+      "索引"
+    ],
+    "title": "数据库性能优化实战",
+    "url": "数据与安全/数据库技术/性能优化/database-optimization.html"
+  },
+  {
+    "categories": [
+      "技术架构",
+      "微服务架构",
+      "服务设计"
+    ],
+    "content": "Go语言微服务架构实践 Go语言凭借其出色的并发性能和简洁的语法，成为了微服务架构的热门选择。本文将探讨如何使用Go构建微服务系统。 微服务架构优势 独立部署 ：每个服务可以独立部署和扩展 技术多样性 ：不同服务可以使用不同技术栈 故障隔离 ：单个服务的故障不会影响整个系统 团队自治 ：不同团队可以独立开发维护服务 Go语言优势 并发性能 Go的goroutine和channel提供了优秀的并发编程支持。 func handleRequests() { for i := 0; i &lt; 1000; i++ { go func(id int) { // 处理请求 processRequest(id) }(i) } } 编译速度 Go的快速编译特性非常适合微服务的快速迭代。 内存占用 Go程序的内存占用相对较小，适合容器化部署。 核心组件 服务发现 使用Consul、etcd或Kubernetes进行服务发现。 负载均衡 实现客户端负载均衡或使用网关进行负载均衡。 配置管理 集中化配置管理，支持动态配置更新。 监控和日志 使用Prometheus进行监控，ELK栈进行日志管理。 实践示例 package main import ( &quot;context&quot; &quot;log&quot; &quot;net/http&quot; &quot;time&quot; &quot;github.com/gin-gonic/gin&quot; &quot;go.opentelemetry.io/otel&quot; ) type UserService struct { db Database } func (s *UserService) GetUser(ctx context.Context, id string) (*User, error) { span := otel.Tracer(&quot;user-service&quot;).Start(ctx, &quot;GetUser&quot;) defer span.End() return s.db.FindUser(ctx, id) } func main() { r := gin.Default() userService := &amp;UserService{db: NewDatabase()} r.GET(&quot;/users/:id&quot;, func(c *gin.Context) { user, err := userService.GetUser(c.Request.Context(), c.Param(&quot;id&quot;)) if err != nil { c.JSON(http.StatusInternalServerError, gin.H{&quot;error&quot;: err.Error()}) return } c.JSON(http.StatusOK, user) }) log.Fatal(r.Run(&quot;:8080&quot;)) } 部署策略 容器化 使用Docker进行容器化部署。 编排 使用Kubernetes进行容器编排。 CI/CD 建立完整的持续集成和部署流水线。 总结 Go语言为微服务架构提供了理想的技术基础，结合现代云原生工具，可以构建高性能、可扩展的分布式系统。",
+    "date": "2024-07-22",
+    "id": 4,
+    "slug": "golang-microservices",
+    "tags": [
+      "Go",
+      "微服务",
+      "分布式系统",
+      "云原生"
+    ],
+    "title": "Go语言微服务架构实践",
+    "url": "技术架构/微服务架构/服务设计/golang-microservices.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "前端开发",
+      "JavaScript框架"
+    ],
+    "content": "Vue 3 Composition API深入解析 Vue 3引入的Composition API为Vue开发带来了全新的编程范式，提供了更好的逻辑复用和TypeScript支持。 什么是Composition API？ Composition API是Vue 3中新增的一套API，它允许我们使用函数的方式来组织组件的逻辑。 核心概念 setup函数 setup函数是Composition API的入口点，在组件创建之前执行。 import { ref, computed, onMounted } from 'vue' export default { setup() { const count = ref(0) const doubleCount = computed(() =&gt; count.value * 2) const increment = () =&gt; { count.value++ } onMounted(() =&gt; { console.log('组件已挂载') }) return { count, doubleCount, increment } } } 响应式API ref 用于创建响应式的基本数据类型。 reactive 用于创建响应式的对象。 computed 用于创建计算属性。 生命周期钩子 Composition API提供了对应的生命周期钩子函数： onMounted onUpdated onUnmounted onBeforeMount onBeforeUpdate onBeforeUnmount 与Options API的对比 特性 Options API Composition API 逻辑组织 按选项类型分组 按功能逻辑分组 代码复用 Mixins 组合函数 TypeScript支持 一般 优秀 学习曲线 平缓 稍陡 最佳实践 合理使用ref和reactive 提取可复用的组合函数 保持setup函数的简洁 充分利用TypeScript类型推导 总结 Composition API为Vue 3带来了更强大的逻辑组织能力，特别适合复杂组件的开发。",
+    "date": "2024-06-08",
+    "id": 5,
+    "slug": "vue3-composition-api",
+    "tags": [
+      "Vue.js",
+      "Composition API",
+      "前端框架",
+      "TypeScript"
+    ],
+    "title": "Vue 3 Composition API深入解析",
+    "url": "编程语言/前端开发/JavaScript框架/vue3-composition-api.html"
+  },
+  {
+    "categories": [],
+    "content": "关于我 你好！我是一名热爱技术的开发者，专注于 Rust、Web 开发和系统架构等领域。 技术栈 后端开发： Rust, Python, Node.js 前端开发： JavaScript, TypeScript, React, Vue.js 数据库： PostgreSQL, MySQL, Redis 云服务： AWS, Docker, Kubernetes 工具： Git, Linux, VS Code 兴趣爱好 除了编程，我还喜欢： 📚 阅读技术书籍和博客 🎵 听音乐，特别是古典音乐和爵士乐 🏃‍♂️ 跑步和健身 📷 摄影，记录生活中的美好瞬间 🌍 旅行，体验不同的文化 联系我 如果你对我的文章有任何问题或建议，或者想要交流技术话题，欢迎通过以下方式联系我： 📧 邮箱：your-email@example.com 🐙 GitHub：https://github.com/yourusername 🐦 Twitter：https://twitter.com/yourusername 感谢你的访问！",
+    "date": "2024-05-12",
+    "id": 6,
+    "slug": "about",
+    "tags": [],
+    "title": "关于我",
+    "url": "about.html"
+  },
+  {
+    "categories": [],
+    "content": "友情链接 这里是我推荐的一些优秀网站和博客，希望对你有所帮助。 技术类网站 Rust 官网 网址： https://www.rust-lang.org/ 描述： Rust 编程语言官方网站，提供最新的文档和资源 头像： https://www.rust-lang.org/static/images/favicon.ico GitHub 网址： https://github.com/ 描述： 全球最大的代码托管平台，开发者的必备工具 头像： https://github.com/favicon.ico MDN Web Docs 网址： https://developer.mozilla.org/ 描述： Web 开发者的权威参考文档，涵盖 HTML、CSS、JavaScript 等 头像： https://developer.mozilla.org/apple-touch-icon.6803c6f0.png 个人博客 示例博客 1 网址： https://example1.com 描述： 专注于前端开发的技术博客 头像： https://via.placeholder.com/40x40 示例博客 2 网址： https://example2.com 描述： 分享后端开发经验和心得 头像： https://via.placeholder.com/40x40 申请友链 如果你也有优秀的网站或博客，欢迎与我交换友情链接。 申请要求 网站内容健康，无违法违规信息 网站可以正常访问，加载速度合理 有一定的原创内容，更新相对稳定 优先考虑技术类、学习类网站 申请方式 请通过以下方式联系我： 📧 邮箱：your-email@example.com 🐙 GitHub Issues：https://github.com/yourusername/yourrepo/issues 请在申请时提供以下信息： 网站名称 网站地址 网站描述（50字以内） 网站头像/Logo（可选） 你的联系方式",
+    "date": "2024-05-12",
+    "id": 7,
+    "slug": "friends",
+    "tags": [],
+    "title": "友情链接",
+    "url": "friends.html"
+  },
+  {
+    "categories": [
+      "数据与安全",
+      "机器学习",
+      "Python应用"
+    ],
+    "content": "Python机器学习实战指南 机器学习已经成为现代数据科学的核心技术。Python凭借其丰富的生态系统，成为了机器学习领域的首选语言。 核心库介绍 NumPy NumPy是Python科学计算的基础库，提供了高性能的多维数组对象。 Pandas Pandas是数据分析和操作的强大工具，特别适合处理结构化数据。 Scikit-learn Scikit-learn是最流行的机器学习库，提供了丰富的算法实现。 机器学习流程 数据收集 ：获取高质量的训练数据 数据预处理 ：清洗、转换和特征工程 模型选择 ：选择合适的算法 模型训练 ：使用训练数据训练模型 模型评估 ：评估模型性能 模型部署 ：将模型部署到生产环境 实战示例 import pandas as pd from sklearn.model_selection import train_test_split from sklearn.linear_model import LinearRegression from sklearn.metrics import mean_squared_error # 加载数据 data = pd.read_csv('data.csv') # 特征和目标变量 X = data[['feature1', 'feature2']] y = data['target'] # 划分训练集和测试集 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2) # 训练模型 model = LinearRegression() model.fit(X_train, y_train) # 预测和评估 predictions = model.predict(X_test) mse = mean_squared_error(y_test, predictions) print(f'均方误差: {mse}') 总结 Python机器学习生态系统为数据科学家提供了强大的工具集，掌握这些工具对于现代数据分析至关重要。",
+    "date": "2024-05-12",
+    "id": 8,
+    "slug": "python-machine-learning",
+    "tags": [
+      "Python",
+      "机器学习",
+      "AI",
+      "数据科学"
+    ],
+    "title": "Python机器学习实战指南",
+    "url": "数据与安全/机器学习/Python应用/python-machine-learning.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "前端开发",
+      "React生态"
+    ],
+    "content": "React Hooks完全教程 React Hooks是React 16.8引入的新特性，让函数组件也能使用状态和其他React特性。 基础Hooks useState 管理组件状态的Hook。 import React, { useState } from 'react'; function Counter() { const [count, setCount] = useState(0); return ( &lt;div&gt; &lt;p&gt;Count: {count}&lt;/p&gt; &lt;button onClick={() =&gt; setCount(count + 1)}&gt; Increment &lt;/button&gt; &lt;/div&gt; ); } useEffect 处理副作用的Hook。 import React, { useState, useEffect } from 'react'; function UserProfile({ userId }) { const [user, setUser] = useState(null); useEffect(() =&gt; { fetchUser(userId).then(setUser); }, [userId]); return user ? &lt;div&gt;{user.name}&lt;/div&gt; : &lt;div&gt;Loading...&lt;/div&gt;; } useContext 消费Context的Hook。 import React, { useContext } from 'react'; const ThemeContext = React.createContext(); function Button() { const theme = useContext(ThemeContext); return &lt;button className={theme}&gt;Click me&lt;/button&gt;; } 高级Hooks useReducer 管理复杂状态的Hook。 import React, { useReducer } from 'react'; function reducer(state, action) { switch (action.type) { case 'increment': return { count: state.count + 1 }; case 'decrement': return { count: state.count - 1 }; default: throw new Error(); } } function Counter() { const [state, dispatch] = useReducer(reducer, { count: 0 }); return ( &lt;div&gt; Count: {state.count} &lt;button onClick={() =&gt; dispatch({ type: 'increment' })}&gt;+&lt;/button&gt; &lt;button onClick={() =&gt; dispatch({ type: 'decrement' })}&gt;-&lt;/button&gt; &lt;/div&gt; ); } useMemo和useCallback 性能优化的Hook。 自定义Hooks 创建可复用的逻辑。 function useLocalStorage(key, initialValue) { const [storedValue, setStoredValue] = useState(() =&gt; { try { const item = window.localStorage.getItem(key); return item ? JSON.parse(item) : initialValue; } catch (error) { return initialValue; } }); const setValue = (value) =&gt; { try { setStoredValue(value); window.localStorage.setItem(key, JSON.stringify(value)); } catch (error) { console.error(error); } }; return [storedValue, setValue]; } 最佳实践 遵循Hooks规则 合理使用依赖数组 避免过度优化 创建自定义Hooks复用逻辑 React Hooks让函数组件变得更加强大和灵活。",
+    "date": "2024-04-05",
+    "id": 9,
+    "slug": "react-hooks-tutorial",
+    "tags": [
+      "React",
+      "Hooks",
+      "前端框架"
+    ],
+    "title": "React Hooks完全教程",
+    "url": "编程语言/前端开发/React生态/react-hooks-tutorial.html"
+  },
+  {
+    "categories": [
+      "技术架构",
+      "容器化技术",
+      "Docker实践"
+    ],
+    "content": "Docker容器化完全指南 Docker已经成为现代软件开发和部署的标准工具。本文将全面介绍Docker的使用方法和最佳实践。 Docker基础概念 镜像（Image） Docker镜像是一个只读的模板，用于创建容器。 容器（Container） 容器是镜像的运行实例，包含了应用程序及其依赖。 Dockerfile 用于构建镜像的文本文件，包含了一系列指令。 常用命令 # 拉取镜像 docker pull nginx # 运行容器 docker run -d -p 80:80 nginx # 查看容器 docker ps # 停止容器 docker stop container_id # 构建镜像 docker build -t my-app . Dockerfile最佳实践 FROM node:16-alpine WORKDIR /app COPY package*.json ./ RUN npm ci --only=production COPY . . EXPOSE 3000 USER node CMD [&quot;npm&quot;, &quot;start&quot;] Docker Compose 使用Docker Compose可以轻松管理多容器应用。 version: '3.8' services: web: build: . ports: - &quot;3000:3000&quot; db: image: postgres:13 environment: POSTGRES_PASSWORD: password 安全考虑 使用非root用户 最小化镜像大小 定期更新基础镜像 扫描安全漏洞 Docker让应用部署变得简单可靠，是现代开发不可或缺的工具。",
+    "date": "2024-03-10",
+    "id": 10,
+    "slug": "docker-containerization-guide",
+    "tags": [
+      "Docker",
+      "容器化",
+      "DevOps"
+    ],
+    "title": "Docker容器化完全指南",
+    "url": "技术架构/容器化技术/Docker实践/docker-containerization-guide.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "前端开发",
+      "JavaScript框架"
+    ],
+    "content": "JavaScript异步编程深度解析 异步编程是JavaScript的核心特性之一，理解异步编程对于成为优秀的JavaScript开发者至关重要。 异步编程的发展历程 1. 回调函数时代 最早的异步处理方式，容易产生回调地狱。 getData(function(a) { getMoreData(a, function(b) { getMoreData(b, function(c) { // 回调地狱 }); }); }); 2. Promise的出现 Promise解决了回调地狱的问题。 getData() .then(a =&gt; getMoreData(a)) .then(b =&gt; getMoreData(b)) .then(c =&gt; { // 处理结果 }); 3. Async/Await语法糖 让异步代码看起来像同步代码。 async function fetchData() { try { const a = await getData(); const b = await getMoreData(a); const c = await getMoreData(b); return c; } catch (error) { console.error(error); } } 事件循环机制 JavaScript的事件循环是理解异步编程的关键。 最佳实践 优先使用async/await 合理处理错误 避免不必要的异步操作 使用Promise.all并行处理 异步编程是JavaScript的精髓，掌握它将让你的代码更加优雅和高效。",
+    "date": "2024-02-20",
+    "id": 11,
+    "slug": "javascript-async-programming",
+    "tags": [
+      "JavaScript",
+      "异步编程",
+      "Promise"
+    ],
+    "title": "JavaScript异步编程深度解析",
+    "url": "编程语言/前端开发/JavaScript框架/javascript-async-programming.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "前端开发",
+      "JavaScript框架"
+    ],
+    "content": "如何刻画人物？一个简单的人物刻画公式和有效的 AI 提示语 目录 [TOC] 刻画人物就是让人物有血有肉，有立体感，吸引读者。刻画人物是有公式的，加上 AI，让 AI 做一些基础协助，刻画好人物并不太难。 这个公式是：设定+印象+优缺点+争议+突=一个立体真实的人物 1.设定 用两个词语给一个角色贴标签。 从人物本身出发 比如一个女主，希望她是很勇敢很独立的女性。 人物关键词：勇敢、独立 比如一个男主，希望他是一个律师，很有魅力的男人。 人物关键词：律师、魅力 设定人物后需要想一想，自己能否驾驭？ 避免人设跟人物的实际行动产生冲突，比如高冷的角色，但是又给人物过多的对话等。 1.1 人物描写中的基础设定（外貌言行） 人物的以下五大方面的描写，要严格遵循人物的性格设定进行。 肖像描写 语言描写 行动描写 心理描写 神态描写 前期不知道如何描写的时候，可以想想身边的人，漫画里的角色，电影电视剧角色来代 入，寻找他们独特的性格特征描写。 比如：刁钻的人，想一想隔壁不友好的邻居，恶毒的婆婆；腼腆的人，想一想大学里的妹子。 1.2 如何防止人设崩塌？ 按照设定的逻辑来写，人物的五大描写都要围绕人设的逻辑点展开，不要让人物说话做事不符合人物的心理，不符合人物的性格，不要为了走情节而改变人物的人设。 人设比情节更重要， 人设崩塌带来的直接后果往往是读者弃文 。 因此在初期设定人物人设的时候，尽量不要设置一些难度比较大的人设。 1.3 如何设置配角的人设？ 配角的作用是：根据故事发展、情节的需求被动做事。 主角是人推着故事走，配角是故事推着人走，两个要区分开。 我们会根据主角的需要调整情节设计，但很少会根据配角的设定修改情节设计。 设置配角，首先要思考以下几个要素： 1，配角在这段剧情里的作用是什么？ 当下的情节需要配角来给主角添加一些什么，制造一些什么或者完善一些什么 2，根据情节需要推配角的人设。 最平常的比如主角性格特征是人不犯我我不犯人，人若犯我我必加倍奉还，这时候可以一引出一个爱挑事，爱装逼的配角来突出主角这一性格。 3，根据戏份多少来考虑配角人设的完整度。 比如大 BOSS 这个配角，可以给点优点，不要为了坏而坏。那些小 BOSS 配角，就可以直接坏、无脑坏。即使在群像中，也不是所有人物形象都是立体的。 2.印象 设置方向有以下五个方面。 外貌特征：朱砂痣、眉间的刀疤、包拯额间月牙、手臂上的纹身、屁股上的胎记 习惯性动作：摸鼻子、摸眉毛、扶眼镜、撩头发 神态：嘟嘴、翻白眼、因为近视眯眼睛 标志性的语言习惯：口头禅 人物技能：金手指 3.性格与优缺点 性格就是人物的言行举行表现，是由前面的设定和印象决定的。在小说创作中，言行举止皆按性格来。 有时候我们通过情节推动故事，这时候需要注意情节设计要符合人物性格；有时候我们是根据人物性格想象情节的，例如日常系小说，这时候便不会有违背人物性格的忧惧。 人物性格要注意，要有不完美，要设置一个缺点或优点。 如果是正面人物，就给他添加一个缺点。 如果是反面人物，就给他添加一个忧点。 缺点或优点，会让人物更加形象立体。 4.争议 让人印象深刻的人物都是有争议的，换一句话讲，其人物设定都是变化的。 在创作中，我们既需要依靠设定，让人物稳定，但又不能用设定将人物框死。人物在故事中也会成长，性格可能也会发生变化，尤其是主角，主角的性格显然是有人物成长曲线的。配角在关键时刻也有性格突变。还有反派，可能有洗白；正派人物，也可能有黑化。这些都是性格变化，在变化时，要特别注意性格转变的逻辑，要给人物一个充分的变化理由。 性格转变往往是矛盾的，是附有争议的。 性格的改变就是设定与印象的改变。对于可能导致人设大变的剧情，要谨慎设定。反复思考这个情节发生后，人设的改变是不是我们能写清楚的，我们能否生动的刻画出来？ 在争议方面，举个例子：比如香蜜沉沉烬如霜的润玉，因为小时候某些不好的经历，遇见女主后勾起对爱情的欲望，最后黑化，即使在剧情上变坏了，但是也不能否定他的优点，让观众直呼心疼。 5.回顾与提示语 以下是人物刻画的小总结： 1，人设要稳定，偏离人物性格的刻画，会让人物飘忽不定。 2，人设加强，就是要加强印象上的描写，例如语言上，外貌上，动作上都可以。 3，给人物一个争议点，加深记忆，正反相结合，达到一个类似平衡的状态。那反面人物就缺点突出一点，正面人物就优点突出一点。这些不同的因素的加持，就会让你的人物与众不同起来。 4，人物弧线要完整，人物所有的行动都要有理有据。 下面是一个我总结的提示语，可以让 AI 辅助我们进行人物刻画，特别在创作初期。 我在创作小说，我设计了一个人物 X，X 的标签是：女律师、魅力。 第一步，设定示例描写。 请你就以下五个方面，对 X 进行人物设定示例描写。 肖像描写： 语言描写： 行动描写： 心理描写： 神态描写： 第二步，印象示例描写。 请从以下这些五个方面，对 X 进行印象示例描写，注意冒号后面是示例，请根据实例情况描写符合 X 的印象。 外貌特征：朱砂痣、眉间的刀疤、包拯额间月牙、手臂上的纹身、屁股上的胎记 习惯性动作：摸鼻子、摸眉毛、扶眼镜、撩头发 神态：嘟嘴、翻白眼、因为近视眯眼睛 标志性的语言习惯：口头禅 人物技能：金手指 第三步，设计优缺点。 首先判断 X 是正面人物，还是反面人物。 如果 X 是正面人物，就给他添加一个缺点。 如果 X 是反面人物，就给他添加一个忧点。 这样的缺点或优点，会让 X 更加形象立体。 请给 X 设计一个优点或缺点，并针对该优缺点写一个有关 X 的示例情节。 第四步，设计争议点。 让人印象深刻的人物都是有争议的，请给 X 设计一个情节，在该情节中 X 的设定发生改变甚至反转，注意变化逻辑要合理。 第五步，起名字。请根据 X 的设定和印象，给 X 起 3 个中文名字。 以下是 AI 的某次返回，结果基本让人满意。 第一步，设定示例描写： 肖像描写： X 是一位身着典雅西装的女性律师，长发披肩，眼神犀利而聪明。她的外表展现出一种自信和专业性，同时散发着一股难以忽视的魅力。 语言描写： X 的口才出色，她善于用简练而有力的语言表达自己的观点。在法庭上，她的辩护辞令人印象深刻，充满说服力。 行动描写： 她在法庭上步履自信，举手投足间透露着专业知识。在处理案件时，她总是细致入微，不放过任何细节，展现出出色的职业素养。 心理描写： X 内心深处隐藏着对正义的强烈追求，她坚信法律是保护弱者的有力工具。虽然外表坚韧，内心却常常为案件中的人情世故而烦恼。 神态描写： 她常常以微笑面对压力，但在关键时刻，她的眼神会变得锐利而决断，展现出坚定的一面。 第二步，印象示例描写： 外貌特征：朱砂痣 X 的左颊上有一颗朱砂痣，宛如法庭上的一抹独特标志，让她在人们心中留下深刻印象。 习惯性动作：扶眼镜 在紧张或思考的时候，X 习惯性地扶一下眼镜，这个动作成为她处理案件时的标志性动作。 神态：因为近视眯眼睛 由于近视，X 在仔细审视文件时常常眯起眼睛，这反而增添了她专注的氛围。 标志性的语言习惯：口头禅 X 经常在讲话时使用口头禅，比如在说完一句重要观点后会习惯性地说一句：“事实胜于雄辩”。 人物技能：金手指 X 在法庭上有一种与生俱来的洞察力，被同事戏称为“金手指”，她总是能够找到案件的关键点。 第三步，设计优缺点： X 是正面人物，给她添加一个缺点： 缺点：过于执着 X 在追求正义的过程中，有时会过于执着于自己的观点，导致与同事产生分歧，影响团队合作。 示例情节：在一次困难的案件中，X 坚持自己的判断，但最终证据表明她的看法并不完全正确，导致案件处理出现波折。她意识到自己过于执着的问题，开始学会倾听他人意见。 第四步，设计争议点： 情节：X 接手一个看似清晰的案件，但随着调查的深入，她发现案件中涉及到一位曾经是她导师的人。这个发现让她陷入两难境地，考虑到导师曾对她的帮助，她面临着是追求正义还是保护导师的道德抉择。 变化逻辑：X 最终选择追求正义，即使这意味着曝光导师的不法行为。这个情节使人们重新审视 X 的价值观和对正义的执着程度。 第五步，起名字： 赵雨萱 刘梦婷 王心怡",
+    "date": "2024-01-21",
+    "id": 12,
+    "slug": "4",
+    "tags": [
+      "网文创作"
+    ],
+    "title": "4",
+    "url": "编程语言/前端开发/JavaScript框架/4.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "后端开发",
+      "Rust语言"
+    ],
+    "content": "Rust Web开发入门指南 Rust作为一门系统编程语言，在Web开发领域也展现出了强大的潜力。本文将介绍如何使用Rust进行Web开发。 为什么选择Rust进行Web开发？ 内存安全 ：Rust的所有权系统确保了内存安全 高性能 ：零成本抽象和编译时优化 并发性 ：优秀的并发编程支持 生态系统 ：日益完善的Web开发生态 主要框架介绍 Axum Axum是一个现代化的Web框架，专注于人体工程学和模块化。 Actix-web 高性能的Web框架，支持异步编程。 Warp 基于过滤器的Web框架，类型安全。 开发环境搭建 # 安装Rust curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # 创建新项目 cargo new my-web-app cd my-web-app # 添加依赖 cargo add axum tokio 总结 Rust在Web开发领域有着光明的前景，值得学习和投入。",
+    "date": "2024-01-15",
+    "id": 13,
+    "slug": "rust-web-development",
+    "tags": [
+      "Rust",
+      "Web开发",
+      "后端"
+    ],
+    "title": "Rust Web开发入门指南",
+    "url": "编程语言/后端开发/Rust语言/rust-web-development.html"
+  },
+  {
+    "categories": [
+      "编程语言",
+      "前端开发",
+      "React生态"
+    ],
+    "content": "欢迎使用 RustPress 这是一个使用 RustPress 创建的示例页面。RustPress 是一个基于 Rust 语言的静态博客生成器，可以将 Markdown 文件转换为精美的 HTML 网站。 特性 🚀 快速 - 使用 Rust 语言编写，性能出色 📝 支持 Markdown - 轻松撰写内容 🎨 可定制模板 - 使用 Tera 模板引擎 🌐 本地预览 - 内置 web 服务器，方便预览 📦 易于部署 - 生成的静态文件可以部署到任何 web 服务器 快速开始 在 mdsource 目录下创建 Markdown 文件 运行 cargo run -- build 生成网站 运行 cargo run -- serve 在本地预览 将 public 目录下的文件部署到服务器 Markdown 示例 代码块 fn main() { println!(&quot;Hello, RustPress!&quot;); } 表格 特性 描述 快速 基于 Rust 的高性能 简单 易于使用的命令行界面 灵活 可定制的模板系统 列表 项目 1 项目 2 项目 3 这个示例文档展示了 RustPress 的基本功能。",
+    "date": "2023-07-15",
+    "id": 14,
+    "slug": "example",
+    "tags": [
+      "Rust",
+      "博客",
+      "静态网站"
+    ],
+    "title": "欢迎使用RustPress",
+    "url": "编程语言/前端开发/React生态/example.html"
+  }
+]

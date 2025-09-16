@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}关于我 - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 作者介绍卡片 -->
+    <div class="card mb-8">
+        <div class="card-body">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+                <!-- 作者头像 -->
+                <div class="flex-shrink-0">
+                    {% if site.author.avatar %}
+                    <img src="{{ site.author.avatar }}" 
+                         alt="{{ site.author.name | default(value=site.author) }}" 
+                         class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxzdmcgeD0iMzIiIHk9IjMyIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMjAgMjEtMTYtMTZtMCAxM2gxM20wLTEzTDIxIDIxIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
+                    {% else %}
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-4xl font-bold">
+                        {% set author_name = site.author.name | default(value=site.author) %}
+                        {{ author_name | truncate(length=1, end="") | upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 作者信息 -->
+                <div class="flex-1 text-center md:text-left">
+                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                        {{ site.author.name | default(value=site.author) }}
+                    </h1>
+                    
+                    {% if site.author.bio %}
+                    <p class="text-lg text-gray-600 mb-4 leading-relaxed">
+                        {{ site.author.bio }}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- 位置和网站信息 -->
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 justify-center md:justify-start">
+                        {% if site.author.location %}
+                        <div class="flex items-center text-gray-500">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            {{ site.author.location }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if site.author.website %}
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9"></path>
+                            </svg>
+                            <a href="{{ site.author.website }}" 
+                               target="_blank" 
+                               rel="noopener"
+                               class="text-primary-600 hover:text-primary-700 transition-colors">
+                                {{ site.author.website | replace(from="https://", to="") | replace(from="http://", to="") }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 社交链接 -->
+                    {% if site.social %}
+                    <div class="flex justify-center md:justify-start space-x-4">
+                        {% if site.social.github %}
+                        <a href="{{ site.social.github }}" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-gray-600 transition-colors"
+                           title="GitHub">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if site.social.twitter %}
+                        <a href="{{ site.social.twitter }}" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-blue-400 transition-colors"
+                           title="Twitter">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if site.social.weibo %}
+                        <a href="{{ site.social.weibo }}" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-red-500 transition-colors"
+                           title="微博">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M9.31 8.17c-2.73-.13-4.3.53-4.3 2.26 0 2.22 2.73 4.69 6.08 4.69 2.61 0 4.08-1.74 4.08-3.17-.01-1.72-2.63-3.65-5.86-3.78zm-.46 5.63c-.65.71-1.57.4-2.03-.14-.47-.54-.42-1.43.23-2.05.63-.6 1.45-.35 1.92.2.48.55.5 1.33-.12 1.99zm1.7-.71c-.13.16-.38.21-.54.08-.17-.13-.19-.39-.04-.55.16-.17.4-.19.56-.05.15.14.16.35.02.52z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if site.social.zhihu %}
+                        <a href="{{ site.social.zhihu }}" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-blue-600 transition-colors"
+                           title="知乎">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5.721 0C2.251 0 0 2.25 0 5.719v12.562C0 21.751 2.251 24 5.721 24h12.558C21.749 24 24 21.751 24 18.281V5.719C24 2.25 21.749 0 18.279 0H5.721zM8.48 5.64c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h3.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774z"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        {% if site.author.email %}
+                        <a href="mailto:{{ site.author.email }}" 
+                           class="text-gray-400 hover:text-green-500 transition-colors"
+                           title="邮箱">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详细介绍 -->
+    <div class="card mb-8">
+        <div class="card-body prose prose-lg max-w-none">
+            <h2>关于我</h2>
+            <p>
+                你好！我是 {{ site.author.name | default(value=site.author) }}，一名热爱技术的开发者。
+                我专注于 Rust、Web 开发和系统架构等领域，喜欢探索新技术，分享学习心得。
+            </p>
+            
+            <h3>技术栈</h3>
+            <p>
+                我主要使用以下技术栈进行开发：
+            </p>
+            <ul>
+                <li><strong>后端开发：</strong>Rust, Python, Node.js</li>
+                <li><strong>前端开发：</strong>JavaScript, TypeScript, React, Vue.js</li>
+                <li><strong>数据库：</strong>PostgreSQL, MySQL, Redis</li>
+                <li><strong>云服务：</strong>AWS, Docker, Kubernetes</li>
+                <li><strong>工具：</strong>Git, Linux, VS Code</li>
+            </ul>
+            
+            <h3>兴趣爱好</h3>
+            <p>
+                除了编程，我还喜欢：
+            </p>
+            <ul>
+                <li>📚 阅读技术书籍和博客</li>
+                <li>🎵 听音乐，特别是古典音乐和爵士乐</li>
+                <li>🏃‍♂️ 跑步和健身</li>
+                <li>📷 摄影，记录生活中的美好瞬间</li>
+                <li>🌍 旅行，体验不同的文化</li>
+            </ul>
+            
+            <h3>联系我</h3>
+            <p>
+                如果你对我的文章有任何问题或建议，或者想要交流技术话题，欢迎通过以下方式联系我：
+            </p>
+            <ul>
+                {% if site.author.email %}
+                <li>📧 邮箱：<a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a></li>
+                {% endif %}
+                {% if site.social.github %}
+                <li>🐙 GitHub：<a href="{{ site.social.github }}" target="_blank" rel="noopener">{{ site.social.github }}</a></li>
+                {% endif %}
+                {% if site.social.twitter %}
+                <li>🐦 Twitter：<a href="{{ site.social.twitter }}" target="_blank" rel="noopener">{{ site.social.twitter }}</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- 博客统计 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-3xl font-bold text-primary-600 mb-2">
+                    {{ posts | length | default(value=0) }}
+                </div>
+                <div class="text-gray-600">篇文章</div>
+            </div>
+        </div>
+        
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-3xl font-bold text-primary-600 mb-2">
+                    {{ all_tags | length | default(value=0) }}
+                </div>
+                <div class="text-gray-600">个标签</div>
+            </div>
+        </div>
+        
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-3xl font-bold text-primary-600 mb-2">
+                    {{ all_categories | length | default(value=0) }}
+                </div>
+                <div class="text-gray-600">个分类</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

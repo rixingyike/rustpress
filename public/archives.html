@@ -1,101 +1,1219 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>归档 - 我的博客</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-        }
-        header {
-            margin-bottom: 40px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 20px;
-        }
-        h1 {
-            color: #222;
-        }
-        a {
-            color: #0366d6;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .post-list {
-            list-style: none;
-            padding: 0;
-        }
-        .post-item {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        .post-date {
-            color: #666;
-            font-size: 0.9em;
-        }
-        .tags {
-            margin-top: 10px;
-        }
-        .tag {
-            display: inline-block;
-            background-color: #f1f1f1;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            margin-right: 5px;
-        }
-    </style>
+    <title>艺述论</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <!-- Lunr.js 搜索库 -->
+    <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
 </head>
-<body>
-    <header>
-        <h1><a href="index.html">我的博客</a></h1>
-        <p>使用RustPress创建的博客</p>
+<body class="bg-gray-50 text-gray-900 font-sans">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo 和站点名称 -->
+                <div class="flex items-center space-x-3">
+                    <img src="/logo.png" alt="艺述论 Logo" class="h-8 w-8 rounded-full" onerror="this.style.display='none'">
+                    <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
+                        艺述论
+                    </a>
+                </div>
+                
+                <!-- 搜索框 - 桌面版 -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 导航菜单 - 桌面版 -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="nav-link">首页</a>
+                    <a href="/archives.html" class="nav-link">归档</a>
+                    <a href="/categories.html" class="nav-link">分类</a>
+                    <a href="/tags.html" class="nav-link">标签</a>
+                    <a href="/about.html" class="nav-link">关于</a>
+                    <a href="/friends.html" class="nav-link">友链</a>
+                    <a href="/search.html" class="nav-link">搜索</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                        id="mobile-menu-btn">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                <!-- 移动端搜索框 -->
+                <div class="px-3 py-2">
+                    <div class="relative">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="mobile-search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 移动端导航链接 -->
+                <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">首页</a>
+                <a href="/archives.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">归档</a>
+                <a href="/categories.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">分类</a>
+                <a href="/tags.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">标签</a>
+                <a href="/about.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">关于</a>
+                <a href="/friends.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">友链</a>
+                <a href="/search.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">搜索</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <header class="text-center py-8 sm:py-12 border-b border-gray-200 mb-8">
+            <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">使用RustPress创建的博客</p>
+        </header>
+        
+        
+        <main class="min-h-screen py-8">
+            
+<div class="max-w-4xl mx-auto">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">文章归档</h1>
+        <p class="text-lg text-gray-600">按时间顺序浏览所有文章</p>
     </header>
-    <main>
-        
-    <h2>归档</h2>
     
-    <h3>2024 1 篇</h3>
     
-    <h4>2024-01</h4>
-    <ul class="post-list">
+    <div class="space-y-8">
         
-        <li class="post-item">
-            <a href="4.html">4</a>
+        
             
-            <span class="post-date">2024-01-21</span>
             
-        </li>
-        
-    </ul>
-    
-    
-    <h3>2023 1 篇</h3>
-    
-    <h4>2023-07</h4>
-    <ul class="post-list">
-        
-        <li class="post-item">
-            <a href="example.html">欢迎使用RustPress</a>
+                
+                
+                <div class="year-section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-2 border-primary-500 inline-block">
+                        2024
+                    </h2>
+                    <div class="space-y-4">
             
-            <span class="post-date">2023-07-15</span>
             
-        </li>
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            25
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Nov
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="区块链技术&#x2F;基础理论&#x2F;核心概念/blockchain-fundamentals.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            区块链技术基础与应用
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            区块链技术 › 基础理论 › 核心概念
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#区块链" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            区块链
+                        </a>
+                        
+                        <a href="tags.html#比特币" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            比特币
+                        </a>
+                        
+                        <a href="tags.html#以太坊" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            以太坊
+                        </a>
+                        
+                        <a href="tags.html#智能合约" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            智能合约
+                        </a>
+                        
+                        <a href="tags.html#DeFi" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            DeFi
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
         
-    </ul>
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            18
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Oct
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;移动开发&#x2F;跨平台开发/mobile-app-development.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            移动应用开发技术选型指南
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 移动开发 › 跨平台开发
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#移动开发" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            移动开发
+                        </a>
+                        
+                        <a href="tags.html#React Native" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            React Native
+                        </a>
+                        
+                        <a href="tags.html#Flutter" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Flutter
+                        </a>
+                        
+                        <a href="tags.html#原生开发" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            原生开发
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            03
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Sep
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="数据与安全&#x2F;网络安全&#x2F;基础防护/cybersecurity-basics.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            网络安全基础知识
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            数据与安全 › 网络安全 › 基础防护
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#网络安全" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            网络安全
+                        </a>
+                        
+                        <a href="tags.html#加密" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            加密
+                        </a>
+                        
+                        <a href="tags.html#防护" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            防护
+                        </a>
+                        
+                        <a href="tags.html#渗透测试" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            渗透测试
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            14
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Aug
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="数据与安全&#x2F;数据库技术&#x2F;性能优化/database-optimization.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            数据库性能优化实战
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            数据与安全 › 数据库技术 › 性能优化
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#数据库" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            数据库
+                        </a>
+                        
+                        <a href="tags.html#性能优化" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            性能优化
+                        </a>
+                        
+                        <a href="tags.html#MySQL" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            MySQL
+                        </a>
+                        
+                        <a href="tags.html#PostgreSQL" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            PostgreSQL
+                        </a>
+                        
+                        <a href="tags.html#索引" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            索引
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            22
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Jul
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术架构&#x2F;微服务架构&#x2F;服务设计/golang-microservices.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Go语言微服务架构实践
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术架构 › 微服务架构 › 服务设计
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Go" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Go
+                        </a>
+                        
+                        <a href="tags.html#微服务" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            微服务
+                        </a>
+                        
+                        <a href="tags.html#分布式系统" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            分布式系统
+                        </a>
+                        
+                        <a href="tags.html#云原生" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            云原生
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            08
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Jun
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;前端开发&#x2F;JavaScript框架/vue3-composition-api.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Vue 3 Composition API深入解析
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 前端开发 › JavaScript框架
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Vue.js" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Vue.js
+                        </a>
+                        
+                        <a href="tags.html#Composition API" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Composition API
+                        </a>
+                        
+                        <a href="tags.html#前端框架" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            前端框架
+                        </a>
+                        
+                        <a href="tags.html#TypeScript" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            TypeScript
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            12
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            May
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="about.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            关于我
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    
+                    <!-- 标签 -->
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            12
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            May
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="friends.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            友情链接
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    
+                    <!-- 标签 -->
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            12
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            May
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="数据与安全&#x2F;机器学习&#x2F;Python应用/python-machine-learning.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Python机器学习实战指南
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            数据与安全 › 机器学习 › Python应用
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Python" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Python
+                        </a>
+                        
+                        <a href="tags.html#机器学习" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            机器学习
+                        </a>
+                        
+                        <a href="tags.html#AI" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            AI
+                        </a>
+                        
+                        <a href="tags.html#数据科学" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            数据科学
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            05
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Apr
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;前端开发&#x2F;React生态/react-hooks-tutorial.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            React Hooks完全教程
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 前端开发 › React生态
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#React" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            React
+                        </a>
+                        
+                        <a href="tags.html#Hooks" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Hooks
+                        </a>
+                        
+                        <a href="tags.html#前端框架" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            前端框架
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            10
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Mar
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术架构&#x2F;容器化技术&#x2F;Docker实践/docker-containerization-guide.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Docker容器化完全指南
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术架构 › 容器化技术 › Docker实践
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Docker" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Docker
+                        </a>
+                        
+                        <a href="tags.html#容器化" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            容器化
+                        </a>
+                        
+                        <a href="tags.html#DevOps" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            DevOps
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            20
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Feb
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;前端开发&#x2F;JavaScript框架/javascript-async-programming.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            JavaScript异步编程深度解析
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 前端开发 › JavaScript框架
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#JavaScript" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            JavaScript
+                        </a>
+                        
+                        <a href="tags.html#异步编程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            异步编程
+                        </a>
+                        
+                        <a href="tags.html#Promise" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Promise
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            21
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Jan
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;前端开发&#x2F;JavaScript框架/4.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            4
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 前端开发 › JavaScript框架
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#网文创作" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            网文创作
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            15
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Jan
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;后端开发&#x2F;Rust语言/rust-web-development.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust Web开发入门指南
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 后端开发 › Rust语言
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#Web开发" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Web开发
+                        </a>
+                        
+                        <a href="tags.html#后端" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            后端
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+            
+            
+                </div>
+                
+                <div class="year-section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-2 border-primary-500 inline-block">
+                        2023
+                    </h2>
+                    <div class="space-y-4">
+            
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            15
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            Jul
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;前端开发&#x2F;React生态/example.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            欢迎使用RustPress
+                        </a>
+                        
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 前端开发 › React生态
+                        </span>
+                    </div>
+                    
+                    
+                    <!-- 标签 -->
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#博客" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            博客
+                        </a>
+                        
+                        <a href="tags.html#静态网站" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            静态网站
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- 阅读时间 -->
+                
+            </article>
+        
+        </div></div>
+    </div>
     
-    
+</div>
  
-    </main>
-    <footer>
-        <p>&copy; 2025 作者 - 由 <a href="https://github.com/rixingyike/rustpress">RustPress</a> 提供支持</p>
+        </main>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600">
+                    &copy; 2002-2025 
+                    李艺
+                </p>
+                
+                <p>
+                    <a href="https://beian.miit.gov.cn/" 
+                       target="_blank" 
+                       rel="noopener" 
+                       class="text-gray-500 hover:text-gray-700 text-sm">
+                        京ICP备14007000号-8
+                    </a>
+                </p>
+                
+                <p class="text-gray-500 text-sm">
+                    由 <a href="https://github.com/rixingyike/rustpress" 
+                          target="_blank" 
+                          rel="noopener" 
+                          class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
+                </p>
+            </div>
+        </div>
     </footer>
+
+    <!-- 搜索结果容器 -->
+    <div class="fixed inset-x-0 top-16 z-40 hidden" id="search-results">
+        <div class="bg-white shadow-lg border border-gray-200 rounded-lg mx-4 mt-2 max-h-96 overflow-y-auto">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+        
+        // 活跃导航链接高亮
+        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === '/' && (currentPath === '' || currentPath === 'index.html')) {
+                link.classList.add('nav-link-active');
+            } else if (href !== '/' && currentPath.includes(href.replace('.html', ''))) {
+                link.classList.add('nav-link-active');
+            }
+        });
+        
+        // Logo错误处理
+        const logo = document.querySelector('img[alt*="Logo"]');
+        if (logo) {
+            logo.addEventListener('error', function() {
+                this.style.display = 'none';
+            });
+        }
+        
+        // 搜索功能增强
+        function setupSearch(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('focus', function() {
+                    document.getElementById('search-results').classList.remove('hidden');
+                });
+                
+                input.addEventListener('blur', function() {
+                    // 延迟隐藏，允许点击搜索结果
+                    setTimeout(() => {
+                        document.getElementById('search-results').classList.add('hidden');
+                    }, 200);
+                });
+            }
+        }
+        
+        setupSearch('search-input');
+        setupSearch('mobile-search-input');
+    </script>
+    
+    <!-- 搜索功能脚本 -->
+    <script src="/js/search.js"></script>
 </body>
 </html>

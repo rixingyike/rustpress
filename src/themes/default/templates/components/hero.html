@@ -1,0 +1,52 @@
+<!-- Hero 组件 -->
+{% if site.homepage.show_hero %}
+<section class="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white overflow-hidden">
+    <!-- 背景图片 -->
+    {% if site.homepage.hero_background %}
+    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" 
+         style="background-image: url('{{ site.homepage.hero_background }}')"></div>
+    {% endif %}
+    
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0">
+        <div class="absolute top-0 left-0 w-72 h-72 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full translate-x-1/2 translate-y-1/2"></div>
+    </div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div class="text-center">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                {{ site.homepage.hero_title | default(value="欢迎来到 " ~ site.name) }}
+            </h1>
+            <p class="text-xl sm:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+                {{ site.homepage.hero_subtitle | default(value=site.description) }}
+            </p>
+            
+            <!-- CTA 按钮 -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="/archives.html" 
+                   class="inline-flex items-center px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors shadow-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z"></path>
+                    </svg>
+                    浏览文章
+                </a>
+                <a href="/about.html" 
+                   class="inline-flex items-center px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    了解作者
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 波浪形底部 -->
+    <div class="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="relative block w-full h-16 fill-gray-50">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
+        </svg>
+    </div>
+</section>
+{% endif %}

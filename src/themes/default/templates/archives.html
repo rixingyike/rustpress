@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">文章归档</h1>
+        <p class="text-lg text-gray-600">按时间顺序浏览所有文章</p>
+    </header>
+    
+    {% if posts %}
+    <div class="space-y-8">
+        {% set current_year = "" %}
+        {% for post in posts %}
+            {% set post_year = post.date_ymd | date(format="%Y") %}
+            {% if post_year != current_year %}
+                {% if current_year != "" %}</div>{% endif %}
+                {% set_global current_year = post_year %}
+                <div class="year-section">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-2 border-primary-500 inline-block">
+                        {{ post_year }}
+                    </h2>
+                    <div class="space-y-4">
+            {% endif %}
+            
+            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                <!-- 日期 -->
+                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
+                    {% if post.date_ymd %}
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary-600">
+                            {{ post.date_ymd | date(format="%d") }}
+                        </div>
+                        <div class="text-sm text-gray-500 uppercase">
+                            {{ post.date_ymd | date(format="%b") }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 文章内容 -->
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold mb-2">
+                        {% if post.categories and post.categories | length > 0 %}
+                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
+                        {% else %}
+                        <a href="{{ post.slug }}.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
+                        {% endif %}
+                    </h3>
+                    
+                    <!-- 分类信息 -->
+                    {% if post.categories %}
+                    <div class="mb-2">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            {{ post.categories | join(sep=' › ') }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 标签 -->
+                    {% if post.tags %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in post.tags %}
+                        <a href="tags.html#{{ tag }}" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            {{ tag }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 阅读时间 -->
+                {% if post.reading_time %}
+                <div class="flex-shrink-0 mt-2 sm:mt-0 sm:ml-4">
+                    <span class="inline-flex items-center text-sm text-gray-500">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ post.reading_time }}min
+                    </span>
+                </div>
+                {% endif %}
+            </article>
+        {% endfor %}
+        {% if current_year != "" %}</div></div>{% endif %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">暂无文章</h3>
+        <p class="mt-2 text-gray-500">还没有发布任何文章</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

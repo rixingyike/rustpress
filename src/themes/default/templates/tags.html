@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">标签云</h1>
+        <p class="text-lg text-gray-600">通过标签快速找到相关内容</p>
+    </header>
+    
+    <!-- 标签云 -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6">所有标签</h2>
+        
+        {% if all_tags %}
+        <div class="flex flex-wrap gap-3 justify-center">
+            {% for tag in all_tags %}
+            <a href="tags.html#{{ tag.name }}" 
+               class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white border border-gray-300 text-gray-700 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                {{ tag.name }}
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    {{ tag.count }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">暂无标签</h3>
+            <p class="mt-2 text-gray-500">还没有创建任何标签</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 标签文章 -->
+    <div class="tag-posts-section">
+        <h3 class="text-2xl font-semibold text-gray-900 mb-4" id="posts-title">标签文章</h3>
+        <p class="text-gray-600 mb-6">点击上方标签查看相关文章</p>
+        
+        {% if posts %}
+        {% for tag in all_tags %}
+        <div class="tag-posts-group space-y-4 hidden" id="tag-{{ tag.name }}">
+            <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+                <h4 class="text-lg font-semibold text-primary-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    标签 "{{ tag.name }}" 的文章
+                </h4>
+            </div>
+            
+            {% for post in posts %}
+                {% if post.tags and tag.name in post.tags %}
+                <article class="card hover:shadow-lg transition-shadow duration-300">
+                    <div class="card-body">
+                        <h5 class="text-lg font-semibold mb-2">
+                            {% if post.categories and post.categories | length > 0 %}
+                            <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
+                               class="text-gray-900 hover:text-primary-600 transition-colors">
+                                {{ post.title | default(value=post.slug) }}
+                            </a>
+                            {% else %}
+                            <a href="{{ post.slug }}.html" 
+                               class="text-gray-900 hover:text-primary-600 transition-colors">
+                                {{ post.title | default(value=post.slug) }}
+                            </a>
+                            {% endif %}
+                        </h5>
+                        
+                        <div class="article-meta mb-3">
+                            {% if post.date_ymd %}
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ post.date_ymd }}
+                            </span>
+                            {% endif %}
+                            {% if post.reading_time %}
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ post.reading_time }} 分钟阅读
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if post.tags %}
+                        <div class="flex flex-wrap gap-2">
+                            {% for tag in post.tags %}
+                            <a href="#{{ tag }}" 
+                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                                {{ tag }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// 标签显示逻辑
+function showTagPosts(tagName) {
+    // 隐藏所有标签组
+    const allGroups = document.querySelectorAll('.tag-posts-group');
+    allGroups.forEach(group => group.classList.add('hidden'));
+    
+    // 显示选中的标签组
+    const targetGroup = document.getElementById('tag-' + tagName);
+    if (targetGroup) {
+        targetGroup.classList.remove('hidden');
+    }
+    
+    // 更新标题
+    const title = document.getElementById('posts-title');
+    if (tagName) {
+        title.textContent = `标签 "${tagName}" 的文章`;
+    } else {
+        title.textContent = '标签文章';
+    }
+}
+
+// 处理标签链接点击
+document.addEventListener('DOMContentLoaded', function() {
+    const tagLinks = document.querySelectorAll('a[href^="tags.html#"]');
+    tagLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('href');
+            const tagName = href.substring(href.indexOf('#') + 1);
+            showTagPosts(tagName);
+            window.location.hash = tagName;
+            
+            // 滚动到文章区域
+            document.querySelector('.tag-posts-section').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+    });
+    
+    // 检查URL hash
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+        showTagPosts(hash);
+    }
+});
+</script>
+{% endblock %}

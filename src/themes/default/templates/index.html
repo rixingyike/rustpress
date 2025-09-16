@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero 组件 -->
+{% include "components/hero.html" %}
+
+<!-- 主要内容区域 - 圣杯布局 -->
+<div class="flex flex-col lg:flex-row gap-8 mt-8">
+    <!-- 主内容区域 -->
+    <main class="flex-1 lg:w-2/3">
+        <!-- 文章列表 -->
+        <div class="space-y-6">
+            {% if posts %}
+                {% for post in posts %}
+                <article class="card hover:shadow-lg transition-shadow duration-300">
+                    <!-- 分类面包屑 -->
+                    {% if post.categories and post.categories | length > 0 %}
+                    <nav class="px-6 pt-4 text-sm text-gray-600">
+                        <a href="/categories.html" class="hover:text-primary-600">全部分类</a>
+                        {% for category in post.categories %}
+                            <span class="mx-2">›</span>
+                            <a href="/categories.html" class="hover:text-primary-600">{{ category }}</a>
+                        {% endfor %}
+                    </nav>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h2 class="text-xl sm:text-2xl font-semibold mb-3">
+                            {% if post.categories and post.categories | length > 0 %}
+                            <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
+                               class="text-gray-900 hover:text-primary-600 transition-colors">
+                                {{ post.title | default(value=post.slug) }}
+                            </a>
+                            {% else %}
+                            <a href="{{ post.slug }}.html" 
+                               class="text-gray-900 hover:text-primary-600 transition-colors">
+                                {{ post.title | default(value=post.slug) }}
+                            </a>
+                            {% endif %}
+                        </h2>
+                        
+                        <div class="article-meta mb-4">
+                            {% if post.date_ymd %}
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ post.date_ymd }}
+                            </span>
+                            {% endif %}
+                            {% if post.reading_time %}
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ post.reading_time }} 分钟阅读
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if post.content %}
+                        <div class="text-gray-600 leading-relaxed mb-4">
+                            {{ post.content | striptags | truncate(length=200) }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- 标签 -->
+                        {% if post.tags %}
+                        <div class="flex flex-wrap gap-2">
+                            {% for tag in post.tags %}
+                            <a href="/tags.html#{{ tag }}" 
+                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                                {{ tag }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+                
+                <!-- 分页导航 -->
+                {% if posts | length >= site.homepage.posts_per_page | default(value=10) %}
+                <div class="flex justify-center mt-8">
+                    <nav class="flex items-center space-x-2">
+                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">
+                            上一页
+                        </a>
+                        <span class="px-3 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-md">
+                            1
+                        </span>
+                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">
+                            2
+                        </a>
+                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">
+                            下一页
+                        </a>
+                    </nav>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">暂无文章</h3>
+                    <p class="mt-2 text-gray-500">还没有发布任何文章</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- 侧边栏 -->
+    <div class="lg:w-1/3">
+        {% include "components/sidebar.html" %}
+    </div>
+</div>
+
+<!-- 快速导航 -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">📂</div>
+            <h3 class="text-lg font-semibold mb-2">浏览分类</h3>
+            <p class="text-gray-600 mb-4">按主题分类查看文章</p>
+            <a href="/categories.html" class="btn-primary">查看分类</a>
+        </div>
+    </div>
+    
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">🏷️</div>
+            <h3 class="text-lg font-semibold mb-2">标签云</h3>
+            <p class="text-gray-600 mb-4">通过标签快速找到相关内容</p>
+            <a href="/tags.html" class="btn-primary">查看标签</a>
+        </div>
+    </div>
+    
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">📚</div>
+            <h3 class="text-lg font-semibold mb-2">文章归档</h3>
+            <p class="text-gray-600 mb-4">按时间顺序浏览所有文章</p>
+            <a href="/archives.html" class="btn-primary">查看归档</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

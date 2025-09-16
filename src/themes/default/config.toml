@@ -1,0 +1,94 @@
+[site]
+name = "艺述论"
+description = "使用RustPress创建的博客"
+author = "李艺"
+base_url = "http://localhost:1111"
+icp_license = "京ICP备14007000号-8"
+start_year = 2002
+
+# 作者信息
+[author]
+name = "李艺"
+bio = "热爱技术，专注于 Rust、Web 开发和系统架构。"
+avatar = "/images/avatar.jpg"
+location = "北京, 中国"
+website = "https://example.com"
+email = "author@example.com"
+
+# 社交链接
+[social]
+github = "https://github.com/username"
+twitter = "https://twitter.com/username"
+weibo = "https://weibo.com/username"
+zhihu = "https://zhihu.com/people/username"
+bilibili = "https://space.bilibili.com/username"
+rss = "/rss.xml"
+
+# 首页设置
+[homepage]
+hero_title = "欢迎来到艺述论"
+hero_subtitle = "分享技术见解，记录成长历程"
+hero_background = "/images/hero-bg.jpg"
+posts_per_page = 10
+show_hero = true
+
+# 广告位设置
+[ads]
+sidebar_top = """
+<div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg text-center">
+    <h3 class="font-bold mb-2">推荐阅读</h3>
+    <p class="text-sm">发现更多精彩内容</p>
+</div>
+"""
+
+sidebar_bottom = """
+<div class="bg-gray-100 p-4 rounded-lg text-center">
+    <h3 class="font-semibold mb-2 text-gray-800">支持我们</h3>
+    <p class="text-sm text-gray-600">如果您觉得内容有用，请考虑支持我们</p>
+</div>
+"""
+
+# 功能开关
+[features]
+search = true
+comments = false
+analytics = false
+rss = true
+sitemap = true
+
+# 导航菜单
+[[menu.main]]
+name = "首页"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "归档"
+url = "/archives.html"
+weight = 2
+
+[[menu.main]]
+name = "分类"
+url = "/categories.html"
+weight = 3
+
+[[menu.main]]
+name = "标签"
+url = "/tags.html"
+weight = 4
+
+[[menu.main]]
+name = "友链"
+url = "/friends.html"
+weight = 5
+
+[[menu.main]]
+name = "关于"
+url = "/about.html"
+weight = 6
+
+[taxonomies]
+category = "categories"
+
+
+tag = "tags"
