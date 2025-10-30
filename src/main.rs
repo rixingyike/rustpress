@@ -25,7 +25,7 @@ struct Cli {
     command: Commands,
     
     /// 指定Markdown源文件目录
-    #[arg(short, long, default_value = "mdsource")]
+    #[arg(short, long, default_value = "source")]
     md_dir: String,
     
     /// 指定配置文件

@@ -8,7 +8,7 @@
  - 集成 Tera 模板：`base.html`、`index.html`、`post.html`
  - 实现 Markdown 编译：生成 `public/` 静态页
  - 增加标签与归档模板：`tags.html`、`archives.html`
- - 添加示例内容：`mdsource/` 与 `public/` 示例文件
+ - 添加示例内容：`source/` 与 `public/` 示例文件
  - 完成首次提交并整理 `.gitignore`
 
 ## 特性
