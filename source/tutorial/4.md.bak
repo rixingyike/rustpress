@@ -1,0 +1,24 @@
+---
+title: "4教程"
+createTime: 2024-01-04 10:00:00
+tags: ["教程,学习"]
+---
+
+# 数据库设计最佳实践
+
+## SQL表结构设计
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## 数据库类型对比
+| 类型 | 适用场景 | 优势 | 劣势 |
+|------|----------|------|------|
+| PostgreSQL | 复杂查询 | ACID | 配置复杂 |
+| MySQL | Web应用 | 成熟 | 功能有限 |
+| MongoDB | 文档存储 | 灵活 | 事务弱 |

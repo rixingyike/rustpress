@@ -1,0 +1,24 @@
+---
+title: "Rust 2机制"
+createTime: 2024-01-02 10:00:00
+tags: ["Rust,编程"]
+---
+
+# Rust 并发模型
+
+## 线程与异步
+```rust
+use std::thread;
+
+fn main() {
+    let handle = thread::spawn(|| {
+        println!("来自子线程");
+    });
+    handle.join().unwrap();
+}
+```
+
+## 消息传递
+- 使用 `mpsc` 通道
+- 支持多生产者单消费者
+- 零成本抽象

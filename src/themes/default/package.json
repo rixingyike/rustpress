@@ -1,0 +1,24 @@
+{
+  "name": "rustpress-default-theme",
+  "version": "1.0.0",
+  "description": "RustPress 默认主题",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "tailwindcss -i ./src/tailwind.input.css -o ./static/css/tailwind.css --minify",
+    "build-dev": "tailwindcss -i ./src/tailwind.input.css -o ./static/css/tailwind.dev.css --watch",
+    "watch-css": "tailwindcss -i ./src/tailwind.input.css -o ./static/css/tailwind.css --watch",
+    "dev": "npm run build-dev",
+    "release": "npm run build-css"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.0",
+    "postcss": "^8.4.31",
+    "autoprefixer": "^10.4.16",
+    "@tailwindcss/typography": "^0.5.10",
+    "@tailwindcss/forms": "^0.5.6",
+    "@tailwindcss/aspect-ratio": "^0.4.2"
+  },
+  "keywords": ["rustpress", "theme", "tailwindcss"],
+  "author": "Your Name",
+  "license": "MIT"
+}

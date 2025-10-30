@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="max-w-4xl mx-auto">
+    <!-- 返回链接 -->
+    <div class="mb-6">
+        <button onclick="history.back()" 
+                class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            返回
+        </button>
+    </div>
+    
+    <!-- 分类面包屑 -->
+    {% if page.categories and page.categories | length > 0 %}
+    <nav class="mb-6 text-sm text-gray-600">
+        <a href="categories.html" class="hover:text-primary-600">全部分类</a>
+        {% for category in page.categories %}
+            <span class="mx-2">›</span>
+            <a href="categories.html" class="hover:text-primary-600">{{ category }}</a>
+        {% endfor %}
+    </nav>
+    {% endif %}
+    
+    <!-- 文章头部 -->
+    <header class="mb-8 pb-8 border-b border-gray-200">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            {{ page.title | default(value=page.slug) }}
+        </h1>
+        
+        <div class="article-meta mb-6">
+            {% if page.date_ymd %}
+            <span class="inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                {{ page.date_ymd }}
+            </span>
+            {% endif %}
+            {% if page.reading_time %}
+            <span class="inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                预计阅读时间：{{ page.reading_time }} 分钟
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- 标签 -->
+        {% if page.tags %}
+        <div class="flex flex-wrap gap-2">
+            {% for tag in page.tags %}
+            <a href="tags.html#{{ tag }}" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                {{ tag }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </header>
+    
+    <!-- 文章内容 -->
+    <div class="article-content prose prose-lg max-w-none">
+        {{ page.content | safe }}
+    </div>
+    
+    <!-- 分享功能 -->
+    <div class="mt-12 p-6 bg-gray-50 rounded-lg">
+        <h4 class="text-lg font-semibold mb-4 text-gray-900">分享这篇文章</h4>
+        <div class="flex flex-wrap gap-3">
+            <button onclick="shareToTwitter()" 
+                    class="btn-outline inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+                Twitter
+            </button>
+            <button onclick="copyLink()" 
+                    class="btn-outline inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                复制链接
+            </button>
+        </div>
+    </div>
+    
+    <!-- 返回顶部 -->
+    <div class="text-center mt-8">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                class="btn-secondary inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+            返回顶部
+        </button>
+    </div>
+</article>
+
+<script>
+function shareToTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(document.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('链接已复制到剪贴板！');
+    });
+}
+
+// 代码块复制功能
+document.addEventListener('DOMContentLoaded', function() {
+    const codeBlocks = document.querySelectorAll('pre code');
+    codeBlocks.forEach(function(codeBlock) {
+        const pre = codeBlock.parentNode;
+        const button = document.createElement('button');
+        button.className = 'copy-code-btn';
+        button.textContent = '复制';
+        button.onclick = function() {
+            navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                button.textContent = '已复制';
+                setTimeout(() => {
+                    button.textContent = '复制';
+                }, 2000);
+            });
+        };
+        pre.style.position = 'relative';
+        pre.appendChild(button);
+    });
+});
+</script>
+{% endblock %}

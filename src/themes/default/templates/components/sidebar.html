@@ -1,0 +1,194 @@
+<!-- 侧边栏组件 -->
+<aside class="space-y-6">
+    <!-- 作者信息卡片 -->
+    <div class="card">
+        <div class="card-body text-center">
+            <!-- 作者头像 -->
+            {% if site.author.avatar %}
+            <div class="mb-4">
+                <img src="{{ site.author.avatar }}" 
+                     alt="{{ site.author.name | default(value=site.author) }}" 
+                     class="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-lg"
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiI+CjxwYXRoIGQ9Im0yMCAyMS0xNi0xNm0wIDEzaDEzbTAtMTNMMjEgMjEiLz4KPHN2Zz4KPC9zdmc+Cg=='">
+            </div>
+            {% endif %}
+            
+            <!-- 作者姓名 -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                {{ site.author.name | default(value=site.author) }}
+            </h3>
+            
+            <!-- 作者简介 -->
+            {% if site.author.bio %}
+            <p class="text-gray-600 text-sm mb-4 leading-relaxed">
+                {{ site.author.bio }}
+            </p>
+            {% endif %}
+            
+            <!-- 位置信息 -->
+            {% if site.author.location %}
+            <div class="flex items-center justify-center text-gray-500 text-sm mb-4">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                {{ site.author.location }}
+            </div>
+            {% endif %}
+            
+            <!-- 社交链接 -->
+            {% if site.social %}
+            <div class="flex justify-center space-x-3">
+                {% if site.social.github %}
+                <a href="{{ site.social.github }}" 
+                   target="_blank" 
+                   rel="noopener"
+                   class="text-gray-400 hover:text-gray-600 transition-colors"
+                   title="GitHub">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if site.social.twitter %}
+                <a href="{{ site.social.twitter }}" 
+                   target="_blank" 
+                   rel="noopener"
+                   class="text-gray-400 hover:text-blue-400 transition-colors"
+                   title="Twitter">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if site.social.weibo %}
+                <a href="{{ site.social.weibo }}" 
+                   target="_blank" 
+                   rel="noopener"
+                   class="text-gray-400 hover:text-red-500 transition-colors"
+                   title="微博">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.31 8.17c-2.73-.13-4.3.53-4.3 2.26 0 2.22 2.73 4.69 6.08 4.69 2.61 0 4.08-1.74 4.08-3.17-.01-1.72-2.63-3.65-5.86-3.78zm-.46 5.63c-.65.71-1.57.4-2.03-.14-.47-.54-.42-1.43.23-2.05.63-.6 1.45-.35 1.92.2.48.55.5 1.33-.12 1.99zm1.7-.71c-.13.16-.38.21-.54.08-.17-.13-.19-.39-.04-.55.16-.17.4-.19.56-.05.15.14.16.35.02.52z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if site.social.zhihu %}
+                <a href="{{ site.social.zhihu }}" 
+                   target="_blank" 
+                   rel="noopener"
+                   class="text-gray-400 hover:text-blue-600 transition-colors"
+                   title="知乎">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5.721 0C2.251 0 0 2.25 0 5.719v12.562C0 21.751 2.251 24 5.721 24h12.558C21.749 24 24 21.751 24 18.281V5.719C24 2.25 21.749 0 18.279 0H5.721zM8.48 5.64c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h3.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774z"/>
+                    </svg>
+                </a>
+                {% endif %}
+                
+                {% if site.social.rss %}
+                <a href="{{ site.social.rss }}" 
+                   target="_blank" 
+                   rel="noopener"
+                   class="text-gray-400 hover:text-orange-500 transition-colors"
+                   title="RSS">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248S0 22.546 0 20.752s1.456-3.248 3.252-3.248 3.251 1.454 3.251 3.248zM1.677 6.155v4.301c5.493 0 9.942 4.448 9.942 9.94h4.299c0-7.837-6.404-14.241-14.241-14.241zM1.677.014v4.301C9.447.315 15.686 6.554 15.686 14.323h4.299C19.985 6.554 13.446.014 1.677.014z"/>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 顶部广告位 -->
+    {% if site.ads.sidebar_top %}
+    <div class="sidebar-ad">
+        {{ site.ads.sidebar_top | safe }}
+    </div>
+    {% endif %}
+
+    <!-- 最新文章 -->
+    {% if posts %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900">最新文章</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="divide-y divide-gray-200">
+                {% for post in posts | slice(end=5) %}
+                <div class="p-4 hover:bg-gray-50 transition-colors">
+                    <h4 class="text-sm font-medium mb-1">
+                        {% if post.categories and post.categories | length > 0 %}
+                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
+                        {% else %}
+                        <a href="{{ post.slug }}.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
+                        {% endif %}
+                    </h4>
+                    {% if post.date_ymd %}
+                    <p class="text-xs text-gray-500">{{ post.date_ymd }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 标签云 -->
+    {% if all_tags %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900">热门标签</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex flex-wrap gap-2">
+                {% for tag in all_tags | slice(end=20) %}
+                <a href="/tags.html#{{ tag.name }}" 
+                   class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
+                    {{ tag.name }}
+                    <span class="ml-1 text-xs text-gray-500">{{ tag.count }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 分类导航 -->
+    {% if all_categories %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900">文章分类</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="divide-y divide-gray-200">
+                {% for category in all_categories | slice(end=8) %}
+                <div class="p-3">
+                    <a href="/categories.html" 
+                       class="flex items-center justify-between text-gray-700 hover:text-primary-600 transition-colors">
+                        <span class="text-sm font-medium">{{ category.name }}</span>
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ category.count }}</span>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 底部广告位 -->
+    {% if site.ads.sidebar_bottom %}
+    <div class="sidebar-ad">
+        {{ site.ads.sidebar_bottom | safe }}
+    </div>
+    {% endif %}
+</aside>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3教程 - 我的博客</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #222;
+        }
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .post-list {
+            list-style: none;
+            padding: 0;
+        }
+        .post-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .post-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .tags {
+            margin-top: 10px;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #f1f1f1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+        .categories-nav {
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .category-link {
+            color: #0366d6;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        .category-link:hover {
+            text-decoration: underline;
+        }
+        .main-nav {
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        .category-breadcrumb {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .category-breadcrumb a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        .category-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="index.html">我的博客</a></h1>
+        <p>使用RustPress创建的博客</p>
+        
+        <!-- 分类导航 -->
+        <nav class="categories-nav">
+            <strong>分类：</strong>
+            
+                
+                    <a href="design/index.html" class="category-link">design</a>
+                     | 
+                
+                    <a href="network/index.html" class="category-link">network</a>
+                     | 
+                
+                    <a href="tutorial/index.html" class="category-link">tutorial</a>
+                     | 
+                
+                    <a href="前端/index.html" class="category-link">前端</a>
+                     | 
+                
+                    <a href="技术/index.html" class="category-link">技术</a>
+                    
+                
+            
+        </nav>
+        
+        <!-- 页面导航 -->
+        <nav class="main-nav">
+            <a href="index.html">首页</a> | 
+            <a href="archives.html">归档</a> | 
+            <a href="tags.html">标签</a>
+        </nav>
+    </header>
+    <main>
+        
+    <!-- 分类面包屑导航 -->
+    
+    <div class="category-breadcrumb">
+        <strong>分类：</strong>
+        
+        
+            <a href="tutorial/index.html">tutorial</a>
+            
+        
+    </div>
+    
+    
+    <article>
+        <h1>3教程</h1>
+        <p class="post-date">2024-01-03 10:00:00</p>
+        
+        <!-- 分类标签 -->
+        
+        <div class="categories">
+            <strong>分类：</strong>
+            
+            
+            <span class="tag"><a href="tutorial/index.html">tutorial</a></span>
+            
+        </div>
+        
+        
+        <div class="tags">
+            
+            
+            <span class="tag"><a href="tags.html?tag=%E6%95%99%E7%A8%8B">教程</a></span>
+            
+            <span class="tag"><a href="tags.html?tag=%E5%AD%A6%E4%B9%A0">学习</a></span>
+            
+        </div>
+        <div class="content">
+            <h1>Docker容器化部署</h1>
+<h2>Dockerfile示例</h2>
+<pre><code class="language-dockerfile">FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD [&quot;npm&quot;, &quot;start&quot;]
+</code></pre>
+<h2>容器编排比较</h2>
+<table><thead><tr><th>工具</th><th>学习曲线</th><th>生产就绪</th><th>社区支持</th></tr></thead><tbody>
+<tr><td>Docker Compose</td><td>简单</td><td>✅</td><td>优秀</td></tr>
+<tr><td>Kubernetes</td><td>复杂</td><td>✅</td><td>极好</td></tr>
+<tr><td>Docker Swarm</td><td>中等</td><td>✅</td><td>良好</td></tr>
+</tbody></table>
+
+        </div>
+    </article>
+ 
+    </main>
+    <footer>
+        <p>&copy; 2025 作者 - 由 <a href="https://github.com/rixingyike/rustpress">RustPress</a> 提供支持</p>
+    </footer>
+</body>
+</html>

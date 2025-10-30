@@ -1,9 +1,0 @@
-[site]
-name = "我的博客"
-description = "使用RustPress创建的博客"
-author = "作者"
-base_url = "https://example.com"
-
-[taxonomies]
-category = "categories"
-tag = "tags"

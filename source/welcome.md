@@ -1,7 +1,7 @@
 ---
 title: "欢迎使用RustPress"
 createTime: 2023-07-15 10:00:00
-categories: ["介绍"]
+
 tags: ["Rust", "博客", "静态网站"]
 ---
 

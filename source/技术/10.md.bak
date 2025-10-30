@@ -1,0 +1,24 @@
+---
+title: "Rust 10机制"
+createTime: 2024-01-10 10:00:00
+tags: ["Rust,编程"]
+---
+
+# Rust 异步编程
+
+## async/await 示例
+```rust
+async fn fetch_data() -> Result<String, reqwest::Error> {
+    reqwest::get("https://api.example.com/data")
+        .await?
+        .text()
+        .await
+}
+```
+
+## 运行时比较
+| 运行时   | 特点                |
+|----------|---------------------|
+| tokio    | 线程池、高性能      |
+| async-std| 类似标准库API       |
+| smol     | 轻量级、兼容性强    |

@@ -1,0 +1,27 @@
+---
+title: "前端3技术"
+createTime: 2024-01-03 10:00:00
+tags: ["前端,Web"]
+---
+
+# 前端框架对比
+
+## React vs Vue vs Angular
+```javascript
+// React 函数组件
+function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+
+// Vue 组合式API
+const count = ref(0);
+const increment = () => count.value++;
+```
+
+## 性能指标
+| 框架 | 包大小 | 首次加载 | 交互响应 |
+|------|--------|----------|----------|
+| React | 42KB | 1.2s | 45ms |
+| Vue | 34KB | 0.9s | 38ms |
+| Svelte | 12KB | 0.6s | 22ms |
