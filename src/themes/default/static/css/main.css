@@ -949,3 +949,39 @@ body {
     color: #666;
     font-size: 0.9rem;
 }
+
+/* 侧边栏布局修复 - 手动添加space-y-6样式 */
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+/* 侧边栏卡片样式 */
+.card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e1e5e9;
+    background: #f8f9fa;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-body.p-0 {
+    padding: 0;
+}
+
+/* 侧边栏广告位样式 */
+.sidebar-ad {
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}

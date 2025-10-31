@@ -1,25 +1,15 @@
 {% extends "base.html" %}
 
+<!-- 文章详情页面模板 -->
 {% block content %}
-<article class="max-w-4xl mx-auto">
-    <!-- 返回链接 -->
-    <div class="mb-6">
-        <button onclick="history.back()" 
-                class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            返回
-        </button>
-    </div>
-    
+<article class="max-w-4xl mx-auto" x-data="{ copiedLink: false, copiedCode: {} }">
     <!-- 分类面包屑 -->
     {% if page.categories and page.categories | length > 0 %}
     <nav class="mb-6 text-sm text-gray-600">
-        <a href="categories.html" class="hover:text-primary-600">全部分类</a>
+        <a href="/" class="hover:text-primary-600">首页</a>
         {% for category in page.categories %}
             <span class="mx-2">›</span>
-            <a href="categories.html" class="hover:text-primary-600">{{ category }}</a>
+            <a href="/{{ page.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
         {% endfor %}
     </nav>
     {% endif %}
@@ -66,14 +56,32 @@
     </header>
     
     <!-- 文章内容 -->
-    <div class="article-content prose prose-lg max-w-none">
+    <div class="article-content prose prose-lg max-w-none" 
+         x-init="$nextTick(() => {
+             // 为代码块添加复制按钮
+             document.querySelectorAll('pre code').forEach((codeBlock, index) => {
+                 const pre = codeBlock.parentElement;
+                 if (!pre.querySelector('.copy-code-btn')) {
+                     const button = document.createElement('button');
+                     button.className = 'copy-code-btn';
+                     button.textContent = '复制';
+                     button.setAttribute('x-data', `{ copied: false }`);
+                     button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
+                     button.setAttribute(':class', `{ 'bg-green-600': copied }`);
+                     button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
+                     
+                     pre.style.position = 'relative';
+                     pre.appendChild(button);
+                 }
+             });
+         })">
         {{ page.content | safe }}
     </div>
     
     <!-- 分享功能 -->
-    <div class="mt-12 p-6 bg-gray-50 rounded-lg">
-        <h4 class="text-lg font-semibold mb-4 text-gray-900">分享这篇文章</h4>
-        <div class="flex flex-wrap gap-3">
+    <div class="mt-12 bg-gray-50 rounded-lg">
+        <h4 class="text-lg font-semibold mb-4 text-gray-900 p-4 pb-0">分享这篇文章</h4>
+        <div class="flex flex-wrap gap-3 p-4">
             <button onclick="shareToTwitter()" 
                     class="btn-outline inline-flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -81,12 +89,13 @@
                 </svg>
                 Twitter
             </button>
-            <button onclick="copyLink()" 
-                    class="btn-outline inline-flex items-center">
+            <button @click="navigator.clipboard.writeText(window.location.href).then(() => { copiedLink = true; setTimeout(() => copiedLink = false, 2000) })" 
+                    class="btn-outline inline-flex items-center"
+                    :class="{ 'bg-green-100 text-green-800 border-green-300': copiedLink }">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                 </svg>
-                复制链接
+                <span x-text="copiedLink ? '已复制' : '复制链接'"></span>
             </button>
         </div>
     </div>
@@ -109,32 +118,5 @@ function shareToTwitter() {
     const text = encodeURIComponent(document.title);
     window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
 }
-
-function copyLink() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        alert('链接已复制到剪贴板！');
-    });
-}
-
-// 代码块复制功能
-document.addEventListener('DOMContentLoaded', function() {
-    const codeBlocks = document.querySelectorAll('pre code');
-    codeBlocks.forEach(function(codeBlock) {
-        const pre = codeBlock.parentNode;
-        const button = document.createElement('button');
-        button.className = 'copy-code-btn';
-        button.textContent = '复制';
-        button.onclick = function() {
-            navigator.clipboard.writeText(codeBlock.textContent).then(() => {
-                button.textContent = '已复制';
-                setTimeout(() => {
-                    button.textContent = '复制';
-                }, 2000);
-            });
-        };
-        pre.style.position = 'relative';
-        pre.appendChild(button);
-    });
-});
 </script>
 {% endblock %}

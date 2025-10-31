@@ -14,16 +14,19 @@ layout: friends
 - **网址：** https://www.rust-lang.org/
 - **描述：** Rust 编程语言官方网站，提供最新的文档和资源
 - **头像：** https://www.rust-lang.org/static/images/favicon.ico
+- **分类：** 技术类
 
 ### GitHub
 - **网址：** https://github.com/
 - **描述：** 全球最大的代码托管平台，开发者的必备工具
 - **头像：** https://github.com/favicon.ico
+- **分类：** 技术类
 
 ### MDN Web Docs
 - **网址：** https://developer.mozilla.org/
 - **描述：** Web 开发者的权威参考文档，涵盖 HTML、CSS、JavaScript 等
-- **头像：** https://developer.mozilla.org/apple-touch-icon.6803c6f0.png
+- **头像：** https://blog.mozilla.org/community/files/2015/07/MDN-10years_twitter-avatar_400x400px-600x600.png
+- **分类：** 技术类
 
 ## 个人博客
 
@@ -31,11 +34,13 @@ layout: friends
 - **网址：** https://example1.com
 - **描述：** 专注于前端开发的技术博客
 - **头像：** https://via.placeholder.com/40x40
+- **分类：** 个人博客
 
 ### 示例博客 2
 - **网址：** https://example2.com
 - **描述：** 分享后端开发经验和心得
 - **头像：** https://via.placeholder.com/40x40
+- **分类：** 个人博客
 
 ---
 

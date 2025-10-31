@@ -1,100 +1,111 @@
 <!-- 侧边栏组件 -->
-<aside class="space-y-6">
+<aside class="space-y-6" x-data="{ wechatModalOpen: false }">
     <!-- 作者信息卡片 -->
     <div class="card">
         <div class="card-body text-center">
             <!-- 作者头像 -->
             {% if site.author.avatar %}
             <div class="mb-4">
-                <img src="{{ site.author.avatar }}" 
-                     alt="{{ site.author.name | default(value=site.author) }}" 
-                     class="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-lg"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiI+CjxwYXRoIGQ9Im0yMCAyMS0xNi0xNm0wIDEzaDEzbTAtMTNMMjEgMjEiLz4KPHN2Zz4KPC9zdmc+Cg=='">
+                <img src="{{ site.author.avatar }}" alt="{{ site.author.name | default(value=site.author) }}"
+                    class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-gray-200 hover:border-primary-400 transition-all duration-300"
+                    onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiI+CjxwYXRoIGQ9Im0yMCAyMS0xNi0xNm0wIDEzaDEzbTAtMTNMMjEgMjEiLz4KPHN2Zz4KPC9zdmc+Cg=='">
             </div>
             {% endif %}
-            
+
             <!-- 作者姓名 -->
             <h3 class="text-lg font-semibold text-gray-900 mb-2">
                 {{ site.author.name | default(value=site.author) }}
             </h3>
-            
+
             <!-- 作者简介 -->
             {% if site.author.bio %}
-            <p class="text-gray-600 text-sm mb-4 leading-relaxed">
+            <p class="text-gray-600 text-sm mb-3 leading-relaxed">
                 {{ site.author.bio }}
             </p>
             {% endif %}
-            
+
             <!-- 位置信息 -->
             {% if site.author.location %}
             <div class="flex items-center justify-center text-gray-500 text-sm mb-4">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                 </svg>
                 {{ site.author.location }}
             </div>
             {% endif %}
-            
+
             <!-- 社交链接 -->
             {% if site.social %}
             <div class="flex justify-center space-x-3">
                 {% if site.social.github %}
-                <a href="{{ site.social.github }}" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="text-gray-400 hover:text-gray-600 transition-colors"
-                   title="GitHub">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                <a href="{{ site.social.github }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group"
+                    title="GitHub">
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-800" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                     </svg>
                 </a>
                 {% endif %}
-                
+
                 {% if site.social.twitter %}
-                <a href="{{ site.social.twitter }}" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="text-gray-400 hover:text-blue-400 transition-colors"
-                   title="Twitter">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                <a href="{{ site.social.twitter }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-blue-100 transition-colors duration-200 group"
+                    title="X (Twitter)">
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-400" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
                     </svg>
                 </a>
                 {% endif %}
-                
-                {% if site.social.weibo %}
-                <a href="{{ site.social.weibo }}" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="text-gray-400 hover:text-red-500 transition-colors"
-                   title="微博">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9.31 8.17c-2.73-.13-4.3.53-4.3 2.26 0 2.22 2.73 4.69 6.08 4.69 2.61 0 4.08-1.74 4.08-3.17-.01-1.72-2.63-3.65-5.86-3.78zm-.46 5.63c-.65.71-1.57.4-2.03-.14-.47-.54-.42-1.43.23-2.05.63-.6 1.45-.35 1.92.2.48.55.5 1.33-.12 1.99zm1.7-.71c-.13.16-.38.21-.54.08-.17-.13-.19-.39-.04-.55.16-.17.4-.19.56-.05.15.14.16.35.02.52z"/>
+
+                {% if site.social.youtube %}
+                <a href="{{ site.social.youtube }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 group"
+                    title="YouTube">
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                     </svg>
                 </a>
                 {% endif %}
-                
+
+                {% if site.social.email %}
+                <a href="mailto:{{ site.social.email }}"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-blue-100 transition-colors duration-200 group"
+                    title="Email">
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-600" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </a>
+                {% endif %}
+
                 {% if site.social.zhihu %}
-                <a href="{{ site.social.zhihu }}" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="text-gray-400 hover:text-blue-600 transition-colors"
-                   title="知乎">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M5.721 0C2.251 0 0 2.25 0 5.719v12.562C0 21.751 2.251 24 5.721 24h12.558C21.749 24 24 21.751 24 18.281V5.719C24 2.25 21.749 0 18.279 0H5.721zM8.48 5.64c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h3.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774z"/>
+                <a href="{{ site.social.zhihu }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-blue-100 transition-colors duration-200 group"
+                    title="知乎">
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-600" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M5.721 0C2.251 0 0 2.25 0 5.719v12.562C0 21.751 2.251 24 5.721 24h12.558C21.749 24 24 21.751 24 18.281V5.719C24 2.25 21.749 0 18.279 0H5.721zM8.48 5.64c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h3.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774z" />
                     </svg>
                 </a>
                 {% endif %}
-                
-                {% if site.social.rss %}
-                <a href="{{ site.social.rss }}" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="text-gray-400 hover:text-orange-500 transition-colors"
-                   title="RSS">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248S0 22.546 0 20.752s1.456-3.248 3.252-3.248 3.251 1.454 3.251 3.248zM1.677 6.155v4.301c5.493 0 9.942 4.448 9.942 9.94h4.299c0-7.837-6.404-14.241-14.241-14.241zM1.677.014v4.301C9.447.315 15.686 6.554 15.686 14.323h4.299C19.985 6.554 13.446.014 1.677.014z"/>
+
+                {% if site.social.wechat %}
+                <a href="#" 
+                   @click.prevent="wechatModalOpen = true"
+                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-green-100 transition-colors duration-200 group"
+                   title="微信公众号">
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-green-500" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M8.691 2.5c-1.747 0-3.184 1.262-3.184 2.813 0 1.551 1.437 2.813 3.184 2.813s3.184-1.262 3.184-2.813c0-1.551-1.437-2.813-3.184-2.813zm6.618 0c-1.747 0-3.184 1.262-3.184 2.813 0 1.551 1.437 2.813 3.184 2.813s3.184-1.262 3.184-2.813c0-1.551-1.437-2.813-3.184-2.813zm-6.618 1.406c.982 0 1.778.71 1.778 1.406 0 .697-.796 1.406-1.778 1.406s-1.778-.709-1.778-1.406c0-.697.796-1.406 1.778-1.406zm6.618 0c.982 0 1.778.71 1.778 1.406 0 .697-.796 1.406-1.778 1.406s-1.778-.709-1.778-1.406c0-.697.796-1.406 1.778-1.406zM3.507 7.813c-1.747 0-3.184 1.262-3.184 2.813 0 1.551 1.437 2.813 3.184 2.813s3.184-1.262 3.184-2.813c0-1.551-1.437-2.813-3.184-2.813zm16.986 0c-1.747 0-3.184 1.262-3.184 2.813 0 1.551 1.437 2.813 3.184 2.813s3.184-1.262 3.184-2.813c0-1.551-1.437-2.813-3.184-2.813zm-16.986 1.406c.982 0 1.778.71 1.778 1.406 0 .697-.796 1.406-1.778 1.406s-1.778-.709-1.778-1.406c0-.697.796-1.406 1.778-1.406zm16.986 0c.982 0 1.778.71 1.778 1.406 0 .697-.796 1.406-1.778 1.406s-1.778-.709-1.778-1.406c0-.697.796-1.406 1.778-1.406z" />
                     </svg>
                 </a>
                 {% endif %}
@@ -103,10 +114,78 @@
         </div>
     </div>
 
-    <!-- 顶部广告位 -->
-    {% if site.ads.sidebar_top %}
+    <!-- 微信公众号二维码浮动层 -->
+    <div x-show="wechatModalOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center"
+         @keydown.escape="wechatModalOpen = false"
+         @click.self="wechatModalOpen = false"
+         x-init="$watch('wechatModalOpen', value => { document.body.style.overflow = value ? 'hidden' : '' })">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="relative bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">微信公众号</h3>
+                <button @click="wechatModalOpen = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="text-center">
+                <img src="{{ site.social.wechat }}" alt="微信公众号二维码" class="w-48 h-48 mx-auto mb-4 rounded-lg shadow-md"
+                    onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiBmaWxsPSIjRjNGNEY2Ii8+Cjxzdmcgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMjAgMjEtMTYtMTZtMCAxM2gxM20wLTEzTDIxIDIxIi8+Cjxzdmc+Cjwvc3ZnPgo='">
+                <p class="text-sm text-gray-600">扫描二维码关注公众号</p>
+                <p class="text-xs text-gray-500 mt-2">获取最新技术文章和资讯</p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 广告位2：侧边栏顶部广告（原推荐阅读位置） -->
+    {% if site.ads and site.ads.ad2_image and site.ads.ad2_link %}
     <div class="sidebar-ad">
-        {{ site.ads.sidebar_top | safe }}
+        <a href="{{ site.ads.ad2_link }}" target="_blank" rel="noopener" class="block">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="flex flex-col items-center p-4 text-center">
+                    <!-- 广告编号 -->
+                    <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                        📚 广告
+                    </div>
+                    
+                    <!-- 广告图片 -->
+                    <div class="mb-3">
+                        <img src="{{ site.ads.ad2_image }}" 
+                             alt="{{ site.ads.ad2_title | default(value='广告图片') }}" 
+                             class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRjBGOUYzIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMDZBODc2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                    </div>
+                    
+                    <!-- 广告信息 -->
+                    <div class="max-w-sm">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                            {{ site.ads.ad2_title | default(value='推荐内容') }}
+                        </h2>
+                        {% if site.ads.ad2_description %}
+                        <p class="text-gray-700 text-sm mb-3">{{ site.ads.ad2_description }}</p>
+                        {% endif %}
+                        
+                        <!-- 查看详情按钮 -->
+                        <div class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow-md transition-all text-sm border border-green-700">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                            </svg>
+                            查看详情
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
     {% endif %}
 
@@ -122,13 +201,13 @@
                 <div class="p-4 hover:bg-gray-50 transition-colors">
                     <h4 class="text-sm font-medium mb-1">
                         {% if post.categories and post.categories | length > 0 %}
-                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
-                           class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html"
+                            class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
                             {{ post.title | default(value=post.slug) }}
                         </a>
                         {% else %}
-                        <a href="{{ post.slug }}.html" 
-                           class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                        <a href="{{ post.slug }}.html"
+                            class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
                             {{ post.title | default(value=post.slug) }}
                         </a>
                         {% endif %}
@@ -152,8 +231,8 @@
         <div class="card-body">
             <div class="flex flex-wrap gap-2">
                 {% for tag in all_tags | slice(end=20) %}
-                <a href="/tags.html#{{ tag.name }}" 
-                   class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
+                <a href="/tags.html#{{ tag.name }}"
+                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
                     {{ tag.name }}
                     <span class="ml-1 text-xs text-gray-500">{{ tag.count }}</span>
                 </a>
@@ -173,10 +252,11 @@
             <div class="divide-y divide-gray-200">
                 {% for category in all_categories | slice(end=8) %}
                 <div class="p-3">
-                    <a href="/categories.html" 
-                       class="flex items-center justify-between text-gray-700 hover:text-primary-600 transition-colors">
+                    <a href="/categories.html"
+                        class="flex items-center justify-between text-gray-700 hover:text-primary-600 transition-colors">
                         <span class="text-sm font-medium">{{ category.name }}</span>
-                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ category.count }}</span>
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ category.count |
+                            default(value=0) }}</span>
                     </a>
                 </div>
                 {% endfor %}
@@ -185,10 +265,45 @@
     </div>
     {% endif %}
 
-    <!-- 底部广告位 -->
-    {% if site.ads.sidebar_bottom %}
+    <!-- 广告位3：侧边栏底部广告（原支持我们位置） -->
+    {% if site.ads and site.ads.ad3_image and site.ads.ad3_link %}
     <div class="sidebar-ad">
-        {{ site.ads.sidebar_bottom | safe }}
+        <a href="{{ site.ads.ad3_link }}" target="_blank" rel="noopener" class="block">
+            <div class="bg-gradient-to-r from-orange-50 to-amber-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="flex flex-col items-center p-4 text-center">
+                    <!-- 广告编号 -->
+                    <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
+                        📚 广告
+                    </div>
+                    
+                    <!-- 广告图片 -->
+                    <div class="mb-3">
+                        <img src="{{ site.ads.ad3_image }}" 
+                             alt="{{ site.ads.ad3_title | default(value='广告图片') }}" 
+                             class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRkVGOUYzIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjRDU2QjIzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                    </div>
+                    
+                    <!-- 广告信息 -->
+                    <div class="max-w-sm">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                            {{ site.ads.ad3_title | default(value='推荐内容') }}
+                        </h2>
+                        {% if site.ads.ad3_description %}
+                        <p class="text-gray-700 text-sm mb-3">{{ site.ads.ad3_description }}</p>
+                        {% endif %}
+                        
+                        <!-- 查看详情按钮 -->
+                        <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                            </svg>
+                            查看详情
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
     {% endif %}
 </aside>

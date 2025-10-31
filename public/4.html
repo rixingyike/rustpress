@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!-- 基础布局模板 -->
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一树论</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <!-- Alpine.js 库 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lunr.js 搜索库 -->
+    <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans" x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.split('/').pop() || 'index.html' }">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo 和站点名称 -->
+                <div class="flex items-center space-x-3">
+                    <img src="/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
+                    <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
+                        一树论
+                    </a>
+                </div>
+                
+                <!-- 搜索框 - 桌面版 -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 导航菜单 - 桌面版 -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
+                    <a href="/archives.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
+                    <a href="/categories.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
+                    <a href="/tags.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
+                    <a href="/about.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
+                    <a href="/friends.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
+                    <a href="/search.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+    <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            :aria-expanded="mobileMenuOpen">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div class="md:hidden" 
+             x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                <!-- 移动端搜索框 -->
+                <div class="px-3 py-2">
+                    <div class="relative">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="mobile-search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 移动端导航链接 -->
+                <a href="/" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
+                <a href="/archives.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
+                <a href="/categories.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
+                <a href="/tags.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
+                <a href="/about.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
+                <a href="/friends.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
+                <a href="/search.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 广告位1：Header广告 -->
+        
+        <div class="mb-6">
+            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col items-center p-4 text-center">
+                        <!-- 广告编号 -->
+                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
+                            📚 广告
+                        </div>
+                        
+                        <!-- 广告图片 -->
+                        <div class="mb-3">
+                            <img src="&#x2F;images&#x2F;book-wegame.png" 
+                                 alt="微信小游戏开发" 
+                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                        </div>
+                        
+                        <!-- 广告信息 -->
+                        <div class="max-w-sm">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                                微信小游戏开发
+                            </h2>
+                            
+                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
+                            
+                            
+                            <!-- 查看详情按钮 -->
+                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                </svg>
+                                查看详情
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        
+        <main class="min-h-screen py-8">
+            
+<article class="max-w-4xl mx-auto" x-data="{ copiedLink: false, copiedCode: {} }">
+    <!-- 分类面包屑 -->
+    
+    
+    <!-- 文章头部 -->
+    <header class="mb-8 pb-8 border-b border-gray-200">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            4
+        </h1>
+        
+        <div class="article-meta mb-6">
+            
+            <span class="inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                2024-01-21
+            </span>
+            
+            
+        </div>
+        
+        <!-- 标签 -->
+        
+        <div class="flex flex-wrap gap-2">
+            
+            <a href="tags.html#网文创作" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                网文创作
+            </a>
+            
+        </div>
+        
+    </header>
+    
+    <!-- 文章内容 -->
+    <div class="article-content prose prose-lg max-w-none" 
+         x-init="$nextTick(() => {
+             // 为代码块添加复制按钮
+             document.querySelectorAll('pre code').forEach((codeBlock, index) => {
+                 const pre = codeBlock.parentElement;
+                 if (!pre.querySelector('.copy-code-btn')) {
+                     const button = document.createElement('button');
+                     button.className = 'copy-code-btn';
+                     button.textContent = '复制';
+                     button.setAttribute('x-data', `{ copied: false }`);
+                     button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
+                     button.setAttribute(':class', `{ 'bg-green-600': copied }`);
+                     button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
+                     
+                     pre.style.position = 'relative';
+                     pre.appendChild(button);
+                 }
+             });
+         })">
+        <h1>如何刻画人物？一个简单的人物刻画公式和有效的 AI 提示语</h1>
+<p>目录</p>
+<p>[TOC]</p>
+<p>刻画人物就是让人物有血有肉，有立体感，吸引读者。刻画人物是有公式的，加上 AI，让 AI 做一些基础协助，刻画好人物并不太难。</p>
+<p>这个公式是：设定+印象+优缺点+争议+突=一个立体真实的人物</p>
+<h2>1.设定</h2>
+<p>用两个词语给一个角色贴标签。</p>
+<p>从人物本身出发</p>
+<p>比如一个女主，希望她是很勇敢很独立的女性。</p>
+<p>人物关键词：勇敢、独立</p>
+<p>比如一个男主，希望他是一个律师，很有魅力的男人。</p>
+<p>人物关键词：律师、魅力</p>
+<p>设定人物后需要想一想，自己能否驾驭？</p>
+<p>避免人设跟人物的实际行动产生冲突，比如高冷的角色，但是又给人物过多的对话等。</p>
+<h3>1.1 人物描写中的基础设定（外貌言行）</h3>
+<p>人物的以下五大方面的描写，要严格遵循人物的性格设定进行。</p>
+<p>肖像描写</p>
+<p>语言描写</p>
+<p>行动描写</p>
+<p>心理描写</p>
+<p>神态描写</p>
+<p>前期不知道如何描写的时候，可以想想身边的人，漫画里的角色，电影电视剧角色来代 入，寻找他们独特的性格特征描写。</p>
+<p>比如：刁钻的人，想一想隔壁不友好的邻居，恶毒的婆婆；腼腆的人，想一想大学里的妹子。</p>
+<h3>1.2 如何防止人设崩塌？</h3>
+<p>按照设定的逻辑来写，人物的五大描写都要围绕人设的逻辑点展开，不要让人物说话做事不符合人物的心理，不符合人物的性格，不要为了走情节而改变人物的人设。</p>
+<p>人设比情节更重要，<strong>人设崩塌带来的直接后果往往是读者弃文</strong>。</p>
+<p>因此在初期设定人物人设的时候，尽量不要设置一些难度比较大的人设。</p>
+<h3>1.3 如何设置配角的人设？</h3>
+<p>配角的作用是：根据故事发展、情节的需求被动做事。</p>
+<p>主角是人推着故事走，配角是故事推着人走，两个要区分开。</p>
+<p>我们会根据主角的需要调整情节设计，但很少会根据配角的设定修改情节设计。</p>
+<p>设置配角，首先要思考以下几个要素：</p>
+<p>1，配角在这段剧情里的作用是什么？</p>
+<p>当下的情节需要配角来给主角添加一些什么，制造一些什么或者完善一些什么</p>
+<p>2，根据情节需要推配角的人设。</p>
+<p>最平常的比如主角性格特征是人不犯我我不犯人，人若犯我我必加倍奉还，这时候可以一引出一个爱挑事，爱装逼的配角来突出主角这一性格。</p>
+<p>3，根据戏份多少来考虑配角人设的完整度。</p>
+<p>比如大 BOSS 这个配角，可以给点优点，不要为了坏而坏。那些小 BOSS 配角，就可以直接坏、无脑坏。即使在群像中，也不是所有人物形象都是立体的。</p>
+<h2>2.印象</h2>
+<p>设置方向有以下五个方面。</p>
+<p>外貌特征：朱砂痣、眉间的刀疤、包拯额间月牙、手臂上的纹身、屁股上的胎记</p>
+<p>习惯性动作：摸鼻子、摸眉毛、扶眼镜、撩头发</p>
+<p>神态：嘟嘴、翻白眼、因为近视眯眼睛</p>
+<p>标志性的语言习惯：口头禅</p>
+<p>人物技能：金手指</p>
+<h2>3.性格与优缺点</h2>
+<p>性格就是人物的言行举行表现，是由前面的设定和印象决定的。在小说创作中，言行举止皆按性格来。</p>
+<p>有时候我们通过情节推动故事，这时候需要注意情节设计要符合人物性格；有时候我们是根据人物性格想象情节的，例如日常系小说，这时候便不会有违背人物性格的忧惧。</p>
+<p>人物性格要注意，要有不完美，要设置一个缺点或优点。</p>
+<p>如果是正面人物，就给他添加一个缺点。</p>
+<p>如果是反面人物，就给他添加一个忧点。</p>
+<p>缺点或优点，会让人物更加形象立体。</p>
+<h2>4.争议</h2>
+<p>让人印象深刻的人物都是有争议的，换一句话讲，其人物设定都是变化的。</p>
+<p>在创作中，我们既需要依靠设定，让人物稳定，但又不能用设定将人物框死。人物在故事中也会成长，性格可能也会发生变化，尤其是主角，主角的性格显然是有人物成长曲线的。配角在关键时刻也有性格突变。还有反派，可能有洗白；正派人物，也可能有黑化。这些都是性格变化，在变化时，要特别注意性格转变的逻辑，要给人物一个充分的变化理由。</p>
+<p>性格转变往往是矛盾的，是附有争议的。</p>
+<p>性格的改变就是设定与印象的改变。对于可能导致人设大变的剧情，要谨慎设定。反复思考这个情节发生后，人设的改变是不是我们能写清楚的，我们能否生动的刻画出来？</p>
+<p>在争议方面，举个例子：比如香蜜沉沉烬如霜的润玉，因为小时候某些不好的经历，遇见女主后勾起对爱情的欲望，最后黑化，即使在剧情上变坏了，但是也不能否定他的优点，让观众直呼心疼。</p>
+<h2>5.回顾与提示语</h2>
+<p>以下是人物刻画的小总结：</p>
+<p>1，人设要稳定，偏离人物性格的刻画，会让人物飘忽不定。</p>
+<p>2，人设加强，就是要加强印象上的描写，例如语言上，外貌上，动作上都可以。</p>
+<p>3，给人物一个争议点，加深记忆，正反相结合，达到一个类似平衡的状态。那反面人物就缺点突出一点，正面人物就优点突出一点。这些不同的因素的加持，就会让你的人物与众不同起来。</p>
+<p>4，人物弧线要完整，人物所有的行动都要有理有据。</p>
+<p>下面是一个我总结的提示语，可以让 AI 辅助我们进行人物刻画，特别在创作初期。</p>
+<p>我在创作小说，我设计了一个人物 X，X 的标签是：女律师、魅力。</p>
+<p>第一步，设定示例描写。</p>
+<p>请你就以下五个方面，对 X 进行人物设定示例描写。</p>
+<p>肖像描写：</p>
+<p>语言描写：</p>
+<p>行动描写：</p>
+<p>心理描写：</p>
+<p>神态描写：</p>
+<p>第二步，印象示例描写。</p>
+<p>请从以下这些五个方面，对 X 进行印象示例描写，注意冒号后面是示例，请根据实例情况描写符合 X 的印象。</p>
+<p>外貌特征：朱砂痣、眉间的刀疤、包拯额间月牙、手臂上的纹身、屁股上的胎记</p>
+<p>习惯性动作：摸鼻子、摸眉毛、扶眼镜、撩头发</p>
+<p>神态：嘟嘴、翻白眼、因为近视眯眼睛</p>
+<p>标志性的语言习惯：口头禅</p>
+<p>人物技能：金手指</p>
+<p>第三步，设计优缺点。</p>
+<p>首先判断 X 是正面人物，还是反面人物。</p>
+<p>如果 X 是正面人物，就给他添加一个缺点。</p>
+<p>如果 X 是反面人物，就给他添加一个忧点。</p>
+<p>这样的缺点或优点，会让 X 更加形象立体。</p>
+<p>请给 X 设计一个优点或缺点，并针对该优缺点写一个有关 X 的示例情节。</p>
+<p>第四步，设计争议点。</p>
+<p>让人印象深刻的人物都是有争议的，请给 X 设计一个情节，在该情节中 X 的设定发生改变甚至反转，注意变化逻辑要合理。</p>
+<p>第五步，起名字。请根据 X 的设定和印象，给 X 起 3 个中文名字。</p>
+<p>以下是 AI 的某次返回，结果基本让人满意。</p>
+<p>第一步，设定示例描写：</p>
+<ol>
+<li>
+<p>肖像描写：
+X 是一位身着典雅西装的女性律师，长发披肩，眼神犀利而聪明。她的外表展现出一种自信和专业性，同时散发着一股难以忽视的魅力。</p>
+</li>
+<li>
+<p>语言描写：
+X 的口才出色，她善于用简练而有力的语言表达自己的观点。在法庭上，她的辩护辞令人印象深刻，充满说服力。</p>
+</li>
+<li>
+<p>行动描写：
+她在法庭上步履自信，举手投足间透露着专业知识。在处理案件时，她总是细致入微，不放过任何细节，展现出出色的职业素养。</p>
+</li>
+<li>
+<p>心理描写：
+X 内心深处隐藏着对正义的强烈追求，她坚信法律是保护弱者的有力工具。虽然外表坚韧，内心却常常为案件中的人情世故而烦恼。</p>
+</li>
+<li>
+<p>神态描写：
+她常常以微笑面对压力，但在关键时刻，她的眼神会变得锐利而决断，展现出坚定的一面。</p>
+</li>
+</ol>
+<p>第二步，印象示例描写：</p>
+<ol>
+<li>
+<p>外貌特征：朱砂痣
+X 的左颊上有一颗朱砂痣，宛如法庭上的一抹独特标志，让她在人们心中留下深刻印象。</p>
+</li>
+<li>
+<p>习惯性动作：扶眼镜
+在紧张或思考的时候，X 习惯性地扶一下眼镜，这个动作成为她处理案件时的标志性动作。</p>
+</li>
+<li>
+<p>神态：因为近视眯眼睛
+由于近视，X 在仔细审视文件时常常眯起眼睛，这反而增添了她专注的氛围。</p>
+</li>
+<li>
+<p>标志性的语言习惯：口头禅
+X 经常在讲话时使用口头禅，比如在说完一句重要观点后会习惯性地说一句：“事实胜于雄辩”。</p>
+</li>
+<li>
+<p>人物技能：金手指
+X 在法庭上有一种与生俱来的洞察力，被同事戏称为“金手指”，她总是能够找到案件的关键点。</p>
+</li>
+</ol>
+<p>第三步，设计优缺点：</p>
+<p>X 是正面人物，给她添加一个缺点：
+缺点：过于执着
+X 在追求正义的过程中，有时会过于执着于自己的观点，导致与同事产生分歧，影响团队合作。</p>
+<p>示例情节：在一次困难的案件中，X 坚持自己的判断，但最终证据表明她的看法并不完全正确，导致案件处理出现波折。她意识到自己过于执着的问题，开始学会倾听他人意见。</p>
+<p>第四步，设计争议点：</p>
+<p>情节：X 接手一个看似清晰的案件，但随着调查的深入，她发现案件中涉及到一位曾经是她导师的人。这个发现让她陷入两难境地，考虑到导师曾对她的帮助，她面临着是追求正义还是保护导师的道德抉择。</p>
+<p>变化逻辑：X 最终选择追求正义，即使这意味着曝光导师的不法行为。这个情节使人们重新审视 X 的价值观和对正义的执着程度。</p>
+<p>第五步，起名字：</p>
+<ol>
+<li>赵雨萱</li>
+<li>刘梦婷</li>
+<li>王心怡</li>
+</ol>
+
+    </div>
+    
+    <!-- 分享功能 -->
+    <div class="mt-12 bg-gray-50 rounded-lg">
+        <h4 class="text-lg font-semibold mb-4 text-gray-900 p-4 pb-0">分享这篇文章</h4>
+        <div class="flex flex-wrap gap-3 p-4">
+            <button onclick="shareToTwitter()" 
+                    class="btn-outline inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+                Twitter
+            </button>
+            <button @click="navigator.clipboard.writeText(window.location.href).then(() => { copiedLink = true; setTimeout(() => copiedLink = false, 2000) })" 
+                    class="btn-outline inline-flex items-center"
+                    :class="{ 'bg-green-100 text-green-800 border-green-300': copiedLink }">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <span x-text="copiedLink ? '已复制' : '复制链接'"></span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 返回顶部 -->
+    <div class="text-center mt-8">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                class="btn-secondary inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+            返回顶部
+        </button>
+    </div>
+</article>
+
+<script>
+function shareToTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(document.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+</script>
+ 
+        </main>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600">
+                    &copy; 2002-2025 
+                    
+                        LIYI
+                    
+                    
+                        &nbsp;|&nbsp;
+                        <a href="https://beian.miit.gov.cn/" 
+                           target="_blank" 
+                           rel="noopener" 
+                           class="text-gray-500 hover:text-gray-700 text-sm">
+                            京ICP备14007000号-8
+                        </a>
+                    
+                </p>
+                <p class="text-gray-500 text-sm">
+                    由 <a href="https://github.com/rixingyike/rustpress" 
+                          target="_blank" 
+                          rel="noopener" 
+                          class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 搜索结果容器 -->
+    <div class="fixed inset-x-0 top-16 z-40 hidden" id="search-results">
+        <div class="bg-white shadow-lg border border-gray-200 rounded-lg mx-4 mt-2 max-h-96 overflow-y-auto">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+    </div>
+
+    <!-- jQuery 库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 搜索功能脚本 -->
+    <script src="/js/search.js"></script>
+</body>
+</html>

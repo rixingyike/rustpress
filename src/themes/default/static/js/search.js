@@ -44,36 +44,23 @@ class RustPressSearch {
     }
 
     setupEventListeners() {
-        const searchInput = document.querySelector('.search-input');
-        const searchBtn = document.querySelector('.search-btn');
-        const searchModal = document.getElementById('search-modal');
-        const searchModalInput = document.getElementById('search-modal-input');
-        const searchResults = document.getElementById('search-results');
-        const searchClose = document.querySelector('.search-modal-close');
-        const searchOverlay = document.querySelector('.search-modal-overlay');
-
         // 点击搜索框或搜索按钮打开弹窗
-        if (searchInput) {
-            searchInput.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openSearchModal();
-            });
-        }
+        $('.search-input').on('click', (e) => {
+            e.preventDefault();
+            this.openSearchModal();
+        });
 
-        if (searchBtn) {
-            searchBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openSearchModal();
-            });
-        }
+        $('.search-btn').on('click', (e) => {
+            e.preventDefault();
+            this.openSearchModal();
+        });
 
         // 弹窗内的搜索输入
-        if (searchModalInput) {
-            searchModalInput.addEventListener('input', (e) => {
-                this.performSearch(e.target.value);
-            });
-
-            searchModalInput.addEventListener('keydown', (e) => {
+        $('#search-modal-input').on({
+            input: (e) => {
+                this.performSearch($(e.target).val());
+            },
+            keydown: (e) => {
                 if (e.key === 'Escape') {
                     this.closeSearchModal();
                 } else if (e.key === 'ArrowDown') {
@@ -86,24 +73,20 @@ class RustPressSearch {
                     e.preventDefault();
                     this.selectResult();
                 }
-            });
-        }
+            }
+        });
 
         // 关闭弹窗
-        if (searchClose) {
-            searchClose.addEventListener('click', () => {
-                this.closeSearchModal();
-            });
-        }
+        $('.search-modal-close').on('click', () => {
+            this.closeSearchModal();
+        });
 
-        if (searchOverlay) {
-            searchOverlay.addEventListener('click', () => {
-                this.closeSearchModal();
-            });
-        }
+        $('.search-modal-overlay').on('click', () => {
+            this.closeSearchModal();
+        });
 
         // 键盘快捷键 Ctrl+K 或 Cmd+K
-        document.addEventListener('keydown', (e) => {
+        $(document).on('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
                 this.openSearchModal();
@@ -112,57 +95,48 @@ class RustPressSearch {
     }
 
     openSearchModal() {
-        const searchModal = document.getElementById('search-modal');
-        const searchModalInput = document.getElementById('search-modal-input');
+        const $searchModal = $('#search-modal');
+        const $searchModalInput = $('#search-modal-input');
         
-        if (searchModal) {
-            searchModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+        if ($searchModal.length) {
+            $searchModal.css('display', 'flex');
+            $('body').css('overflow', 'hidden');
             
             // 聚焦到搜索输入框
             setTimeout(() => {
-                if (searchModalInput) {
-                    searchModalInput.focus();
+                if ($searchModalInput.length) {
+                    $searchModalInput.focus();
                 }
             }, 100);
         }
     }
 
     closeSearchModal() {
-        const searchModal = document.getElementById('search-modal');
-        const searchModalInput = document.getElementById('search-modal-input');
-        const searchResults = document.getElementById('search-results');
+        const $searchModal = $('#search-modal');
         
-        if (searchModal) {
-            searchModal.style.display = 'none';
-            document.body.style.overflow = '';
+        if ($searchModal.length) {
+            $searchModal.css('display', 'none');
+            $('body').css('overflow', '');
             
-            // 清空搜索内容
-            if (searchModalInput) {
-                searchModalInput.value = '';
-            }
-            if (searchResults) {
-                searchResults.innerHTML = '';
-            }
-            
-            this.selectedIndex = -1;
+            this.currentResults = [];
+            this.currentIndex = -1;
         }
     }
 
     performSearch(query) {
-        const searchResults = document.getElementById('search-results');
-        const searchCount = document.getElementById('search-count');
+        const $searchResults = $('#search-results');
+        const $searchCount = $('#search-count');
         
-        if (!searchResults) return;
+        if (!$searchResults.length) return;
 
         if (!query.trim()) {
-            searchResults.innerHTML = '';
-            if (searchCount) searchCount.textContent = '';
+            $searchResults.html('');
+            if ($searchCount.length) $searchCount.text('');
             return;
         }
 
         if (!this.isLoaded) {
-            searchResults.innerHTML = '<div class="search-loading">搜索索引加载中...</div>';
+            $searchResults.html('<div class="search-loading">搜索索引加载中...</div>');
             return;
         }
 
@@ -178,12 +152,12 @@ class RustPressSearch {
 
             this.displayResults(finalResults, query);
             
-            if (searchCount) {
-                searchCount.textContent = `找到 ${finalResults.length} 个结果`;
+            if ($searchCount.length) {
+                $searchCount.text(`找到 ${finalResults.length} 个结果`);
             }
         } catch (error) {
             console.error('搜索出错:', error);
-            searchResults.innerHTML = '<div class="search-error">搜索出错，请重试</div>';
+            $searchResults.html('<div class="search-error">搜索出错，请重试</div>');
         }
     }
 
@@ -219,15 +193,15 @@ class RustPressSearch {
     }
 
     displayResults(results, query) {
-        const searchResults = document.getElementById('search-results');
+        const $searchResults = $('#search-results');
         
         if (results.length === 0) {
-            searchResults.innerHTML = `
+            $searchResults.html(`
                 <div class="search-no-results">
                     <p>没有找到相关内容</p>
                     <p class="search-suggestion">尝试使用不同的关键词</p>
                 </div>
-            `;
+            `);
             return;
         }
 
@@ -253,13 +227,13 @@ class RustPressSearch {
             `;
         }).join('');
 
-        searchResults.innerHTML = html;
+        $searchResults.html(html);
         this.selectedIndex = -1;
 
         // 添加点击事件
-        searchResults.querySelectorAll('.search-result-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const url = item.dataset.url;
+        $searchResults.find('.search-result-item').each(function() {
+            $(this).on('click', function() {
+                const url = $(this).data('url');
                 if (url) {
                     window.location.href = url;
                 }
@@ -294,32 +268,33 @@ class RustPressSearch {
     }
 
     navigateResults(direction) {
-        const items = document.querySelectorAll('.search-result-item');
-        if (items.length === 0) return;
+        const $items = $('.search-result-item');
+        if ($items.length === 0) return;
 
         // 移除当前选中状态
-        if (this.selectedIndex >= 0 && items[this.selectedIndex]) {
-            items[this.selectedIndex].classList.remove('selected');
+        if (this.selectedIndex >= 0 && $items[this.selectedIndex]) {
+            $($items[this.selectedIndex]).removeClass('selected');
         }
 
         // 计算新的选中索引
         if (direction === 'down') {
-            this.selectedIndex = (this.selectedIndex + 1) % items.length;
+            this.selectedIndex = (this.selectedIndex + 1) % $items.length;
         } else {
-            this.selectedIndex = this.selectedIndex <= 0 ? items.length - 1 : this.selectedIndex - 1;
+            this.selectedIndex = this.selectedIndex <= 0 ? $items.length - 1 : this.selectedIndex - 1;
         }
 
         // 添加新的选中状态
-        if (items[this.selectedIndex]) {
-            items[this.selectedIndex].classList.add('selected');
-            items[this.selectedIndex].scrollIntoView({ block: 'nearest' });
+        if ($items[this.selectedIndex]) {
+            const $selectedItem = $($items[this.selectedIndex]);
+            $selectedItem.addClass('selected');
+            $selectedItem[0].scrollIntoView({ block: 'nearest' });
         }
     }
 
     selectResult() {
-        const items = document.querySelectorAll('.search-result-item');
-        if (this.selectedIndex >= 0 && items[this.selectedIndex]) {
-            const url = items[this.selectedIndex].dataset.url;
+        const $items = $('.search-result-item');
+        if (this.selectedIndex >= 0 && $items[this.selectedIndex]) {
+            const url = $($items[this.selectedIndex]).data('url');
             if (url) {
                 window.location.href = url;
             }
@@ -328,7 +303,7 @@ class RustPressSearch {
 }
 
 // 页面加载完成后初始化搜索
-document.addEventListener('DOMContentLoaded', () => {
+$(document).ready(function() {
     // 检查是否有Lunr.js
     if (typeof lunr === 'undefined') {
         console.warn('Lunr.js 未加载，搜索功能将不可用');

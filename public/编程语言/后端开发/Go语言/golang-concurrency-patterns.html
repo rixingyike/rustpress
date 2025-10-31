@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<!-- 基础布局模板 -->
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一树论</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <!-- Alpine.js 库 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lunr.js 搜索库 -->
+    <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans" x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.split('/').pop() || 'index.html' }">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo 和站点名称 -->
+                <div class="flex items-center space-x-3">
+                    <img src="/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
+                    <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
+                        一树论
+                    </a>
+                </div>
+                
+                <!-- 搜索框 - 桌面版 -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 导航菜单 - 桌面版 -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
+                    <a href="/archives.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
+                    <a href="/categories.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
+                    <a href="/tags.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
+                    <a href="/about.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
+                    <a href="/friends.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
+                    <a href="/search.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+    <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            :aria-expanded="mobileMenuOpen">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div class="md:hidden" 
+             x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                <!-- 移动端搜索框 -->
+                <div class="px-3 py-2">
+                    <div class="relative">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="mobile-search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 移动端导航链接 -->
+                <a href="/" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
+                <a href="/archives.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
+                <a href="/categories.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
+                <a href="/tags.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
+                <a href="/about.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
+                <a href="/friends.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
+                <a href="/search.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 广告位1：Header广告 -->
+        
+        <div class="mb-6">
+            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col items-center p-4 text-center">
+                        <!-- 广告编号 -->
+                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
+                            📚 广告
+                        </div>
+                        
+                        <!-- 广告图片 -->
+                        <div class="mb-3">
+                            <img src="&#x2F;images&#x2F;book-wegame.png" 
+                                 alt="微信小游戏开发" 
+                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                        </div>
+                        
+                        <!-- 广告信息 -->
+                        <div class="max-w-sm">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                                微信小游戏开发
+                            </h2>
+                            
+                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
+                            
+                            
+                            <!-- 查看详情按钮 -->
+                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                </svg>
+                                查看详情
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        
+        <main class="min-h-screen py-8">
+            
+<article class="max-w-4xl mx-auto" x-data="{ copiedLink: false, copiedCode: {} }">
+    <!-- 分类面包屑 -->
+    
+    <nav class="mb-6 text-sm text-gray-600">
+        <a href="/" class="hover:text-primary-600">首页</a>
+        
+            <span class="mx-2">›</span>
+            <a href="/编程语言/" class="hover:text-primary-600">编程语言</a>
+        
+            <span class="mx-2">›</span>
+            <a href="/编程语言&#x2F;后端开发/" class="hover:text-primary-600">后端开发</a>
+        
+            <span class="mx-2">›</span>
+            <a href="/编程语言&#x2F;后端开发&#x2F;Go语言/" class="hover:text-primary-600">Go语言</a>
+        
+    </nav>
+    
+    
+    <!-- 文章头部 -->
+    <header class="mb-8 pb-8 border-b border-gray-200">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            Go语言并发模式深度解析
+        </h1>
+        
+        <div class="article-meta mb-6">
+            
+            <span class="inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                2024-03-15
+            </span>
+            
+            
+        </div>
+        
+        <!-- 标签 -->
+        
+        <div class="flex flex-wrap gap-2">
+            
+            <a href="tags.html#Go" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                Go
+            </a>
+            
+            <a href="tags.html#并发编程" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                并发编程
+            </a>
+            
+            <a href="tags.html#goroutine" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                goroutine
+            </a>
+            
+            <a href="tags.html#channel" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                channel
+            </a>
+            
+        </div>
+        
+    </header>
+    
+    <!-- 文章内容 -->
+    <div class="article-content prose prose-lg max-w-none" 
+         x-init="$nextTick(() => {
+             // 为代码块添加复制按钮
+             document.querySelectorAll('pre code').forEach((codeBlock, index) => {
+                 const pre = codeBlock.parentElement;
+                 if (!pre.querySelector('.copy-code-btn')) {
+                     const button = document.createElement('button');
+                     button.className = 'copy-code-btn';
+                     button.textContent = '复制';
+                     button.setAttribute('x-data', `{ copied: false }`);
+                     button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
+                     button.setAttribute(':class', `{ 'bg-green-600': copied }`);
+                     button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
+                     
+                     pre.style.position = 'relative';
+                     pre.appendChild(button);
+                 }
+             });
+         })">
+        <h1>Go语言并发模式深度解析</h1>
+<p>Go语言以其出色的并发编程能力而闻名，goroutine和channel是其并发模型的核心。本文将深入探讨Go语言的并发模式和实践技巧。</p>
+<h2>并发基础</h2>
+<h3>goroutine</h3>
+<p>轻量级线程，由Go运行时管理。</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;time&quot;
+)
+
+func sayHello() {
+    for i := 0; i &lt; 5; i++ {
+        fmt.Println(&quot;Hello&quot;)
+        time.Sleep(100 * time.Millisecond)
+    }
+}
+
+func sayWorld() {
+    for i := 0; i &lt; 5; i++ {
+        fmt.Println(&quot;World&quot;)
+        time.Sleep(100 * time.Millisecond)
+    }
+}
+
+func main() {
+    go sayHello()
+    go sayWorld()
+    
+    // 等待goroutine执行完成
+    time.Sleep(1 * time.Second)
+}
+</code></pre>
+<h3>channel</h3>
+<p>goroutine之间的通信机制。</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func sum(numbers []int, result chan int) {
+    total := 0
+    for _, num := range numbers {
+        total += num
+    }
+    result &lt;- total // 发送结果到channel
+}
+
+func main() {
+    numbers := []int{1, 2, 3, 4, 5}
+    result := make(chan int)
+    
+    go sum(numbers[:len(numbers)/2], result)
+    go sum(numbers[len(numbers)/2:], result)
+    
+    // 接收结果
+    part1, part2 := &lt;-result, &lt;-result
+    fmt.Printf(&quot;总和: %d\n&quot;, part1+part2)
+}
+</code></pre>
+<h2>并发模式</h2>
+<h3>1. Worker Pool模式</h3>
+<p>使用固定数量的worker处理任务。</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;sync&quot;
+    &quot;time&quot;
+)
+
+func worker(id int, jobs &lt;-chan int, results chan&lt;- int) {
+    for job := range jobs {
+        fmt.Printf(&quot;Worker %d 开始处理任务 %d\n&quot;, id, job)
+        time.Sleep(time.Second) // 模拟工作
+        results &lt;- job * 2
+        fmt.Printf(&quot;Worker %d 完成任务 %d\n&quot;, id, job)
+    }
+}
+
+func main() {
+    const numJobs = 5
+    jobs := make(chan int, numJobs)
+    results := make(chan int, numJobs)
+    
+    // 启动3个worker
+    for w := 1; w &lt;= 3; w++ {
+        go worker(w, jobs, results)
+    }
+    
+    // 发送任务
+    for j := 1; j &lt;= numJobs; j++ {
+        jobs &lt;- j
+    }
+    close(jobs)
+    
+    // 收集结果
+    for a := 1; a &lt;= numJobs; a++ {
+        &lt;-results
+    }
+}
+</code></pre>
+<h3>2. Fan-out/Fan-in模式</h3>
+<p>多个goroutine处理输入，然后合并结果。</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;sync&quot;
+)
+
+func producer(nums []int) &lt;-chan int {
+    out := make(chan int)
+    go func() {
+        defer close(out)
+        for _, n := range nums {
+            out &lt;- n
+        }
+    }()
+    return out
+}
+
+func square(in &lt;-chan int) &lt;-chan int {
+    out := make(chan int)
+    go func() {
+        defer close(out)
+        for n := range in {
+            out &lt;- n * n
+        }
+    }()
+    return out
+}
+
+func merge(channels ...&lt;-chan int) &lt;-chan int {
+    var wg sync.WaitGroup
+    out := make(chan int)
+    
+    // 启动goroutine从每个channel读取
+    output := func(c &lt;-chan int) {
+        defer wg.Done()
+        for n := range c {
+            out &lt;- n
+        }
+    }
+    
+    wg.Add(len(channels))
+    for _, c := range channels {
+        go output(c)
+    }
+    
+    // 等待所有goroutine完成
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    
+    return out
+}
+
+func main() {
+    nums := []int{1, 2, 3, 4, 5}
+    
+    // 生成数据
+    in := producer(nums)
+    
+    // 并行处理
+    c1 := square(in)
+    c2 := square(in)
+    
+    // 合并结果
+    for n := range merge(c1, c2) {
+        fmt.Println(n)
+    }
+}
+</code></pre>
+<h3>3. Pipeline模式</h3>
+<p>将处理过程分解为多个阶段。</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func generator(nums ...int) &lt;-chan int {
+    out := make(chan int)
+    go func() {
+        defer close(out)
+        for _, n := range nums {
+            out &lt;- n
+        }
+    }()
+    return out
+}
+
+func square(in &lt;-chan int) &lt;-chan int {
+    out := make(chan int)
+    go func() {
+        defer close(out)
+        for n := range in {
+            out &lt;- n * n
+        }
+    }()
+    return out
+}
+
+func main() {
+    // 创建pipeline: generator -&gt; square
+    for n := range square(generator(1, 2, 3, 4, 5)) {
+        fmt.Println(n)
+    }
+}
+</code></pre>
+<h2>同步原语</h2>
+<h3>sync.WaitGroup</h3>
+<p>等待一组goroutine完成。</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;sync&quot;
+    &quot;time&quot;
+)
+
+func worker(id int, wg *sync.WaitGroup) {
+    defer wg.Done()
+    fmt.Printf(&quot;Worker %d 开始工作\n&quot;, id)
+    time.Sleep(time.Second)
+    fmt.Printf(&quot;Worker %d 完成工作\n&quot;, id)
+}
+
+func main() {
+    var wg sync.WaitGroup
+    
+    for i := 1; i &lt;= 5; i++ {
+        wg.Add(1)
+        go worker(i, &amp;wg)
+    }
+    
+    wg.Wait()
+    fmt.Println(&quot;所有工作完成&quot;)
+}
+</code></pre>
+<h3>sync.Mutex</h3>
+<p>保护共享资源的互斥锁。</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;sync&quot;
+)
+
+type Counter struct {
+    mu    sync.Mutex
+    value int
+}
+
+func (c *Counter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.value++
+}
+
+func (c *Counter) Value() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    return c.value
+}
+
+func main() {
+    var wg sync.WaitGroup
+    counter := &amp;Counter{}
+    
+    for i := 0; i &lt; 1000; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            counter.Increment()
+        }()
+    }
+    
+    wg.Wait()
+    fmt.Printf(&quot;最终计数: %d\n&quot;, counter.Value())
+}
+</code></pre>
+<h2>最佳实践</h2>
+<h3>1. 避免goroutine泄漏</h3>
+<p>确保goroutine能够正常退出。</p>
+<h3>2. 使用context进行取消和超时控制</h3>
+<pre><code class="language-go">package main
+
+import (
+    &quot;context&quot;
+    &quot;fmt&quot;
+    &quot;time&quot;
+)
+
+func worker(ctx context.Context) {
+    for {
+        select {
+        case &lt;-ctx.Done():
+            fmt.Println(&quot;收到取消信号，退出&quot;)
+            return
+        default:
+            // 正常工作
+            fmt.Println(&quot;工作中...&quot;)
+            time.Sleep(500 * time.Millisecond)
+        }
+    }
+}
+
+func main() {
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    defer cancel()
+    
+    go worker(ctx)
+    
+    time.Sleep(3 * time.Second)
+}
+</code></pre>
+<h3>3. 合理使用缓冲channel</h3>
+<pre><code class="language-go">// 无缓冲channel
+ch1 := make(chan int)
+
+// 有缓冲channel
+ch2 := make(chan int, 10)
+</code></pre>
+<h3>4. 使用select处理多个channel</h3>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;time&quot;
+)
+
+func main() {
+    ch1 := make(chan string)
+    ch2 := make(chan string)
+    
+    go func() {
+        time.Sleep(1 * time.Second)
+        ch1 &lt;- &quot;来自ch1&quot;
+    }()
+    
+    go func() {
+        time.Sleep(2 * time.Second)
+        ch2 &lt;- &quot;来自ch2&quot;
+    }()
+    
+    for i := 0; i &lt; 2; i++ {
+        select {
+        case msg1 := &lt;-ch1:
+            fmt.Println(msg1)
+        case msg2 := &lt;-ch2:
+            fmt.Println(msg2)
+        }
+    }
+}
+</code></pre>
+<h2>性能考虑</h2>
+<h3>1. goroutine开销</h3>
+<p>每个goroutine初始栈大小为2KB，远小于线程。</p>
+<h3>2. channel性能</h3>
+<p>无缓冲channel比有缓冲channel更快，但可能导致阻塞。</p>
+<h3>3. 避免过度并发</h3>
+<p>过多的goroutine可能导致调度开销增加。</p>
+<h2>调试和监控</h2>
+<h3>1. 使用pprof分析性能</h3>
+<pre><code class="language-bash">go tool pprof http://localhost:6060/debug/pprof/goroutine
+</code></pre>
+<h3>2. 使用trace工具分析执行</h3>
+<pre><code class="language-bash">go tool trace trace.out
+</code></pre>
+<h2>总结</h2>
+<p>Go语言的并发模型简单而强大，通过goroutine和channel的组合，可以构建高效的并发程序。掌握这些并发模式对于编写高性能的Go应用程序至关重要。</p>
+
+    </div>
+    
+    <!-- 分享功能 -->
+    <div class="mt-12 bg-gray-50 rounded-lg">
+        <h4 class="text-lg font-semibold mb-4 text-gray-900 p-4 pb-0">分享这篇文章</h4>
+        <div class="flex flex-wrap gap-3 p-4">
+            <button onclick="shareToTwitter()" 
+                    class="btn-outline inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+                Twitter
+            </button>
+            <button @click="navigator.clipboard.writeText(window.location.href).then(() => { copiedLink = true; setTimeout(() => copiedLink = false, 2000) })" 
+                    class="btn-outline inline-flex items-center"
+                    :class="{ 'bg-green-100 text-green-800 border-green-300': copiedLink }">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <span x-text="copiedLink ? '已复制' : '复制链接'"></span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 返回顶部 -->
+    <div class="text-center mt-8">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                class="btn-secondary inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+            返回顶部
+        </button>
+    </div>
+</article>
+
+<script>
+function shareToTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(document.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+</script>
+ 
+        </main>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600">
+                    &copy; 2002-2025 
+                    
+                        LIYI
+                    
+                    
+                        &nbsp;|&nbsp;
+                        <a href="https://beian.miit.gov.cn/" 
+                           target="_blank" 
+                           rel="noopener" 
+                           class="text-gray-500 hover:text-gray-700 text-sm">
+                            京ICP备14007000号-8
+                        </a>
+                    
+                </p>
+                <p class="text-gray-500 text-sm">
+                    由 <a href="https://github.com/rixingyike/rustpress" 
+                          target="_blank" 
+                          rel="noopener" 
+                          class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 搜索结果容器 -->
+    <div class="fixed inset-x-0 top-16 z-40 hidden" id="search-results">
+        <div class="bg-white shadow-lg border border-gray-200 rounded-lg mx-4 mt-2 max-h-96 overflow-y-auto">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+    </div>
+
+    <!-- jQuery 库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 搜索功能脚本 -->
+    <script src="/js/search.js"></script>
+</body>
+</html>

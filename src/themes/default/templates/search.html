@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+<!-- 搜索页面模板 -->
 {% block title %}搜索 - {{ site.name }}{% endblock %}
 
 {% block content %}
@@ -89,14 +90,14 @@
 
 <!-- 搜索功能脚本 -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-query');
-    const searchBtn = document.getElementById('search-btn');
-    const searchResults = document.getElementById('search-results');
-    const resultsContainer = document.getElementById('results-container');
-    const resultsCount = document.getElementById('results-count');
-    const noResults = document.getElementById('no-results');
-    const clearBtn = document.getElementById('clear-search');
+$(document).ready(function() {
+    const $searchInput = $('#search-query');
+    const $searchBtn = $('#search-btn');
+    const $searchResults = $('#search-results');
+    const $resultsContainer = $('#results-container');
+    const $resultsCount = $('#results-count');
+    const $noResults = $('#no-results');
+    const $clearBtn = $('#clear-search');
     
     // 搜索数据
     const searchData = [];
@@ -117,18 +118,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 显示搜索结果
     function displayResults(results, query) {
-        searchResults.classList.remove('hidden');
+        $searchResults.removeClass('hidden');
         
         if (results.length === 0) {
-            resultsContainer.classList.add('hidden');
-            noResults.classList.remove('hidden');
-            resultsCount.textContent = '(0 篇)';
+            $resultsContainer.addClass('hidden');
+            $noResults.removeClass('hidden');
+            $resultsCount.text('(0 篇)');
             return;
         }
         
-        resultsContainer.classList.remove('hidden');
-        noResults.classList.add('hidden');
-        resultsCount.textContent = `(${results.length} 篇)`;
+        $resultsContainer.removeClass('hidden');
+        $noResults.addClass('hidden');
+        $resultsCount.text(`(${results.length} 篇)`);
         
         const html = results.map(result => {
             const title = highlightText(result.title, query);
@@ -160,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }).join('');
         
-        resultsContainer.innerHTML = html;
+        $resultsContainer.html(html);
     }
     
     // 高亮搜索关键词
@@ -172,31 +173,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 清除搜索
     function clearSearch() {
-        searchInput.value = '';
-        searchResults.classList.add('hidden');
-        searchInput.focus();
+        $searchInput.val('');
+        $searchResults.addClass('hidden');
+        $searchInput.focus();
     }
     
     // 事件监听
-    searchBtn.addEventListener('click', () => {
-        performSearch(searchInput.value);
+    $searchBtn.on('click', () => {
+        performSearch($searchInput.val());
     });
     
-    searchInput.addEventListener('keypress', (e) => {
+    $searchInput.on('keypress', (e) => {
         if (e.key === 'Enter') {
-            performSearch(searchInput.value);
+            performSearch($searchInput.val());
         }
     });
     
-    clearBtn.addEventListener('click', clearSearch);
+    $clearBtn.on('click', clearSearch);
     
     // 标签搜索
-    document.querySelectorAll('.search-tag').forEach(tag => {
-        tag.addEventListener('click', () => {
-            const tagName = tag.dataset.tag;
-            searchInput.value = tagName;
-            performSearch(tagName);
-        });
+    $('.search-tag').on('click', function() {
+        const tagName = $(this).data('tag');
+        $searchInput.val(tagName);
+        performSearch(tagName);
     });
 });
 </script>

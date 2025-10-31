@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+<!-- 单个分类页面模板 -->
+{% block title %}{{ category_name }} - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{{ category_name }}</h1>
+        <p class="text-lg text-gray-600">该分类下的所有文章 ({{ posts | length }})</p>
+    </header>
+    
+    <!-- 文章列表 -->
+    <div class="space-y-6">
+        {% if posts and posts | length > 0 %}
+            {% for post in posts %}
+            <article class="card hover:shadow-lg transition-shadow duration-300">
+                <!-- 分类面包屑 -->
+                {% if post.categories and post.categories | length > 0 %}
+                <nav class="px-6 pt-4 text-sm text-gray-600">
+                    <a href="/" class="hover:text-primary-600">首页</a>
+                    {% for category in post.categories %}
+                        <span class="mx-2">›</span>
+                        <a href="/{{ post.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
+                    {% endfor %}
+                </nav>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h2 class="text-xl sm:text-2xl font-semibold mb-3">
+                        <a href="/{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
+                    </h2>
+                    
+                    <p class="text-gray-600 mb-4">{{ post.description | default(value="") }}</p>
+                    
+                    <div class="flex flex-wrap items-center text-sm text-gray-500">
+                        {% if post.date_ymd %}
+                        <time datetime="{{ post.date_ymd }}" class="mr-4">{{ post.date_ymd }}</time>
+                        {% endif %}
+                        
+                        {% if post.tags and post.tags | length > 0 %}
+                        <div class="flex flex-wrap items-center">
+                            <span class="mr-2">标签:</span>
+                            {% for tag in post.tags %}
+                                <a href="/tags.html#{{ tag }}" class="tag mr-2">{{ tag }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-12">
+                <p class="text-lg text-gray-600">该分类下暂无文章。</p>
+                <a href="/" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回首页</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

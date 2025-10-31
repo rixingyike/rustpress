@@ -1,23 +1,26 @@
 <!DOCTYPE html>
+<!-- 基础布局模板 -->
 <html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>艺述论</title>
+    <title>一树论</title>
     <link rel="stylesheet" href="/css/main.css">
+    <!-- Alpine.js 库 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Lunr.js 搜索库 -->
     <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="bg-gray-50 text-gray-900 font-sans" x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.split('/').pop() || 'index.html' }">
     <!-- 顶部导航栏 -->
     <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo 和站点名称 -->
                 <div class="flex items-center space-x-3">
-                    <img src="/logo.png" alt="艺述论 Logo" class="h-8 w-8 rounded-full" onerror="this.style.display='none'">
+                    <img src="/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
                     <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
-                        艺述论
+                        一树论
                     </a>
                 </div>
                 
@@ -38,27 +41,49 @@
                 
                 <!-- 导航菜单 - 桌面版 -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" class="nav-link">首页</a>
-                    <a href="/archives.html" class="nav-link">归档</a>
-                    <a href="/categories.html" class="nav-link">分类</a>
-                    <a href="/tags.html" class="nav-link">标签</a>
-                    <a href="/about.html" class="nav-link">关于</a>
-                    <a href="/friends.html" class="nav-link">友链</a>
-                    <a href="/search.html" class="nav-link">搜索</a>
+                    <a href="/" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
+                    <a href="/archives.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
+                    <a href="/categories.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
+                    <a href="/tags.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
+                    <a href="/about.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
+                    <a href="/friends.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
+                    <a href="/search.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
                 </div>
                 
                 <!-- 移动端菜单按钮 -->
-                <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
-                        id="mobile-menu-btn">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+    <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            :aria-expanded="mobileMenuOpen">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
             </div>
         </div>
         
         <!-- 移动端菜单 -->
-        <div class="md:hidden hidden" id="mobile-menu">
+        <div class="md:hidden" 
+             x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2">
             <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
                 <!-- 移动端搜索框 -->
                 <div class="px-3 py-2">
@@ -75,28 +100,114 @@
                     </div>
                 </div>
                 <!-- 移动端导航链接 -->
-                <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">首页</a>
-                <a href="/archives.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">归档</a>
-                <a href="/categories.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">分类</a>
-                <a href="/tags.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">标签</a>
-                <a href="/about.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">关于</a>
-                <a href="/friends.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">友链</a>
-                <a href="/search.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">搜索</a>
+                <a href="/" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
+                <a href="/archives.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
+                <a href="/categories.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
+                <a href="/tags.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
+                <a href="/about.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
+                <a href="/friends.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
+                <a href="/search.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
             </div>
         </div>
     </nav>
 
     <!-- 主要内容区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 广告位1：Header广告 -->
         
-        <header class="text-center py-8 sm:py-12 border-b border-gray-200 mb-8">
-            <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">使用RustPress创建的博客</p>
-        </header>
+        <div class="mb-6">
+            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col items-center p-4 text-center">
+                        <!-- 广告编号 -->
+                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
+                            📚 广告
+                        </div>
+                        
+                        <!-- 广告图片 -->
+                        <div class="mb-3">
+                            <img src="&#x2F;images&#x2F;book-wegame.png" 
+                                 alt="微信小游戏开发" 
+                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                        </div>
+                        
+                        <!-- 广告信息 -->
+                        <div class="max-w-sm">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                                微信小游戏开发
+                            </h2>
+                            
+                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
+                            
+                            
+                            <!-- 查看详情按钮 -->
+                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                </svg>
+                                查看详情
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
         
         
         <main class="min-h-screen py-8">
             
-<div class="max-w-6xl mx-auto">
+<div class="max-w-6xl mx-auto" x-data="{
+    openCategories: {},
+    currentCategoryPath: window.location.hash.substring(1),
+    
+    toggleCategory(categoryName) {
+        this.openCategories[categoryName] = !this.openCategories[categoryName];
+    },
+    
+    isCategoryOpen(categoryName) {
+        return this.openCategories[categoryName] || false;
+    },
+    
+    showCategoryPosts(categoryPath) {
+        this.currentCategoryPath = categoryPath;
+        window.location.hash = categoryPath;
+        // 切换分类时重置到第一页
+        if (window.postsPagination) {
+            window.postsPagination.showPage(1);
+        }
+    },
+    
+    getVisiblePostsCount() {
+        if (!this.currentCategoryPath) {
+            return 37;
+        }
+        
+        const visiblePosts = document.querySelectorAll('.post-item');
+        let count = 0;
+        visiblePosts.forEach(post => {
+            const postCategories = post.getAttribute('data-categories') || '';
+            if (postCategories.startsWith(this.currentCategoryPath)) {
+                count++;
+            }
+        });
+        return count;
+    }
+}">
     <!-- 页面头部 -->
     <header class="text-center mb-12">
         <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">文章分类</h1>
@@ -113,8 +224,119 @@
             <div class="card">
                 <!-- 主分类 -->
                 <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
-                     onclick="toggleCategory('区块链技术')">
+                     @click="toggleCategory('design')">
+                    <a href="#design" 
+                       @click.prevent="showCategoryPosts('design')"
+                       class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2v0z"></path>
+                        </svg>
+                        design
+                    </a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        2
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+            </div>
+            
+            <div class="card">
+                <!-- 主分类 -->
+                <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="toggleCategory('network')">
+                    <a href="#network" 
+                       @click.prevent="showCategoryPosts('network')"
+                       class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2v0z"></path>
+                        </svg>
+                        network
+                    </a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        1
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+            </div>
+            
+            <div class="card">
+                <!-- 主分类 -->
+                <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="toggleCategory('tutorial')">
+                    <a href="#tutorial" 
+                       @click.prevent="showCategoryPosts('tutorial')"
+                       class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2v0z"></path>
+                        </svg>
+                        tutorial
+                    </a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        3
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+            </div>
+            
+            <div class="card">
+                <!-- 主分类 -->
+                <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="toggleCategory('web')">
+                    <a href="#web" 
+                       @click.prevent="showCategoryPosts('web')"
+                       class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2v0z"></path>
+                        </svg>
+                        web
+                    </a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        4
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+            </div>
+            
+            <div class="card">
+                <!-- 主分类 -->
+                <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="toggleCategory('前端')">
+                    <a href="#前端" 
+                       @click.prevent="showCategoryPosts('前端')"
+                       class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2v0z"></path>
+                        </svg>
+                        前端
+                    </a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        1
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+            </div>
+            
+            <div class="card">
+                <!-- 主分类 -->
+                <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="toggleCategory('区块链技术')">
                     <a href="#区块链技术" 
+                       @click.prevent="showCategoryPosts('区块链技术')"
                        class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -129,12 +351,20 @@
                 
                 <!-- 子分类 -->
                 
-                <div class="card-body pt-0" id="category-区块链技术" style="display: none;">
+                <div class="card-body pt-0" 
+                     x-show="isCategoryOpen('区块链技术')"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform -translate-y-2">
                     <div class="space-y-3 pl-4 border-l-2 border-gray-200">
                         
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#区块链技术/基础理论" 
+                                   @click.prevent="showCategoryPosts('区块链技术/基础理论')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -152,6 +382,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#区块链技术/基础理论/核心概念" 
+                                       @click.prevent="showCategoryPosts('区块链技术/基础理论/核心概念')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -173,8 +404,31 @@
             <div class="card">
                 <!-- 主分类 -->
                 <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
-                     onclick="toggleCategory('技术架构')">
+                     @click="toggleCategory('技术')">
+                    <a href="#技术" 
+                       @click.prevent="showCategoryPosts('技术')"
+                       class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2v0z"></path>
+                        </svg>
+                        技术
+                    </a>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        10
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+            </div>
+            
+            <div class="card">
+                <!-- 主分类 -->
+                <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="toggleCategory('技术架构')">
                     <a href="#技术架构" 
+                       @click.prevent="showCategoryPosts('技术架构')"
                        class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -189,12 +443,20 @@
                 
                 <!-- 子分类 -->
                 
-                <div class="card-body pt-0" id="category-技术架构" style="display: none;">
+                <div class="card-body pt-0" 
+                     x-show="isCategoryOpen('技术架构')"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform -translate-y-2">
                     <div class="space-y-3 pl-4 border-l-2 border-gray-200">
                         
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#技术架构/容器化技术" 
+                                   @click.prevent="showCategoryPosts('技术架构/容器化技术')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -212,6 +474,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#技术架构/容器化技术/Docker实践" 
+                                       @click.prevent="showCategoryPosts('技术架构/容器化技术/Docker实践')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -228,6 +491,7 @@
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#技术架构/微服务架构" 
+                                   @click.prevent="showCategoryPosts('技术架构/微服务架构')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -245,6 +509,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#技术架构/微服务架构/服务设计" 
+                                       @click.prevent="showCategoryPosts('技术架构/微服务架构/服务设计')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -266,8 +531,9 @@
             <div class="card">
                 <!-- 主分类 -->
                 <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
-                     onclick="toggleCategory('数据与安全')">
+                     @click="toggleCategory('数据与安全')">
                     <a href="#数据与安全" 
+                       @click.prevent="showCategoryPosts('数据与安全')"
                        class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -282,12 +548,20 @@
                 
                 <!-- 子分类 -->
                 
-                <div class="card-body pt-0" id="category-数据与安全" style="display: none;">
+                <div class="card-body pt-0" 
+                     x-show="isCategoryOpen('数据与安全')"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform -translate-y-2">
                     <div class="space-y-3 pl-4 border-l-2 border-gray-200">
                         
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#数据与安全/数据库技术" 
+                                   @click.prevent="showCategoryPosts('数据与安全/数据库技术')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -305,6 +579,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#数据与安全/数据库技术/性能优化" 
+                                       @click.prevent="showCategoryPosts('数据与安全/数据库技术/性能优化')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -321,6 +596,7 @@
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#数据与安全/机器学习" 
+                                   @click.prevent="showCategoryPosts('数据与安全/机器学习')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -338,6 +614,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#数据与安全/机器学习/Python应用" 
+                                       @click.prevent="showCategoryPosts('数据与安全/机器学习/Python应用')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -354,6 +631,7 @@
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#数据与安全/网络安全" 
+                                   @click.prevent="showCategoryPosts('数据与安全/网络安全')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -371,6 +649,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#数据与安全/网络安全/基础防护" 
+                                       @click.prevent="showCategoryPosts('数据与安全/网络安全/基础防护')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -392,8 +671,9 @@
             <div class="card">
                 <!-- 主分类 -->
                 <div class="card-header flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
-                     onclick="toggleCategory('编程语言')">
+                     @click="toggleCategory('编程语言')">
                     <a href="#编程语言" 
+                       @click.prevent="showCategoryPosts('编程语言')"
                        class="text-lg font-semibold text-gray-900 hover:text-primary-600 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -402,18 +682,26 @@
                         编程语言
                     </a>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                        7
+                        6
                     </span>
                 </div>
                 
                 <!-- 子分类 -->
                 
-                <div class="card-body pt-0" id="category-编程语言" style="display: none;">
+                <div class="card-body pt-0" 
+                     x-show="isCategoryOpen('编程语言')"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                     x-transition:leave-end="opacity-0 transform -translate-y-2">
                     <div class="space-y-3 pl-4 border-l-2 border-gray-200">
                         
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#编程语言/前端开发" 
+                                   @click.prevent="showCategoryPosts('编程语言/前端开发')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -421,7 +709,7 @@
                                     前端开发
                                 </a>
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
-                                    5
+                                    3
                                 </span>
                             </div>
                             
@@ -431,24 +719,26 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#编程语言/前端开发/JavaScript框架" 
+                                       @click.prevent="showCategoryPosts('编程语言/前端开发/JavaScript框架')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
                                         JavaScript框架
                                     </a>
-                                    <span class="text-xs text-gray-500">(3)</span>
+                                    <span class="text-xs text-gray-500">(2)</span>
                                 </div>
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#编程语言/前端开发/React生态" 
+                                       @click.prevent="showCategoryPosts('编程语言/前端开发/React生态')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
                                         React生态
                                     </a>
-                                    <span class="text-xs text-gray-500">(2)</span>
+                                    <span class="text-xs text-gray-500">(1)</span>
                                 </div>
                                 
                             </div>
@@ -458,6 +748,7 @@
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#编程语言/后端开发" 
+                                   @click.prevent="showCategoryPosts('编程语言/后端开发')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -465,7 +756,7 @@
                                     后端开发
                                 </a>
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
-                                    1
+                                    2
                                 </span>
                             </div>
                             
@@ -474,7 +765,20 @@
                             <div class="space-y-2 pl-4">
                                 
                                 <div class="flex justify-between items-center py-1">
+                                    <a href="#编程语言/后端开发/Go语言" 
+                                       @click.prevent="showCategoryPosts('编程语言/后端开发/Go语言')"
+                                       class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
+                                        <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Go语言
+                                    </a>
+                                    <span class="text-xs text-gray-500">(1)</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center py-1">
                                     <a href="#编程语言/后端开发/Rust语言" 
+                                       @click.prevent="showCategoryPosts('编程语言/后端开发/Rust语言')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -491,6 +795,7 @@
                         <div class="bg-gray-50 rounded-lg p-3">
                             <div class="flex justify-between items-center mb-2">
                                 <a href="#编程语言/移动开发" 
+                                   @click.prevent="showCategoryPosts('编程语言/移动开发')"
                                    class="font-medium text-gray-800 hover:text-primary-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -508,6 +813,7 @@
                                 
                                 <div class="flex justify-between items-center py-1">
                                     <a href="#编程语言/移动开发/跨平台开发" 
+                                       @click.prevent="showCategoryPosts('编程语言/移动开发/跨平台开发')"
                                        class="text-sm text-gray-600 hover:text-primary-600 flex items-center">
                                         <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -532,14 +838,249 @@
     
     <!-- 分类文章 -->
     <div class="category-posts-section">
-        <h3 class="text-2xl font-semibold text-gray-900 mb-4" id="posts-title">分类文章</h3>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-4" 
+            x-text="currentCategoryPath ? `分类 \"${currentCategoryPath}\" 的文章 (${getVisiblePostsCount()})` : `所有文章 (${getVisiblePostsCount()})`">
+            分类文章
+        </h3>
         <p class="text-gray-600 mb-6">点击上方分类查看相关文章</p>
         
         
-        <div class="space-y-4" id="posts-container">
+        <div class="space-y-4" id="posts-container" 
+             x-data="{
+                 postsPerPage: 10,
+                 currentPage: 1,
+                 
+                 getVisiblePosts() {
+                     const allPosts = Array.from(document.querySelectorAll('.post-item'));
+                     return allPosts.filter(post => {
+                         if (!this.currentCategoryPath) return true;
+                         const categories = post.getAttribute('data-categories') || '';
+                         return categories.startsWith(this.currentCategoryPath);
+                     });
+                 },
+                 
+                 getTotalPages() {
+                     const visiblePosts = this.getVisiblePosts();
+                     return Math.ceil(visiblePosts.length / this.postsPerPage);
+                 },
+                 
+                 showPage(page) {
+                     this.currentPage = page;
+                     const visiblePosts = this.getVisiblePosts();
+                     const startIndex = (page - 1) * this.postsPerPage;
+                     const endIndex = startIndex + this.postsPerPage;
+                     
+                     // 隐藏所有文章
+                     document.querySelectorAll('.post-item').forEach(post => {
+                         post.style.display = 'none';
+                     });
+                     
+                     // 显示当前页的文章
+                     visiblePosts.slice(startIndex, endIndex).forEach(post => {
+                         post.style.display = 'block';
+                     });
+                 }
+             }"
+             x-init="$nextTick(() => showPage(1))">
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="区块链技术&#x2F;基础理论&#x2F;核心概念">
+                     data-categories="web"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'web', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="web/4.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            现代CSS技术
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2025-02-03
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            web
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#CSS" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            CSS
+                        </a>
+                        
+                        <a href="tags.html#布局" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            布局
+                        </a>
+                        
+                        <a href="tags.html#响应式设计" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            响应式设计
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="web"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'web', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="web/3.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            前端框架对比
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2025-02-02
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            web
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#前端" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            前端
+                        </a>
+                        
+                        <a href="tags.html#框架" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            框架
+                        </a>
+                        
+                        <a href="tags.html#React" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            React
+                        </a>
+                        
+                        <a href="tags.html#Vue" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Vue
+                        </a>
+                        
+                        <a href="tags.html#Angular" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Angular
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="web"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'web', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="web/2.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            WebAssembly 应用场景
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2025-02-01
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            web
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#WebAssembly" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            WebAssembly
+                        </a>
+                        
+                        <a href="tags.html#性能优化" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            性能优化
+                        </a>
+                        
+                        <a href="tags.html#前端" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            前端
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="区块链技术&#x2F;基础理论&#x2F;核心概念"
+                     style="display: none;"
+                     x-data="{ dataCategories: '区块链技术&#x2F;基础理论&#x2F;核心概念', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -607,7 +1148,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;移动开发&#x2F;跨平台开发">
+                     data-categories="编程语言&#x2F;移动开发&#x2F;跨平台开发"
+                     style="display: none;"
+                     x-data="{ dataCategories: '编程语言&#x2F;移动开发&#x2F;跨平台开发', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -670,7 +1214,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="数据与安全&#x2F;网络安全&#x2F;基础防护">
+                     data-categories="数据与安全&#x2F;网络安全&#x2F;基础防护"
+                     style="display: none;"
+                     x-data="{ dataCategories: '数据与安全&#x2F;网络安全&#x2F;基础防护', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -733,7 +1280,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="数据与安全&#x2F;数据库技术&#x2F;性能优化">
+                     data-categories="数据与安全&#x2F;数据库技术&#x2F;性能优化"
+                     style="display: none;"
+                     x-data="{ dataCategories: '数据与安全&#x2F;数据库技术&#x2F;性能优化', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -801,7 +1351,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="技术架构&#x2F;微服务架构&#x2F;服务设计">
+                     data-categories="技术架构&#x2F;微服务架构&#x2F;服务设计"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术架构&#x2F;微服务架构&#x2F;服务设计', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -864,7 +1417,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;前端开发&#x2F;JavaScript框架">
+                     data-categories="编程语言&#x2F;前端开发&#x2F;JavaScript框架"
+                     style="display: none;"
+                     x-data="{ dataCategories: '编程语言&#x2F;前端开发&#x2F;JavaScript框架', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -927,37 +1483,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="">
-                <div class="card-body">
-                    <h4 class="text-lg font-semibold mb-2">
-                        
-                        <a href="about.html" 
-                           class="text-gray-900 hover:text-primary-600 transition-colors">
-                            关于我
-                        </a>
-                        
-                    </h4>
-                    
-                    <div class="article-meta mb-3">
-                        
-                        <span class="inline-flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            2024-05-12
-                        </span>
-                        
-                        
-                    </div>
-                    
-                    
-                    
-                    
-                </div>
-            </article>
-            
-            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="">
+                     data-categories=""
+                     style="display: none;"
+                     x-data="{ dataCategories: '', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -987,7 +1516,43 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="数据与安全&#x2F;机器学习&#x2F;Python应用">
+                     data-categories=""
+                     style="display: none;"
+                     x-data="{ dataCategories: '', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="about.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            关于我
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-05-12
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="数据与安全&#x2F;机器学习&#x2F;Python应用"
+                     style="display: none;"
+                     x-data="{ dataCategories: '数据与安全&#x2F;机器学习&#x2F;Python应用', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -1050,7 +1615,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;前端开发&#x2F;React生态">
+                     data-categories="编程语言&#x2F;前端开发&#x2F;React生态"
+                     style="display: none;"
+                     x-data="{ dataCategories: '编程语言&#x2F;前端开发&#x2F;React生态', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -1108,7 +1676,147 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="技术架构&#x2F;容器化技术&#x2F;Docker实践">
+                     data-categories="前端"
+                     style="display: none;"
+                     x-data="{ dataCategories: '前端', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="前端/现代前端开发技术栈.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            现代前端开发技术栈深度解析
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-03-16
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            前端
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#前端开发" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            前端开发
+                        </a>
+                        
+                        <a href="tags.html#React" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            React
+                        </a>
+                        
+                        <a href="tags.html#Vue" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Vue
+                        </a>
+                        
+                        <a href="tags.html#TypeScript" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            TypeScript
+                        </a>
+                        
+                        <a href="tags.html#构建工具" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            构建工具
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="编程语言&#x2F;后端开发&#x2F;Go语言"
+                     style="display: none;"
+                     x-data="{ dataCategories: '编程语言&#x2F;后端开发&#x2F;Go语言', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="编程语言&#x2F;后端开发&#x2F;Go语言/golang-concurrency-patterns.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Go语言并发模式深度解析
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-03-15
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            编程语言 › 后端开发 › Go语言
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Go" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Go
+                        </a>
+                        
+                        <a href="tags.html#并发编程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            并发编程
+                        </a>
+                        
+                        <a href="tags.html#goroutine" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            goroutine
+                        </a>
+                        
+                        <a href="tags.html#channel" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            channel
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术架构&#x2F;容器化技术&#x2F;Docker实践"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术架构&#x2F;容器化技术&#x2F;Docker实践', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -1166,7 +1874,10 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;前端开发&#x2F;JavaScript框架">
+                     data-categories="编程语言&#x2F;前端开发&#x2F;JavaScript框架"
+                     style="display: none;"
+                     x-data="{ dataCategories: '编程语言&#x2F;前端开发&#x2F;JavaScript框架', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -1224,13 +1935,673 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;前端开发&#x2F;JavaScript框架">
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
-                        <a href="编程语言&#x2F;前端开发&#x2F;JavaScript框架/4.html" 
+                        <a href="技术/10.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 异步编程
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-31
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#异步" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            异步
+                        </a>
+                        
+                        <a href="tags.html#async&#x2F;await" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            async&#x2F;await
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/9.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 属性编程
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-30
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#属性" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            属性
+                        </a>
+                        
+                        <a href="tags.html#元编程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            元编程
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/8.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 智能指针
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-29
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#智能指针" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            智能指针
+                        </a>
+                        
+                        <a href="tags.html#内存管理" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            内存管理
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/7.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 迭代器
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-28
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#迭代器" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            迭代器
+                        </a>
+                        
+                        <a href="tags.html#函数式编程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            函数式编程
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/6.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 泛型编程
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-27
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#泛型" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            泛型
+                        </a>
+                        
+                        <a href="tags.html#trait" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            trait
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/5.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 生命周期
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-26
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#生命周期" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            生命周期
+                        </a>
+                        
+                        <a href="tags.html#引用" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            引用
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/4.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 宏系统
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-25
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#宏" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            宏
+                        </a>
+                        
+                        <a href="tags.html#元编程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            元编程
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/3.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 错误处理
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-24
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#错误处理" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            错误处理
+                        </a>
+                        
+                        <a href="tags.html#Result" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Result
+                        </a>
+                        
+                        <a href="tags.html#Option" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Option
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/2.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 并发模型
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-23
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#并发" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            并发
+                        </a>
+                        
+                        <a href="tags.html#多线程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            多线程
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="技术"
+                     style="display: none;"
+                     x-data="{ dataCategories: '技术', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="技术/1.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust 所有权机制
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-22
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            技术
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#所有权" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            所有权
+                        </a>
+                        
+                        <a href="tags.html#内存管理" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            内存管理
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories=""
+                     style="display: none;"
+                     x-data="{ dataCategories: '', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="4.html" 
                            class="text-gray-900 hover:text-primary-600 transition-colors">
                             4
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-21
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#网文创作" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            网文创作
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="web"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'web', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="web/1.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Web开发实战
                         </a>
                         
                     </h4>
@@ -1253,7 +2624,7 @@
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
                             </svg>
-                            编程语言 › 前端开发 › JavaScript框架
+                            web
                         </span>
                     </div>
                     
@@ -1261,9 +2632,19 @@
                     
                     <div class="flex flex-wrap gap-2">
                         
-                        <a href="tags.html#网文创作" 
+                        <a href="tags.html#后端开发" 
                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
-                            网文创作
+                            后端开发
+                        </a>
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#Actix-web" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Actix-web
                         </a>
                         
                     </div>
@@ -1272,7 +2653,366 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;后端开发&#x2F;Rust语言">
+                     data-categories="network"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'network', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="network/1.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Rust网络编程
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-20
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            network
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Rust" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Rust
+                        </a>
+                        
+                        <a href="tags.html#网络编程" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            网络编程
+                        </a>
+                        
+                        <a href="tags.html#HTTP" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            HTTP
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="tutorial"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'tutorial', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="tutorial/4.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            数据库优化技巧
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-19
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            tutorial
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#数据库" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            数据库
+                        </a>
+                        
+                        <a href="tags.html#优化" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            优化
+                        </a>
+                        
+                        <a href="tags.html#索引" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            索引
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="tutorial"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'tutorial', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="tutorial/3.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Docker容器化部署
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-18
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            tutorial
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Docker" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Docker
+                        </a>
+                        
+                        <a href="tags.html#容器化" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            容器化
+                        </a>
+                        
+                        <a href="tags.html#部署" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            部署
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="tutorial"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'tutorial', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="tutorial/2.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            Git版本控制教程
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-17
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            tutorial
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#Git" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            Git
+                        </a>
+                        
+                        <a href="tags.html#版本控制" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            版本控制
+                        </a>
+                        
+                        <a href="tags.html#分支管理" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            分支管理
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="design"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'design', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="design/2.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            分布式系统设计
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-16
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            design
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#分布式系统" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            分布式系统
+                        </a>
+                        
+                        <a href="tags.html#一致性哈希" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            一致性哈希
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="design"
+                     style="display: none;"
+                     x-data="{ dataCategories: 'design', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
+                <div class="card-body">
+                    <h4 class="text-lg font-semibold mb-2">
+                        
+                        <a href="design/1.html" 
+                           class="text-gray-900 hover:text-primary-600 transition-colors">
+                            系统设计模式
+                        </a>
+                        
+                    </h4>
+                    
+                    <div class="article-meta mb-3">
+                        
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            2024-01-15
+                        </span>
+                        
+                        
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <span class="inline-flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            design
+                        </span>
+                    </div>
+                    
+                    
+                    
+                    <div class="flex flex-wrap gap-2">
+                        
+                        <a href="tags.html#系统设计" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            系统设计
+                        </a>
+                        
+                        <a href="tags.html#架构模式" 
+                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                            架构模式
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </article>
+            
+            <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
+                     data-categories="编程语言&#x2F;后端开发&#x2F;Rust语言"
+                     style="display: none;"
+                     x-data="{ dataCategories: '编程语言&#x2F;后端开发&#x2F;Rust语言', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
@@ -1330,11 +3070,14 @@
             </article>
             
             <article class="card post-item hover:shadow-lg transition-shadow duration-300" 
-                     data-categories="编程语言&#x2F;前端开发&#x2F;React生态">
+                     data-categories=""
+                     style="display: none;"
+                     x-data="{ dataCategories: '', 
+                              isVisible: !currentCategoryPath || (dataCategories && dataCategories.startsWith(currentCategoryPath)) }">
                 <div class="card-body">
                     <h4 class="text-lg font-semibold mb-2">
                         
-                        <a href="编程语言&#x2F;前端开发&#x2F;React生态/example.html" 
+                        <a href="welcome.html" 
                            class="text-gray-900 hover:text-primary-600 transition-colors">
                             欢迎使用RustPress
                         </a>
@@ -1353,15 +3096,6 @@
                         
                     </div>
                     
-                    
-                    <div class="mb-3">
-                        <span class="inline-flex items-center text-sm text-gray-600">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            </svg>
-                            编程语言 › 前端开发 › React生态
-                        </span>
-                    </div>
                     
                     
                     
@@ -1389,62 +3123,28 @@
             
         </div>
         
+        <!-- 分页控件 -->
+        <div class="mt-8 flex justify-center items-center space-x-4" 
+             x-show="getTotalPages() > 1">
+            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
+                    @click="showPage(currentPage - 1)"
+                    :disabled="currentPage <= 1">
+                上一页
+            </button>
+            
+            <span class="text-gray-600">
+                第 <span x-text="currentPage"></span> 页，共 <span x-text="getTotalPages()"></span> 页
+            </span>
+            
+            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
+                    @click="showPage(currentPage + 1)"
+                    :disabled="currentPage >= getTotalPages()">
+                下一页
+            </button>
+        </div>
+        
     </div>
 </div>
-
-<script>
-// 分类展开/收起功能
-function toggleCategory(categoryName) {
-    const element = document.getElementById('category-' + categoryName);
-    if (element) {
-        element.style.display = element.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-// 分类过滤逻辑
-function showCategoryPosts(categoryPath) {
-    const allPosts = document.querySelectorAll('.post-item');
-    let visibleCount = 0;
-    
-    allPosts.forEach(post => {
-        const postCategories = post.getAttribute('data-categories') || '';
-        if (!categoryPath || postCategories.startsWith(categoryPath)) {
-            post.style.display = 'block';
-            visibleCount++;
-        } else {
-            post.style.display = 'none';
-        }
-    });
-    
-    // 更新标题
-    const title = document.getElementById('posts-title');
-    if (categoryPath) {
-        title.textContent = `分类 "${categoryPath}" 的文章 (${visibleCount})`;
-    } else {
-        title.textContent = `所有文章 (${visibleCount})`;
-    }
-}
-
-// 处理分类链接点击
-document.addEventListener('DOMContentLoaded', function() {
-    const categoryLinks = document.querySelectorAll('a[href^="#"]');
-    categoryLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const href = this.getAttribute('href');
-            const categoryPath = href.substring(1); // 移除 #
-            showCategoryPosts(categoryPath);
-            window.location.hash = categoryPath;
-        });
-    });
-    
-    // 检查URL hash
-    const hash = window.location.hash.substring(1);
-    if (hash) {
-        showCategoryPosts(hash);
-    }
-});
-</script>
  
         </main>
     </div>
@@ -1455,18 +3155,19 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="text-center space-y-2">
                 <p class="text-gray-600">
                     &copy; 2002-2025 
-                    李艺
+                    
+                        LIYI
+                    
+                    
+                        &nbsp;|&nbsp;
+                        <a href="https://beian.miit.gov.cn/" 
+                           target="_blank" 
+                           rel="noopener" 
+                           class="text-gray-500 hover:text-gray-700 text-sm">
+                            京ICP备14007000号-8
+                        </a>
+                    
                 </p>
-                
-                <p>
-                    <a href="https://beian.miit.gov.cn/" 
-                       target="_blank" 
-                       rel="noopener" 
-                       class="text-gray-500 hover:text-gray-700 text-sm">
-                        京ICP备14007000号-8
-                    </a>
-                </p>
-                
                 <p class="text-gray-500 text-sm">
                     由 <a href="https://github.com/rixingyike/rustpress" 
                           target="_blank" 
@@ -1484,53 +3185,8 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script>
-        // 移动端菜单切换
-        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        });
-        
-        // 活跃导航链接高亮
-        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-        document.querySelectorAll('.nav-link').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === '/' && (currentPath === '' || currentPath === 'index.html')) {
-                link.classList.add('nav-link-active');
-            } else if (href !== '/' && currentPath.includes(href.replace('.html', ''))) {
-                link.classList.add('nav-link-active');
-            }
-        });
-        
-        // Logo错误处理
-        const logo = document.querySelector('img[alt*="Logo"]');
-        if (logo) {
-            logo.addEventListener('error', function() {
-                this.style.display = 'none';
-            });
-        }
-        
-        // 搜索功能增强
-        function setupSearch(inputId) {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.addEventListener('focus', function() {
-                    document.getElementById('search-results').classList.remove('hidden');
-                });
-                
-                input.addEventListener('blur', function() {
-                    // 延迟隐藏，允许点击搜索结果
-                    setTimeout(() => {
-                        document.getElementById('search-results').classList.add('hidden');
-                    }, 200);
-                });
-            }
-        }
-        
-        setupSearch('search-input');
-        setupSearch('mobile-search-input');
-    </script>
+    <!-- jQuery 库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- 搜索功能脚本 -->
     <script src="/js/search.js"></script>

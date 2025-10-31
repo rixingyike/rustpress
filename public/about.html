@@ -1,23 +1,26 @@
 <!DOCTYPE html>
+<!-- 基础布局模板 -->
 <html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>关于我 - 艺述论</title>
+    <title>关于我 - 一树论</title>
     <link rel="stylesheet" href="/css/main.css">
+    <!-- Alpine.js 库 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Lunr.js 搜索库 -->
     <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="bg-gray-50 text-gray-900 font-sans" x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.split('/').pop() || 'index.html' }">
     <!-- 顶部导航栏 -->
     <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo 和站点名称 -->
                 <div class="flex items-center space-x-3">
-                    <img src="/logo.png" alt="艺述论 Logo" class="h-8 w-8 rounded-full" onerror="this.style.display='none'">
+                    <img src="/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
                     <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
-                        艺述论
+                        一树论
                     </a>
                 </div>
                 
@@ -38,27 +41,49 @@
                 
                 <!-- 导航菜单 - 桌面版 -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" class="nav-link">首页</a>
-                    <a href="/archives.html" class="nav-link">归档</a>
-                    <a href="/categories.html" class="nav-link">分类</a>
-                    <a href="/tags.html" class="nav-link">标签</a>
-                    <a href="/about.html" class="nav-link">关于</a>
-                    <a href="/friends.html" class="nav-link">友链</a>
-                    <a href="/search.html" class="nav-link">搜索</a>
+                    <a href="/" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
+                    <a href="/archives.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
+                    <a href="/categories.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
+                    <a href="/tags.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
+                    <a href="/about.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
+                    <a href="/friends.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
+                    <a href="/search.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
                 </div>
                 
                 <!-- 移动端菜单按钮 -->
-                <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
-                        id="mobile-menu-btn">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+    <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            :aria-expanded="mobileMenuOpen">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
             </div>
         </div>
         
         <!-- 移动端菜单 -->
-        <div class="md:hidden hidden" id="mobile-menu">
+        <div class="md:hidden" 
+             x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2">
             <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
                 <!-- 移动端搜索框 -->
                 <div class="px-3 py-2">
@@ -75,23 +100,73 @@
                     </div>
                 </div>
                 <!-- 移动端导航链接 -->
-                <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">首页</a>
-                <a href="/archives.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">归档</a>
-                <a href="/categories.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">分类</a>
-                <a href="/tags.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">标签</a>
-                <a href="/about.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">关于</a>
-                <a href="/friends.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">友链</a>
-                <a href="/search.html" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">搜索</a>
+                <a href="/" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
+                <a href="/archives.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
+                <a href="/categories.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
+                <a href="/tags.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
+                <a href="/about.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
+                <a href="/friends.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
+                <a href="/search.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
             </div>
         </div>
     </nav>
 
     <!-- 主要内容区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 广告位1：Header广告 -->
         
-        <header class="text-center py-8 sm:py-12 border-b border-gray-200 mb-8">
-            <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">使用RustPress创建的博客</p>
-        </header>
+        <div class="mb-6">
+            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col items-center p-4 text-center">
+                        <!-- 广告编号 -->
+                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
+                            📚 广告
+                        </div>
+                        
+                        <!-- 广告图片 -->
+                        <div class="mb-3">
+                            <img src="&#x2F;images&#x2F;book-wegame.png" 
+                                 alt="微信小游戏开发" 
+                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                        </div>
+                        
+                        <!-- 广告信息 -->
+                        <div class="max-w-sm">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                                微信小游戏开发
+                            </h2>
+                            
+                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
+                            
+                            
+                            <!-- 查看详情按钮 -->
+                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                </svg>
+                                查看详情
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
         
         
         <main class="min-h-screen py-8">
@@ -104,29 +179,113 @@
                 <!-- 作者头像 -->
                 <div class="flex-shrink-0">
                     
-                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-4xl font-bold">
-                        
-                        李
-                    </div>
+                    <img src="&#x2F;images&#x2F;avatar.png" 
+                         alt="LIYI" 
+                         class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxzdmcgeD0iMzIiIHk9IjMyIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMjAgMjEtMTYtMTZtMCAxM2gxM20wLTEzTDIxIDIxIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
                     
                 </div>
                 
                 <!-- 作者信息 -->
                 <div class="flex-1 text-center md:text-left">
                     <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                        李艺
+                        LIYI
                     </h1>
                     
+                    
+                    <p class="text-lg text-gray-600 mb-4 leading-relaxed">
+                        热爱技术，专注于 Rust、Web 开发和系统架构。
+                    </p>
                     
                     
                     <!-- 位置和网站信息 -->
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 justify-center md:justify-start">
                         
+                        <div class="flex items-center text-gray-500">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            北京, 中国
+                        </div>
                         
+                        
+                        
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9"></path>
+                            </svg>
+                            <a href="https:&#x2F;&#x2F;yishulun.com" 
+                               target="_blank" 
+                               rel="noopener"
+                               class="text-primary-600 hover:text-primary-700 transition-colors">
+                                yishulun.com
+                            </a>
+                        </div>
                         
                     </div>
                     
                     <!-- 社交链接 -->
+                    
+                    <div class="flex justify-center md:justify-start space-x-4">
+                        
+                        <a href="https:&#x2F;&#x2F;github.com&#x2F;rixingyike" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-gray-600 transition-colors"
+                           title="GitHub">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        
+                        
+                        
+                        <a href="https:&#x2F;&#x2F;twitter.com&#x2F;coderliyi" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-blue-400 transition-colors"
+                           title="Twitter">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        
+                        
+                        
+                        <a href="https:&#x2F;&#x2F;weibo.com&#x2F;ixiaochengxu" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-red-500 transition-colors"
+                           title="微博">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M9.31 8.17c-2.73-.13-4.3.53-4.3 2.26 0 2.22 2.73 4.69 6.08 4.69 2.61 0 4.08-1.74 4.08-3.17-.01-1.72-2.63-3.65-5.86-3.78zm-.46 5.63c-.65.71-1.57.4-2.03-.14-.47-.54-.42-1.43.23-2.05.63-.6 1.45-.35 1.92.2.48.55.5 1.33-.12 1.99zm1.7-.71c-.13.16-.38.21-.54.08-.17-.13-.19-.39-.04-.55.16-.17.4-.19.56-.05.15.14.16.35.02.52z"/>
+                            </svg>
+                        </a>
+                        
+                        
+                        
+                        <a href="https:&#x2F;&#x2F;zhihu.com&#x2F;people&#x2F;liyi2005" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="text-gray-400 hover:text-blue-600 transition-colors"
+                           title="知乎">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5.721 0C2.251 0 0 2.25 0 5.719v12.562C0 21.751 2.251 24 5.721 24h12.558C21.749 24 24 21.751 24 18.281V5.719C24 2.25 21.749 0 18.279 0H5.721zM8.48 5.64c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h5.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774zm0 2.4c0-.427.347-.773.774-.773h3.493c.426 0 .773.346.773.773s-.347.774-.773.774H9.254c-.427 0-.774-.347-.774-.774z"/>
+                            </svg>
+                        </a>
+                        
+                        
+                        
+                        <a href="mailto:9830131@qq.com" 
+                           class="text-gray-400 hover:text-green-500 transition-colors"
+                           title="邮箱">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </a>
+                        
+                    </div>
                     
                 </div>
             </div>
@@ -138,7 +297,7 @@
         <div class="card-body prose prose-lg max-w-none">
             <h2>关于我</h2>
             <p>
-                你好！我是 李艺，一名热爱技术的开发者。
+                你好！我是 LIYI，一名热爱技术的开发者。
                 我专注于 Rust、Web 开发和系统架构等领域，喜欢探索新技术，分享学习心得。
             </p>
             
@@ -172,7 +331,13 @@
             </p>
             <ul>
                 
+                <li>📧 邮箱：<a href="mailto:9830131@qq.com">9830131@qq.com</a></li>
                 
+                
+                <li>🐙 GitHub：<a href="https:&#x2F;&#x2F;github.com&#x2F;rixingyike" target="_blank" rel="noopener">https:&#x2F;&#x2F;github.com&#x2F;rixingyike</a></li>
+                
+                
+                <li>🐦 Twitter：<a href="https:&#x2F;&#x2F;twitter.com&#x2F;coderliyi" target="_blank" rel="noopener">https:&#x2F;&#x2F;twitter.com&#x2F;coderliyi</a></li>
                 
             </ul>
         </div>
@@ -183,7 +348,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <div class="text-3xl font-bold text-primary-600 mb-2">
-                    15
+                    37
                 </div>
                 <div class="text-gray-600">篇文章</div>
             </div>
@@ -192,7 +357,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <div class="text-3xl font-bold text-primary-600 mb-2">
-                    44
+                    88
                 </div>
                 <div class="text-gray-600">个标签</div>
             </div>
@@ -201,7 +366,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <div class="text-3xl font-bold text-primary-600 mb-2">
-                    4
+                    10
                 </div>
                 <div class="text-gray-600">个分类</div>
             </div>
@@ -218,18 +383,19 @@
             <div class="text-center space-y-2">
                 <p class="text-gray-600">
                     &copy; 2002-2025 
-                    李艺
+                    
+                        LIYI
+                    
+                    
+                        &nbsp;|&nbsp;
+                        <a href="https://beian.miit.gov.cn/" 
+                           target="_blank" 
+                           rel="noopener" 
+                           class="text-gray-500 hover:text-gray-700 text-sm">
+                            京ICP备14007000号-8
+                        </a>
+                    
                 </p>
-                
-                <p>
-                    <a href="https://beian.miit.gov.cn/" 
-                       target="_blank" 
-                       rel="noopener" 
-                       class="text-gray-500 hover:text-gray-700 text-sm">
-                        京ICP备14007000号-8
-                    </a>
-                </p>
-                
                 <p class="text-gray-500 text-sm">
                     由 <a href="https://github.com/rixingyike/rustpress" 
                           target="_blank" 
@@ -247,53 +413,8 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script>
-        // 移动端菜单切换
-        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        });
-        
-        // 活跃导航链接高亮
-        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-        document.querySelectorAll('.nav-link').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === '/' && (currentPath === '' || currentPath === 'index.html')) {
-                link.classList.add('nav-link-active');
-            } else if (href !== '/' && currentPath.includes(href.replace('.html', ''))) {
-                link.classList.add('nav-link-active');
-            }
-        });
-        
-        // Logo错误处理
-        const logo = document.querySelector('img[alt*="Logo"]');
-        if (logo) {
-            logo.addEventListener('error', function() {
-                this.style.display = 'none';
-            });
-        }
-        
-        // 搜索功能增强
-        function setupSearch(inputId) {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.addEventListener('focus', function() {
-                    document.getElementById('search-results').classList.remove('hidden');
-                });
-                
-                input.addEventListener('blur', function() {
-                    // 延迟隐藏，允许点击搜索结果
-                    setTimeout(() => {
-                        document.getElementById('search-results').classList.add('hidden');
-                    }, 200);
-                });
-            }
-        }
-        
-        setupSearch('search-input');
-        setupSearch('mobile-search-input');
-    </script>
+    <!-- jQuery 库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- 搜索功能脚本 -->
     <script src="/js/search.js"></script>

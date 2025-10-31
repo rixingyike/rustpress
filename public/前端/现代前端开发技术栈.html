@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<!-- 基础布局模板 -->
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一树论</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <!-- Alpine.js 库 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lunr.js 搜索库 -->
+    <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans" x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.split('/').pop() || 'index.html' }">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo 和站点名称 -->
+                <div class="flex items-center space-x-3">
+                    <img src="/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
+                    <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
+                        一树论
+                    </a>
+                </div>
+                
+                <!-- 搜索框 - 桌面版 -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 导航菜单 - 桌面版 -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
+                    <a href="/archives.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
+                    <a href="/categories.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
+                    <a href="/tags.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
+                    <a href="/about.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
+                    <a href="/friends.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
+                    <a href="/search.html" 
+                       class="nav-link" 
+                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+    <button class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500" 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            :aria-expanded="mobileMenuOpen">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div class="md:hidden" 
+             x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                <!-- 移动端搜索框 -->
+                <div class="px-3 py-2">
+                    <div class="relative">
+                        <input type="text" 
+                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               placeholder="搜索文章..." 
+                               id="mobile-search-input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 移动端导航链接 -->
+                <a href="/" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
+                <a href="/archives.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
+                <a href="/categories.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
+                <a href="/tags.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
+                <a href="/about.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
+                <a href="/friends.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
+                <a href="/search.html" 
+                   class="block px-3 py-2 text-base font-medium rounded-md" 
+                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 广告位1：Header广告 -->
+        
+        <div class="mb-6">
+            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col items-center p-4 text-center">
+                        <!-- 广告编号 -->
+                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
+                            📚 广告
+                        </div>
+                        
+                        <!-- 广告图片 -->
+                        <div class="mb-3">
+                            <img src="&#x2F;images&#x2F;book-wegame.png" 
+                                 alt="微信小游戏开发" 
+                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                        </div>
+                        
+                        <!-- 广告信息 -->
+                        <div class="max-w-sm">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                                微信小游戏开发
+                            </h2>
+                            
+                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
+                            
+                            
+                            <!-- 查看详情按钮 -->
+                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                </svg>
+                                查看详情
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        
+        <main class="min-h-screen py-8">
+            
+<article class="max-w-4xl mx-auto" x-data="{ copiedLink: false, copiedCode: {} }">
+    <!-- 分类面包屑 -->
+    
+    <nav class="mb-6 text-sm text-gray-600">
+        <a href="/" class="hover:text-primary-600">首页</a>
+        
+            <span class="mx-2">›</span>
+            <a href="/前端/" class="hover:text-primary-600">前端</a>
+        
+    </nav>
+    
+    
+    <!-- 文章头部 -->
+    <header class="mb-8 pb-8 border-b border-gray-200">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            现代前端开发技术栈深度解析
+        </h1>
+        
+        <div class="article-meta mb-6">
+            
+            <span class="inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                2024-03-16
+            </span>
+            
+            
+        </div>
+        
+        <!-- 标签 -->
+        
+        <div class="flex flex-wrap gap-2">
+            
+            <a href="tags.html#前端开发" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                前端开发
+            </a>
+            
+            <a href="tags.html#React" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                React
+            </a>
+            
+            <a href="tags.html#Vue" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                Vue
+            </a>
+            
+            <a href="tags.html#TypeScript" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                TypeScript
+            </a>
+            
+            <a href="tags.html#构建工具" 
+               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                构建工具
+            </a>
+            
+        </div>
+        
+    </header>
+    
+    <!-- 文章内容 -->
+    <div class="article-content prose prose-lg max-w-none" 
+         x-init="$nextTick(() => {
+             // 为代码块添加复制按钮
+             document.querySelectorAll('pre code').forEach((codeBlock, index) => {
+                 const pre = codeBlock.parentElement;
+                 if (!pre.querySelector('.copy-code-btn')) {
+                     const button = document.createElement('button');
+                     button.className = 'copy-code-btn';
+                     button.textContent = '复制';
+                     button.setAttribute('x-data', `{ copied: false }`);
+                     button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
+                     button.setAttribute(':class', `{ 'bg-green-600': copied }`);
+                     button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
+                     
+                     pre.style.position = 'relative';
+                     pre.appendChild(button);
+                 }
+             });
+         })">
+        <h1>现代前端开发技术栈深度解析</h1>
+<p>随着Web技术的快速发展，现代前端开发已经形成了完整的技术生态体系。本文将从框架选择、工具链、工程化等多个维度，全面解析现代前端开发的技术栈。</p>
+<h2>前端框架生态</h2>
+<h3>React生态系统</h3>
+<p>React作为目前最流行的前端框架，拥有丰富的生态系统：</p>
+<ul>
+<li><strong>核心库</strong>: React 18+ 支持并发特性</li>
+<li><strong>状态管理</strong>: Redux Toolkit、Zustand、Recoil</li>
+<li><strong>路由</strong>: React Router v6</li>
+<li><strong>样式方案</strong>: Styled-components、Tailwind CSS、Emotion</li>
+<li><strong>数据获取</strong>: React Query、SWR、Apollo Client</li>
+<li><strong>UI组件库</strong>: Ant Design、Material-UI、Chakra UI</li>
+</ul>
+<h3>Vue生态系统</h3>
+<p>Vue 3的Composition API带来了全新的开发体验：</p>
+<ul>
+<li><strong>核心库</strong>: Vue 3 + Composition API</li>
+<li><strong>状态管理</strong>: Pinia（替代Vuex）</li>
+<li><strong>路由</strong>: Vue Router 4</li>
+<li><strong>样式方案</strong>: UnoCSS、Windi CSS、VueUse</li>
+<li><strong>构建工具</strong>: Vite（极速构建）</li>
+<li><strong>UI组件库</strong>: Element Plus、Naive UI、Vuetify</li>
+</ul>
+<h3>新兴框架</h3>
+<ul>
+<li><strong>Svelte</strong>: 编译时框架，无虚拟DOM</li>
+<li><strong>SolidJS</strong>: 响应式原语，高性能</li>
+<li><strong>Qwik</strong>: 可恢复性框架，极致性能</li>
+</ul>
+<h2>开发工具链</h2>
+<h3>构建工具对比</h3>
+<table><thead><tr><th>工具</th><th>特点</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>Vite</td><td>基于ESM，极速冷启动</td><td>现代框架项目</td></tr>
+<tr><td>Webpack</td><td>功能全面，生态成熟</td><td>大型复杂项目</td></tr>
+<tr><td>Rollup</td><td>库打包优化，Tree-shaking</td><td>组件库开发</td></tr>
+<tr><td>Parcel</td><td>零配置，开箱即用</td><td>快速原型</td></tr>
+</tbody></table>
+<h3>包管理器演进</h3>
+<pre><code class="language-bash"># npm v7+ 支持workspaces
+npm install
+npm run dev
+
+# yarn berry 支持Plug'n'Play
+yarn install
+yarn dev
+
+# pnpm 高效的磁盘空间利用
+pnpm install
+pnpm dev
+</code></pre>
+<h2>TypeScript集成</h2>
+<h3>类型安全优势</h3>
+<p>TypeScript为JavaScript提供了静态类型检查：</p>
+<pre><code class="language-typescript">// 接口定义
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: Date;
+}
+
+// 泛型组件
+interface ListProps&lt;T&gt; {
+  items: T[];
+  renderItem: (item: T) =&gt; React.ReactNode;
+}
+
+function List&lt;T&gt;({ items, renderItem }: ListProps&lt;T&gt;) {
+  return (
+    &lt;div&gt;
+      {items.map((item, index) =&gt; (
+        &lt;div key={index}&gt;{renderItem(item)}&lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+// 使用示例
+const users: User[] = [
+  { id: 1, name: &quot;Alice&quot;, email: &quot;alice@example.com&quot;, createdAt: new Date() }
+];
+
+&lt;List items={users} renderItem={(user) =&gt; &lt;div&gt;{user.name}&lt;/div&gt;} /&gt;
+</code></pre>
+<h3>配置最佳实践</h3>
+<pre><code class="language-json">{
+  &quot;compilerOptions&quot;: {
+    &quot;target&quot;: &quot;ES2020&quot;,
+    &quot;lib&quot;: [&quot;DOM&quot;, &quot;DOM.Iterable&quot;, &quot;ES6&quot;],
+    &quot;allowJs&quot;: true,
+    &quot;skipLibCheck&quot;: true,
+    &quot;esModuleInterop&quot;: true,
+    &quot;allowSyntheticDefaultImports&quot;: true,
+    &quot;strict&quot;: true,
+    &quot;forceConsistentCasingInFileNames&quot;: true,
+    &quot;moduleResolution&quot;: &quot;node&quot;,
+    &quot;resolveJsonModule&quot;: true,
+    &quot;isolatedModules&quot;: true,
+    &quot;noEmit&quot;: true,
+    &quot;jsx&quot;: &quot;react-jsx&quot;
+  },
+  &quot;include&quot;: [&quot;src&quot;]
+}
+</code></pre>
+<h2>现代CSS方案</h2>
+<h3>CSS-in-JS方案</h3>
+<pre><code class="language-jsx">import styled from 'styled-components';
+
+const Button = styled.button`
+  background: ${props =&gt; props.primary ? &quot;#007bff&quot; : &quot;#6c757d&quot;};
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+
+  &amp;:hover {
+    background: ${props =&gt; props.primary ? &quot;#0056b3&quot; : &quot;#545b62&quot;};
+  }
+
+  &amp;:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+// 使用
+&lt;Button primary&gt;主要按钮&lt;/Button&gt;
+&lt;Button&gt;次要按钮&lt;/Button&gt;
+</code></pre>
+<h3>Utility-First CSS</h3>
+<pre><code class="language-html">&lt;!-- Tailwind CSS --&gt;
+&lt;button class=&quot;bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded&quot;&gt;
+  按钮
+&lt;/button&gt;
+
+&lt;!-- 响应式设计 --&gt;
+&lt;div class=&quot;grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4&quot;&gt;
+  &lt;div class=&quot;bg-gray-100 p-4&quot;&gt;内容1&lt;/div&gt;
+  &lt;div class=&quot;bg-gray-100 p-4&quot;&gt;内容2&lt;/div&gt;
+  &lt;div class=&quot;bg-gray-100 p-4&quot;&gt;内容3&lt;/div&gt;
+  &lt;div class=&quot;bg-gray-100 p-4&quot;&gt;内容4&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<h2>状态管理方案</h2>
+<h3>现代状态管理库对比</h3>
+<table><thead><tr><th>库名</th><th>特点</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>Zustand</td><td>轻量，API简单</td><td>中小型项目</td></tr>
+<tr><td>Redux Toolkit</td><td>官方推荐，功能全面</td><td>大型复杂应用</td></tr>
+<tr><td>Recoil</td><td>Facebook出品，原子化状态</td><td>需要细粒度控制</td></tr>
+<tr><td>Jotai</td><td>原子化，TypeScript友好</td><td>React状态管理</td></tr>
+</tbody></table>
+<h3>Zustand示例</h3>
+<pre><code class="language-jsx">import { create } from 'zustand';
+
+// 定义store
+const useStore = create((set) =&gt; ({
+  count: 0,
+  user: null,
+  increment: () =&gt; set((state) =&gt; ({ count: state.count + 1 })),
+  decrement: () =&gt; set((state) =&gt; ({ count: state.count - 1 })),
+  setUser: (user) =&gt; set({ user }),
+}));
+
+// 在组件中使用
+function Counter() {
+  const { count, increment, decrement } = useStore();
+  
+  return (
+    &lt;div&gt;
+      &lt;span&gt;{count}&lt;/span&gt;
+      &lt;button onClick={increment}&gt;+&lt;/button&gt;
+      &lt;button onClick={decrement}&gt;-&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2>性能优化策略</h2>
+<h3>代码分割与懒加载</h3>
+<pre><code class="language-jsx">import { lazy, Suspense } from 'react';
+
+// 懒加载组件
+const LazyComponent = lazy(() =&gt; import('./LazyComponent'));
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;Suspense fallback={&lt;div&gt;加载中...&lt;/div&gt;}&gt;
+        &lt;LazyComponent /&gt;
+      &lt;/Suspense&gt;
+    &lt;/div&gt;
+  );
+}
+
+// 路由级别的代码分割
+const routes = [
+  {
+    path: '/admin',
+    component: lazy(() =&gt; import('./AdminDashboard')),
+  },
+  {
+    path: '/user',
+    component: lazy(() =&gt; import('./UserProfile')),
+  }
+];
+</code></pre>
+<h3>图片优化</h3>
+<pre><code class="language-jsx">// 使用下一代图片格式
+&lt;img 
+  src=&quot;image.jpg&quot; 
+  srcSet=&quot;image.webp 1x, image@2x.webp 2x&quot;
+  alt=&quot;描述&quot;
+  loading=&quot;lazy&quot;
+/&gt;
+
+// 响应式图片
+&lt;picture&gt;
+  &lt;source media=&quot;(min-width: 1024px)&quot; srcSet=&quot;large.jpg&quot; /&gt;
+  &lt;source media=&quot;(min-width: 768px)&quot; srcSet=&quot;medium.jpg&quot; /&gt;
+  &lt;img src=&quot;small.jpg&quot; alt=&quot;描述&quot; /&gt;
+&lt;/picture&gt;
+</code></pre>
+<h2>测试策略</h2>
+<h3>单元测试</h3>
+<pre><code class="language-jsx">import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import Counter from './Counter';
+
+test('计数器功能正常', async () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  // 获取元素
+  const countDisplay = screen.getByText(/0/);
+  const incrementButton = screen.getByRole('button', { name: /\+/ });
+  
+  // 模拟用户交互
+  await userEvent.click(incrementButton);
+  
+  // 断言
+  expect(countDisplay).toHaveTextContent('1');
+});
+
+test('输入框功能', () =&gt; {
+  render(&lt;InputComponent /&gt;);
+  
+  const input = screen.getByLabelText(/username/i);
+  fireEvent.change(input, { target: { value: 'testuser' } });
+  
+  expect(input.value).toBe('testuser');
+});
+</code></pre>
+<h3>E2E测试</h3>
+<pre><code class="language-javascript">// Playwright示例
+describe('用户登录流程', () =&gt; {
+  test('成功登录', async ({ page }) =&gt; {
+    await page.goto('/login');
+    
+    await page.fill('[data-testid=username]', 'testuser');
+    await page.fill('[data-testid=password]', 'password123');
+    await page.click('[data-testid=submit]');
+    
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.locator('[data-testid=welcome]')).toContainText('欢迎');
+  });
+});
+</code></pre>
+<h2>部署与CI/CD</h2>
+<h3>现代部署方案</h3>
+<table><thead><tr><th>平台</th><th>特点</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>Vercel</td><td>零配置，自动部署</td><td>前端项目，Next.js</td></tr>
+<tr><td>Netlify</td><td>功能丰富，表单处理</td><td>静态站点，JAMStack</td></tr>
+<tr><td>GitHub Pages</td><td>免费，与GitHub集成</td><td>文档，个人项目</td></tr>
+<tr><td>AWS S3 + CloudFront</td><td>高度可定制，全球CDN</td><td>企业级应用</td></tr>
+</tbody></table>
+<h3>GitHub Actions配置</h3>
+<pre><code class="language-yaml">name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v20
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+</code></pre>
+<h2>未来趋势</h2>
+<h3>新兴技术</h3>
+<ul>
+<li><strong>WebAssembly</strong>: 高性能计算</li>
+<li><strong>Web Components</strong>: 原生组件化</li>
+<li><strong>Progressive Web Apps</strong>: 离线体验</li>
+<li><strong>WebGL &amp; WebGPU</strong>: 图形渲染</li>
+</ul>
+<h3>开发范式演进</h3>
+<ul>
+<li><strong>Islands Architecture</strong>: 部分交互的静态页面</li>
+<li><strong>Resumability</strong>: 可恢复的渲染</li>
+<li><strong>Edge Computing</strong>: 边缘计算部署</li>
+</ul>
+<h2>总结</h2>
+<p>现代前端开发已经形成了完整的技术体系，从框架选择到工具链配置，从开发实践到部署运维，都需要开发者具备全面的技术视野。选择合适的技术栈，建立高效的开发流程，持续关注技术发展趋势，是前端开发者持续成长的关键。</p>
+<p>随着AI编程助手、低代码平台等新工具的出现，前端开发的效率将进一步提升，但对开发者技术深度的要求也会相应提高。保持学习，拥抱变化，是现代前端开发者的必备素质。</p>
+
+    </div>
+    
+    <!-- 分享功能 -->
+    <div class="mt-12 bg-gray-50 rounded-lg">
+        <h4 class="text-lg font-semibold mb-4 text-gray-900 p-4 pb-0">分享这篇文章</h4>
+        <div class="flex flex-wrap gap-3 p-4">
+            <button onclick="shareToTwitter()" 
+                    class="btn-outline inline-flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+                Twitter
+            </button>
+            <button @click="navigator.clipboard.writeText(window.location.href).then(() => { copiedLink = true; setTimeout(() => copiedLink = false, 2000) })" 
+                    class="btn-outline inline-flex items-center"
+                    :class="{ 'bg-green-100 text-green-800 border-green-300': copiedLink }">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <span x-text="copiedLink ? '已复制' : '复制链接'"></span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 返回顶部 -->
+    <div class="text-center mt-8">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                class="btn-secondary inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+            返回顶部
+        </button>
+    </div>
+</article>
+
+<script>
+function shareToTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(document.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+</script>
+ 
+        </main>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600">
+                    &copy; 2002-2025 
+                    
+                        LIYI
+                    
+                    
+                        &nbsp;|&nbsp;
+                        <a href="https://beian.miit.gov.cn/" 
+                           target="_blank" 
+                           rel="noopener" 
+                           class="text-gray-500 hover:text-gray-700 text-sm">
+                            京ICP备14007000号-8
+                        </a>
+                    
+                </p>
+                <p class="text-gray-500 text-sm">
+                    由 <a href="https://github.com/rixingyike/rustpress" 
+                          target="_blank" 
+                          rel="noopener" 
+                          class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 搜索结果容器 -->
+    <div class="fixed inset-x-0 top-16 z-40 hidden" id="search-results">
+        <div class="bg-white shadow-lg border border-gray-200 rounded-lg mx-4 mt-2 max-h-96 overflow-y-auto">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+    </div>
+
+    <!-- jQuery 库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 搜索功能脚本 -->
+    <script src="/js/search.js"></script>
+</body>
+</html>

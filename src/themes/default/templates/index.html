@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
+<!-- 首页模板 -->
 {% block content %}
 <!-- Hero 组件 -->
 {% include "components/hero.html" %}
+
+
 
 <!-- 主要内容区域 - 圣杯布局 -->
 <div class="flex flex-col lg:flex-row gap-8 mt-8">
@@ -16,10 +19,10 @@
                     <!-- 分类面包屑 -->
                     {% if post.categories and post.categories | length > 0 %}
                     <nav class="px-6 pt-4 text-sm text-gray-600">
-                        <a href="/categories.html" class="hover:text-primary-600">全部分类</a>
+                        <a href="/" class="hover:text-primary-600">首页</a>
                         {% for category in post.categories %}
                             <span class="mx-2">›</span>
-                            <a href="/categories.html" class="hover:text-primary-600">{{ category }}</a>
+                            <a href="/{{ post.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
                         {% endfor %}
                     </nav>
                     {% endif %}

@@ -57,7 +57,7 @@ impl Generator {
         let all_categories = PostParser::generate_hierarchical_categories(&posts);
         
         // 渲染首页
-        let index_html = self.template_engine.render_index(&posts, &all_tags)?;
+        let index_html = self.template_engine.render_index(&posts, &all_tags, &all_categories)?;
         std::fs::write(output_dir.join("index.html"), index_html)
             .map_err(|e| Error::Other(format!("无法写入首页文件: {}", e)))?;
         
@@ -99,6 +99,9 @@ impl Generator {
         std::fs::write(output_dir.join("categories.html"), categories_html)
             .map_err(|e| Error::Other(format!("无法写入分类页: {}", e)))?;
         
+        // 为每个分类生成分类索引页面
+        self.generate_category_pages(&posts, output_dir)?;
+        
         // 渲染归档页
         let archives_html = self.template_engine.render_archives(&posts, &all_years)?;
         std::fs::write(output_dir.join("archives.html"), archives_html)
@@ -128,6 +131,52 @@ impl Generator {
         self.generate_search_index(&posts, output_dir)?;
         
         println!("网站构建成功！静态文件已生成到 {:?} 目录。", output_dir);
+        
+        Ok(())
+    }
+    
+    /// 为每个分类生成分类索引页面
+    fn generate_category_pages<P: AsRef<Path>>(&self, posts: &[Post], output_dir: P) -> Result<()> {
+        let output_dir = output_dir.as_ref();
+        
+        // 收集所有分类路径（包括多层级分类）
+        let mut category_paths: std::collections::HashSet<Vec<String>> = std::collections::HashSet::new();
+        for post in posts {
+            let cats = post.categories();
+            if !cats.is_empty() {
+                // 为每个分类路径的每个层级生成索引页面
+                for i in 1..=cats.len() {
+                    let path = cats[0..i].to_vec();
+                    category_paths.insert(path);
+                }
+            }
+        }
+        
+        // 为每个分类路径生成索引页面
+        for category_path in category_paths.into_iter() {
+            // 获取该分类路径下的所有文章
+            let category_posts: Vec<&Post> = posts
+                .iter()
+                .filter(|post| {
+                    let post_cats = post.categories();
+                    post_cats.len() >= category_path.len() && 
+                    post_cats[0..category_path.len()] == category_path
+                })
+                .collect();
+            
+            // 构建分类目录路径
+            let category_dir = output_dir.join(category_path.join("/"));
+            std::fs::create_dir_all(&category_dir)
+                .map_err(|e| Error::Other(format!("无法创建分类目录 {:?}: {}", category_dir, e)))?;
+            
+            // 获取当前层级的分类名称
+            let category_name = category_path.last().unwrap();
+            
+            // 渲染分类页面
+            let category_html = self.template_engine.render_category(&category_posts, category_name)?;
+            std::fs::write(category_dir.join("index.html"), category_html)
+                .map_err(|e| Error::Other(format!("无法写入分类页面 {:?}: {}", category_dir.join("index.html"), e)))?;
+        }
         
         Ok(())
     }
