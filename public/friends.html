@@ -25,10 +25,11 @@
                 </div>
                 
                 <!-- 搜索框 - 桌面版 -->
-                <div class="hidden md:flex flex-1 max-w-lg mx-8">
-                    <div class="relative w-full">
+                <div class="hidden md:flex flex-1 max-w-xs mx-8">
+                    <form action="/search.html" method="get" class="relative w-full">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -36,32 +37,43 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 
                 <!-- 导航菜单 - 桌面版 -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
-                    <a href="/archives.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
-                    <a href="/categories.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
-                    <a href="/tags.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
-                    <a href="/about.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
-                    <a href="/friends.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
-                    <a href="/search.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                    
+                        
+                        <a href="&#x2F;" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html')) }">首页</a>
+                        
+                        <a href="&#x2F;archives.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">归档</a>
+                        
+                        <a href="&#x2F;categories.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">分类</a>
+                        
+                        <a href="&#x2F;tags.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">标签</a>
+                        
+                        <a href="&#x2F;friends.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">友链</a>
+                        
+                        <a href="&#x2F;about.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">关于</a>
+                        
+                    
                 </div>
                 
                 <!-- 移动端菜单按钮 -->
@@ -87,9 +99,10 @@
             <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
                 <!-- 移动端搜索框 -->
                 <div class="px-3 py-2">
-                    <div class="relative">
+                    <form action="/search.html" method="get" class="relative">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="mobile-search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,241 +110,230 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 <!-- 移动端导航链接 -->
-                <a href="/" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
-                <a href="/archives.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
-                <a href="/categories.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
-                <a href="/tags.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
-                <a href="/about.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
-                <a href="/friends.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
-                <a href="/search.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+                
+                    
+                    <a href="&#x2F;" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">首页</a>
+                    
+                    <a href="&#x2F;archives.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">归档</a>
+                    
+                    <a href="&#x2F;categories.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">分类</a>
+                    
+                    <a href="&#x2F;tags.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">标签</a>
+                    
+                    <a href="&#x2F;friends.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">友链</a>
+                    
+                    <a href="&#x2F;about.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">关于</a>
+                    
+                
             </div>
         </div>
     </nav>
 
     <!-- 主要内容区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- 广告位1：Header广告 -->
-        
-        <div class="mb-6">
-            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                    <div class="flex flex-col items-center p-4 text-center">
-                        <!-- 广告编号 -->
-                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
-                            📚 广告
-                        </div>
-                        
-                        <!-- 广告图片 -->
-                        <div class="mb-3">
-                            <img src="&#x2F;images&#x2F;book-wegame.png" 
-                                 alt="微信小游戏开发" 
-                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
-                        </div>
-                        
-                        <!-- 广告信息 -->
-                        <div class="max-w-sm">
-                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
-                                微信小游戏开发
-                            </h2>
-                            
-                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
-                            
-                            
-                            <!-- 查看详情按钮 -->
-                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                </svg>
-                                查看详情
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        
-        
         <main class="min-h-screen py-8">
             
 <div class="max-w-4xl mx-auto">
     <!-- 页面标题 -->
     <header class="text-center mb-12">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">友情链接</h1>
-        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-            这里是我推荐的一些优秀网站和博客，希望对你有所帮助。
-        </p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">友情链接</h1>
     </header>
 
     <!-- 友链列表 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        <!-- 示例友链 -->
-        <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        
+        <div class="card hover:shadow-md transition-shadow">
             <div class="card-body">
-                <div class="flex items-center mb-3">
-                    <img src="https://www.rust-lang.org/static/images/favicon.ico" 
-                         alt="Rust 官网" 
-                         class="w-10 h-10 rounded-full mr-3 object-cover"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIxMCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiI+CjxwYXRoIGQ9Im0yMCAyMS0xNi0xNm0wIDEzaDEzbTAtMTNMMjEgMjEiLz4KPHN2Zz4KPC9zdmc+Cg=='">
-                    <div>
-                        <h3 class="font-semibold text-gray-900">Rust 官网</h3>
-                        <p class="text-sm text-gray-500">rust-lang.org</p>
+                <div class="flex items-start">
+                    
+                    <img src="https:&#x2F;&#x2F;yishulun.com&#x2F;favicon.ico" alt="一树论" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    
+                    <div class="min-w-0">
+                        <a href="https:&#x2F;&#x2F;yishulun.com&#x2F;" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            一树论
+                        </a>
+                        
+                        <div class="text-xs text-gray-500 mt-0.5">yishulun.com</div>
+                        
+                        
+                        <p class="text-gray-600 text-sm mt-2">读书使人进步，著书亦使人进步。</p>
+                        
                     </div>
                 </div>
-                <p class="text-gray-600 text-sm mb-3">
-                    Rust 编程语言官方网站，提供最新的文档和资源。
-                </p>
-                <a href="https://www.rust-lang.org/" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm font-medium">
-                    访问网站
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                    </svg>
-                </a>
             </div>
         </div>
 
-        <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        
+        <div class="card hover:shadow-md transition-shadow">
             <div class="card-body">
-                <div class="flex items-center mb-3">
-                    <img src="https://github.com/favicon.ico" 
-                         alt="GitHub" 
-                         class="w-10 h-10 rounded-full mr-3 object-cover"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIxMCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiI+CjxwYXRoIGQ9Im0yMCAyMS0xNi0xNm0wIDEzaDEzbTAtMTNMMjEgMjEiLz4KPHN2Zz4KPC9zdmc+Cg=='">
-                    <div>
-                        <h3 class="font-semibold text-gray-900">GitHub</h3>
-                        <p class="text-sm text-gray-500">github.com</p>
+                <div class="flex items-start">
+                    
+                    <img src="https:&#x2F;&#x2F;cloud.tencent.com&#x2F;favicon.ico" alt="腾讯云最具价值专家" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    
+                    <div class="min-w-0">
+                        <a href="https:&#x2F;&#x2F;cloud.tencent.com&#x2F;tvp" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            腾讯云最具价值专家
+                        </a>
+                        
+                        <div class="text-xs text-gray-500 mt-0.5">cloud.tencent.com</div>
+                        
+                        
+                        <p class="text-gray-600 text-sm mt-2">腾讯云最具价值专家计划，汇聚行业技术精英</p>
+                        
                     </div>
                 </div>
-                <p class="text-gray-600 text-sm mb-3">
-                    全球最大的代码托管平台，开发者的必备工具。
-                </p>
-                <a href="https://github.com/" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm font-medium">
-                    访问网站
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                    </svg>
-                </a>
             </div>
         </div>
 
-        <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        
+        <div class="card hover:shadow-md transition-shadow">
             <div class="card-body">
-                <div class="flex items-center mb-3">
-                    <img src="https://developer.mozilla.org/favicon-48x48.cbbd161b5b0b.png" 
-                         alt="MDN Web Docs" 
-                         class="w-10 h-10 rounded-full mr-3 object-cover"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB4PSIxMCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiI+CjxwYXRoIGQ9Im0yMCAyMS0xNi0xNm0wIDEzaDEzbTAtMTNMMjEgMjEiLz4KPHN2Zz4KPC9zdmc+Cg=='">
-                    <div>
-                        <h3 class="font-semibold text-gray-900">MDN Web Docs</h3>
-                        <p class="text-sm text-gray-500">developer.mozilla.org</p>
+                <div class="flex items-start">
+                    
+                    <img src="https:&#x2F;&#x2F;www.csdn.net&#x2F;favicon.ico" alt="CSDN" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    
+                    <div class="min-w-0">
+                        <a href="https:&#x2F;&#x2F;www.csdn.net&#x2F;" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            CSDN
+                        </a>
+                        
+                        <div class="text-xs text-gray-500 mt-0.5">csdn.net</div>
+                        
+                        
+                        <p class="text-gray-600 text-sm mt-2">中文第一程序员技术社区</p>
+                        
                     </div>
                 </div>
-                <p class="text-gray-600 text-sm mb-3">
-                    Web 开发者的权威参考文档，涵盖 HTML、CSS、JavaScript 等。
-                </p>
-                <a href="https://developer.mozilla.org/" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="inline-flex items-center text-primary-600 hover:text-primary-700 text-sm font-medium">
-                    访问网站
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                    </svg>
-                </a>
             </div>
         </div>
+
+        
+        <div class="card hover:shadow-md transition-shadow">
+            <div class="card-body">
+                <div class="flex items-start">
+                    
+                    <img src="https:&#x2F;&#x2F;www.rust-lang.org&#x2F;static&#x2F;images&#x2F;favicon.ico" alt="Rust 官网" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    
+                    <div class="min-w-0">
+                        <a href="https:&#x2F;&#x2F;www.rust-lang.org&#x2F;" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            Rust 官网
+                        </a>
+                        
+                        <div class="text-xs text-gray-500 mt-0.5">rust-lang.org</div>
+                        
+                        
+                        <p class="text-gray-600 text-sm mt-2">Rust 编程语言官方网站，提供最新的文档和资源</p>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="card hover:shadow-md transition-shadow">
+            <div class="card-body">
+                <div class="flex items-start">
+                    
+                    <img src="https:&#x2F;&#x2F;github.com&#x2F;favicon.ico" alt="GitHub" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    
+                    <div class="min-w-0">
+                        <a href="https:&#x2F;&#x2F;github.com&#x2F;" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            GitHub
+                        </a>
+                        
+                        <div class="text-xs text-gray-500 mt-0.5">github.com</div>
+                        
+                        
+                        <p class="text-gray-600 text-sm mt-2">全球最大的代码托管平台，开发者的必备工具</p>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="card hover:shadow-md transition-shadow">
+            <div class="card-body">
+                <div class="flex items-start">
+                    
+                    <img src="https:&#x2F;&#x2F;blog.mozilla.org&#x2F;community&#x2F;files&#x2F;2015&#x2F;07&#x2F;MDN-10years_twitter-avatar_400x400px-600x600.png" alt="MDN Web Docs" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    
+                    <div class="min-w-0">
+                        <a href="https:&#x2F;&#x2F;developer.mozilla.org&#x2F;" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            MDN Web Docs
+                        </a>
+                        
+                        <div class="text-xs text-gray-500 mt-0.5">developer.mozilla.org</div>
+                        
+                        
+                        <p class="text-gray-600 text-sm mt-2">Web 开发者的权威参考文档，涵盖 HTML、CSS、JavaScript 等</p>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
     </div>
+    
 
-    <!-- 申请友链 -->
-    <div class="card">
-        <div class="card-body text-center">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">申请友链</h2>
-            <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
-                如果你也有优秀的网站或博客，欢迎与我交换友情链接。请确保你的网站内容积极向上，更新频率稳定。
-            </p>
-            
-            <div class="bg-gray-50 rounded-lg p-6 mb-6 text-left max-w-2xl mx-auto">
-                <h3 class="font-semibold text-gray-900 mb-3">申请要求：</h3>
-                <ul class="text-gray-600 space-y-2">
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        网站内容健康，无违法违规信息
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        网站可以正常访问，加载速度合理
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        有一定的原创内容，更新相对稳定
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        优先考虑技术类、学习类网站
-                    </li>
-                </ul>
-            </div>
+    <!-- 申请说明（来自 friends.md 的正文） -->
+    
+    <div class="prose prose-lg max-w-none">
+        <h2>申请友链</h2>
+<p>欢迎技术博客和优质网站交换友链，要求简洁直观、内容健康可访问。</p>
+<h3>申请要求</h3>
+<ul>
+<li>网站内容健康，无违法违规信息</li>
+<li>网站可以正常访问，加载速度合理</li>
+<li>有一定的原创内容，更新相对稳定</li>
+<li>优先考虑技术类、学习类网站</li>
+</ul>
+<h3>申请方式</h3>
+<p>请先在你的站点添加本站链接，然后通过邮件申请：</p>
+<ul>
+<li>邮箱：9830131@qq.com（请注明“友链申请”）</li>
+</ul>
+<p>申请时请提供：</p>
+<ul>
+<li>网站名称（name）</li>
+<li>网站地址（link）</li>
+<li>网站描述（desc，50字以内）</li>
+<li>网站头像/Logo 地址（avatar，可选）</li>
+<li>联系方式（便于反馈）</li>
+</ul>
 
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                
-                <a href="mailto:9830131@qq.com?subject=友链申请" 
-                   class="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                    发送邮件申请
-                </a>
-                
-                
-                
-                <a href="https:&#x2F;&#x2F;github.com&#x2F;rixingyike/issues" 
-                   target="_blank" 
-                   rel="noopener"
-                   class="inline-flex items-center px-6 py-3 border-2 border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                    GitHub Issues
-                </a>
-                
-            </div>
-        </div>
     </div>
+    
 </div>
  
         </main>
     </div>
+    
+    <!-- 广告位1：底部广告（版权区上方） -->
+    
+
     
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-16">
@@ -340,7 +342,9 @@
                 <p class="text-gray-600">
                     &copy; 2002-2025 
                     
-                        LIYI
+                        
+                        <a href="https:&#x2F;&#x2F;yishulun.com" target="_blank" rel="noopener" class="text-gray-700 hover:text-primary-600">LIYI</a>
+                        
                     
                     
                         &nbsp;|&nbsp;
@@ -358,6 +362,11 @@
                           rel="noopener" 
                           class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
                 </p>
+                <p class="text-gray-500 text-sm">
+                    <a href="/rss.xml" class="hover:text-primary-600">RSS</a>
+                    &nbsp;·&nbsp;
+                    <a href="/sitemap.xml" class="hover:text-primary-600">Sitemap</a>
+                </p>
             </div>
         </div>
     </footer>
@@ -374,5 +383,52 @@
     
     <!-- 搜索功能脚本 -->
     <script src="/js/search.js"></script>
+
+    
+    <!-- Google Analytics 懒加载 -->
+    <script>
+    (function(){
+        var gid = "G-8N64Q25EK9";
+        var loadGA = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://www.googletagmanager.com/gtag/js?id=" + gid;
+            s.onload = function(){
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);} // eslint-disable-line
+                gtag('js', new Date());
+                gtag('config', gid);
+            };
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadGA);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadGA, 1500); });
+        }
+    })();
+    </script>
+    
+
+    
+    <!-- Google Ads 懒加载 -->
+    <script>
+    (function(){
+        var clientId = "ca-pub-2139303336591479";
+        var loadAds = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + clientId;
+            s.crossOrigin = "anonymous";
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadAds);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadAds, 1500); });
+        }
+    })();
+    </script>
+    
 </body>
 </html>

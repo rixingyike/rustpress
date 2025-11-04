@@ -4,7 +4,7 @@
 {% block title %}{{ category_name }} - {{ site.name }}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
+<div class="max-w-4xl mx-auto">
     <!-- 页面头部 -->
     <header class="text-center mb-12">
         <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{{ category_name }}</h1>
@@ -46,7 +46,7 @@
                         <div class="flex flex-wrap items-center">
                             <span class="mr-2">标签:</span>
                             {% for tag in post.tags %}
-                                <a href="/tags.html#{{ tag }}" class="tag mr-2">{{ tag }}</a>
+                                <a href="/tags/{{ tag }}/" class="tag mr-2">{{ tag }}</a>
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -61,5 +61,38 @@
             </div>
         {% endif %}
     </div>
+
+    {# 分页导航（居中，仅显示上一页/下一页；去掉数字页码与总结果数） #}
+    {% if paginator %}
+    <div class="mt-12">
+        <p class="text-sm text-gray-700 text-center">
+            第 <span class="font-medium">{{ paginator.start_index }}</span> 到 <span class="font-medium">{{ paginator.end_index }}</span> 条
+        </p>
+        <nav class="mt-4 flex justify-center gap-3" aria-label="Pagination">
+            {% if paginator.previous %}
+            <a href="{{ paginator.previous }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                上一页
+            </a>
+            {% else %}
+            <span class="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-300 bg-gray-100 cursor-not-allowed">
+                上一页
+            </span>
+            {% endif %}
+
+            {% if paginator.next %}
+            <a href="{{ paginator.next }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                下一页
+            </a>
+            {% else %}
+            <span class="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-300 bg-gray-100 cursor-not-allowed">
+                下一页
+            </span>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
+
+{# 单分类列表页不显示底部广告位 1 #}
+{% block ad1 %}{% endblock %}

@@ -1,0 +1,3 @@
+# 普通全量编译full，增量编译incremental
+compile_mode = "incremental"
+last_build_time = "2025-11-04 17:31:05"

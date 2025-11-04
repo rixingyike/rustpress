@@ -1,0 +1,132 @@
+<!-- 目录组件 -->
+<div class="toc-container fixed right-4 top-20 z-40 hidden xl:block" 
+     x-data="{ 
+         tocOpen: true, 
+         activeId: '',
+         headings: [],
+         init() {
+             this.generateToc();
+             this.observeHeadings();
+         },
+         generateToc() {
+             const content = document.querySelector('.prose, .card-body');
+             if (!content) return;
+             
+             const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+             this.headings = Array.from(headings).map((heading, index) => {
+                 const id = heading.id || `heading-${index}`;
+                 heading.id = id;
+                 return {
+                     id: id,
+                     text: heading.textContent.trim(),
+                     level: parseInt(heading.tagName.charAt(1)),
+                     element: heading
+                 };
+             });
+         },
+         observeHeadings() {
+             if (this.headings.length === 0) return;
+             
+             const observer = new IntersectionObserver((entries) => {
+                 entries.forEach(entry => {
+                     if (entry.isIntersecting) {
+                         this.activeId = entry.target.id;
+                     }
+                 });
+             }, {
+                 rootMargin: '-20% 0px -80% 0px'
+             });
+             
+             this.headings.forEach(heading => {
+                 observer.observe(heading.element);
+             });
+         },
+         scrollToHeading(id) {
+             const element = document.getElementById(id);
+             if (element) {
+                 element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+             }
+         }
+     }"
+     x-init="init()">
+    
+    <!-- 目录切换按钮 -->
+    <button @click="tocOpen = !tocOpen" 
+            class="mb-2 p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200"
+            title="目录">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    
+    <!-- 目录内容 -->
+    <div x-show="tocOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95"
+         class="bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-xs w-64 max-h-96 overflow-y-auto">
+        
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-900">目录</h3>
+            <button @click="tocOpen = false" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <nav class="space-y-1">
+            <template x-for="heading in headings" :key="heading.id">
+                <a @click.prevent="scrollToHeading(heading.id)" 
+                   :class="{
+                       'text-primary-600 bg-primary-50 border-l-2 border-primary-600': activeId === heading.id,
+                       'text-gray-600 hover:text-gray-900 hover:bg-gray-50': activeId !== heading.id,
+                       'pl-2': heading.level === 1,
+                       'pl-4': heading.level === 2,
+                       'pl-6': heading.level === 3,
+                       'pl-8': heading.level === 4,
+                       'pl-10': heading.level === 5,
+                       'pl-12': heading.level === 6
+                   }"
+                   class="block py-1 px-2 text-sm cursor-pointer rounded transition-colors duration-150"
+                   x-text="heading.text">
+                </a>
+            </template>
+        </nav>
+        
+        <div x-show="headings.length === 0" class="text-sm text-gray-500 text-center py-4">
+            暂无目录
+        </div>
+    </div>
+</div>
+
+<style>
+/* 移动端隐藏目录 */
+@media (max-width: 1279px) {
+    .toc-container {
+        display: none !important;
+    }
+}
+
+/* 目录滚动条样式 */
+.toc-container .max-h-96::-webkit-scrollbar {
+    width: 4px;
+}
+
+.toc-container .max-h-96::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 2px;
+}
+
+.toc-container .max-h-96::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.toc-container .max-h-96::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>

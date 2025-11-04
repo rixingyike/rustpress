@@ -2,58 +2,62 @@
 
 <!-- 文章详情页面模板 -->
 {% block content %}
-<article class="max-w-4xl mx-auto" x-data="{ copiedLink: false, copiedCode: {} }">
-    <!-- 分类面包屑 -->
-    {% if page.categories and page.categories | length > 0 %}
-    <nav class="mb-6 text-sm text-gray-600">
-        <a href="/" class="hover:text-primary-600">首页</a>
-        {% for category in page.categories %}
-            <span class="mx-2">›</span>
-            <a href="/{{ page.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
-        {% endfor %}
-    </nav>
-    {% endif %}
-    
-    <!-- 文章头部 -->
-    <header class="mb-8 pb-8 border-b border-gray-200">
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            {{ page.title | default(value=page.slug) }}
-        </h1>
-        
-        <div class="article-meta mb-6">
-            {% if page.date_ymd %}
-            <span class="inline-flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                {{ page.date_ymd }}
-            </span>
-            {% endif %}
-            {% if page.reading_time %}
-            <span class="inline-flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                预计阅读时间：{{ page.reading_time }} 分钟
-            </span>
-            {% endif %}
-        </div>
-        
-        <!-- 标签 -->
-        {% if page.tags %}
-        <div class="flex flex-wrap gap-2">
-            {% for tag in page.tags %}
-            <a href="tags.html#{{ tag }}" 
-               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                </svg>
-                {{ tag }}
-            </a>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </header>
+<div class="max-w-4xl mx-auto relative">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- 主要内容 -->
+        <div class="flex-1">
+            <article x-data="{ copiedLink: false, copiedCode: {} }">
+                <!-- 分类面包屑 -->
+                {% if page.categories and page.categories | length > 0 %}
+                <nav class="mb-6 text-sm text-gray-600">
+                    <a href="/" class="hover:text-primary-600">首页</a>
+                    {% for category in page.categories %}
+                        <span class="mx-2">›</span>
+                        <a href="/{{ page.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
+                    {% endfor %}
+                </nav>
+                {% endif %}
+                
+                <!-- 文章头部 -->
+                <header class="mb-8 pb-8 border-b border-gray-200">
+                    <h1 class="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-6 leading-tight">
+                        {{ page.title | default(value=page.slug) }}
+                    </h1>
+                    
+                    <div class="article-meta mb-6">
+                        {% if page.date_ymd %}
+                        <span class="inline-flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            {{ page.date_ymd }}
+                        </span>
+                        {% endif %}
+                        {% if page.reading_time %}
+                        <span class="inline-flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            预计阅读时间：{{ page.reading_time }} 分钟
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 标签 -->
+                    {% if page.tags %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in page.tags %}
+                        <a href="/tags/{{ tag }}/" 
+                           class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            {{ tag }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </header>
     
     <!-- 文章内容 -->
     <div class="article-content prose prose-lg max-w-none" 
@@ -77,7 +81,20 @@
          })">
         {{ page.content | safe }}
     </div>
-    
+
+    <!-- 版权信息 -->
+    <div class="mt-10 bg-gray-50 rounded-lg border border-gray-200 p-4" x-data="{domain: '{{ site.domain }}', link: '{{ site.domain }}' + window.location.pathname}">
+        <h4 class="text-lg font-semibold mb-3 text-gray-900">版权所有</h4>
+        <p class="text-sm text-gray-700">
+            本文链接：
+            <a :href="link" class="text-primary-600 hover:underline" x-text="link" target="_blank" rel="noopener"></a>
+        </p>
+        <p class="text-sm text-gray-700 mt-2">
+            许可证：署名-非商业性 4.0 国际 (CC-BY-NC-4.0)
+            <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" class="text-primary-600 hover:underline">查看许可说明</a>
+        </p>
+    </div>
+
     <!-- 分享功能 -->
     <div class="mt-12 bg-gray-50 rounded-lg">
         <h4 class="text-lg font-semibold mb-4 text-gray-900 p-4 pb-0">分享这篇文章</h4>
@@ -99,18 +116,61 @@
             </button>
         </div>
     </div>
-    
-    <!-- 返回顶部 -->
-    <div class="text-center mt-8">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
-                class="btn-secondary inline-flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-            </svg>
-            返回顶部
-        </button>
+
+    {% if site.features and site.features.comments and site.comments and site.comments.enabled and (page.comments | default(value=true)) %}
+    <!-- 评论区域（Giscus，懒加载） -->
+    <div id="comments" class="mt-12">
+        <h4 class="text-lg font-semibold mb-4 text-gray-900">评论</h4>
+        <div id="giscus-container"></div>
     </div>
-</article>
+    <script>
+    (function(){
+        var loadGiscus = function(){
+            var s = document.createElement('script');
+            s.src = 'https://giscus.app/client.js';
+            s.setAttribute('data-repo', '{{ site.comments.repo }}');
+            s.setAttribute('data-repo-id', '{{ site.comments.repo_id }}');
+            s.setAttribute('data-category', '{{ site.comments.category }}');
+            s.setAttribute('data-category-id', '{{ site.comments.category_id }}');
+            s.setAttribute('data-mapping', '{{ site.comments.mapping | default(value="pathname") }}');
+            s.setAttribute('data-strict', '1');
+            s.setAttribute('data-reactions-enabled', '1');
+            s.setAttribute('data-emit-metadata', '0');
+            s.setAttribute('data-input-position', 'top');
+            s.setAttribute('data-loading', 'lazy');
+            s.setAttribute('data-theme', '{{ site.comments.theme | default(value="light") }}');
+            s.setAttribute('data-lang', '{{ site.comments.lang | default(value="zh-CN") }}');
+            s.setAttribute('crossorigin', 'anonymous');
+            s.async = true;
+            (document.getElementById('giscus-container') || document.body).appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadGiscus);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadGiscus, 1200); });
+        }
+    })();
+    </script>
+    {% endif %}
+    
+                <!-- 返回顶部 -->
+                <div class="text-center mt-8">
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                            class="btn-secondary inline-flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                        </svg>
+                        返回顶部
+                    </button>
+                </div>
+            </article>
+        </div>
+        
+        {% if page.toc | default(value=true) %}
+            {% include "components/toc.html" %}
+        {% endif %}
+    </div>
+</div>
 
 <script>
 function shareToTwitter() {

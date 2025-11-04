@@ -3,13 +3,15 @@ name = "一树论"
 description = "一花一世界，一树一菩提。"
 author = "LIYI"
 base_url = "http://localhost:1111"
+# 在RSS中公开显示的域名
+domain = "https://yishulun.com"
 icp_license = "京ICP备14007000号-8"
 start_year = 2002
 
 # 作者信息
 [author]
 name = "LIYI"
-bio = "热爱技术，专注于 Rust、Web 开发和系统架构。"
+bio = "读书使人进步，著书亦使人进步。"
 avatar = "/images/avatar.png"
 location = "北京, 中国"
 website = "https://yishulun.com"
@@ -18,7 +20,7 @@ email = "9830131@qq.com"
 # 社交链接
 [social]
 github = "https://github.com/rixingyike"
-twitter = "https://twitter.com/coderliyi"
+twitter = "https://x.com/coderliyi"
 youtube = "https://youtube.com/@yishulun"
 email = "9830131@qq.com"
 zhihu = "https://zhihu.com/people/liyi2005"
@@ -30,10 +32,18 @@ rss = "/rss.xml"
 # 首页设置
 [homepage]
 hero_title = "欢迎来到一树论"
-hero_subtitle = "分享技术见解，记录成长历程"
+hero_subtitle = "稻盛和夫：成长不是和别人比，而是和自己的昨天比。"
 hero_background = "/images/hero-bg.jpg"
-posts_per_page = 10
+posts_per_page = 8
 show_hero = true
+
+# 分类列表设置
+[categories]
+posts_per_page = 8
+
+# 标签列表设置
+[tags]
+posts_per_page = 8
 
 # 广告位设置
 [ads]
@@ -58,10 +68,29 @@ ad3_description = "学习微信小游戏开发技术，掌握游戏开发全流�
 # 功能开关
 [features]
 search = true
-comments = false
-analytics = false
+comments = true
+analytics = true
 rss = true
 sitemap = true
+
+# Google Analytics 配置
+[analytics]
+google_id = "G-8N64Q25EK9"
+
+# Google Ads 配置
+[ads.google]
+client_id = "ca-pub-2139303336591479"
+
+# 评论（giscus）配置
+[comments]
+enabled = true
+repo = "rixingyike/yishulun.com_discus"
+repo_id = "R_kgDOKRUETQ"
+category = "General"
+category_id = "DIC_kwDOKRUETc4CZMWK"
+mapping = "pathname"
+theme = "preferred_color_scheme"
+lang = "zh-CN"
 
 # 导航菜单
 [[menu.main]]

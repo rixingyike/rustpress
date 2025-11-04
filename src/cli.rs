@@ -13,7 +13,7 @@ pub struct Cli {
     #[arg(short, long, default_value = "source")]
     pub md_dir: String,
     
-    /// 指定配置文件
+    /// 指定配置文件（默认从 md_dir 下解析）
     #[arg(short, long, default_value = "config.toml")]
     pub config: String,
 }
@@ -35,6 +35,10 @@ pub enum Commands {
         /// 指定输出目录
         #[arg(short, long, default_value = "public")]
         output_dir: String,
+
+        /// 开启增量编译（基于 build.toml 的 last_build_time）
+        #[arg(long, default_value_t = false)]
+        incremental: bool,
     },
     
     /// 开发环境构建（包含 CSS 编译）
@@ -42,6 +46,10 @@ pub enum Commands {
         /// 指定输出目录
         #[arg(short, long, default_value = "public")]
         output_dir: String,
+
+        /// 开启增量编译（构建前端资源后，按增量渲染文章）
+        #[arg(long, default_value_t = false)]
+        incremental: bool,
     },
     
     /// 构建主题 CSS
@@ -56,6 +64,10 @@ pub enum Commands {
         /// 指定输出目录
         #[arg(short, long, default_value = "public")]
         output_dir: String,
+
+        /// 启动前执行增量编译
+        #[arg(long, default_value_t = false)]
+        incremental: bool,
     },
     
     /// 开发模式：构建并启动本地预览服务器
@@ -67,5 +79,12 @@ pub enum Commands {
         /// 指定输出目录
         #[arg(short, long, default_value = "public")]
         output_dir: String,
+
+        /// 启动前执行增量编译
+        #[arg(long, default_value_t = false)]
+        incremental: bool,
     },
+
+    /// 重新生成首页侧边栏数据到 build.toml
+    BuildSidebar,
 }

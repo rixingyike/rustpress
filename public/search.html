@@ -25,10 +25,11 @@
                 </div>
                 
                 <!-- 搜索框 - 桌面版 -->
-                <div class="hidden md:flex flex-1 max-w-lg mx-8">
-                    <div class="relative w-full">
+                <div class="hidden md:flex flex-1 max-w-xs mx-8">
+                    <form action="/search.html" method="get" class="relative w-full">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -36,32 +37,43 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 
                 <!-- 导航菜单 - 桌面版 -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
-                    <a href="/archives.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
-                    <a href="/categories.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
-                    <a href="/tags.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
-                    <a href="/about.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
-                    <a href="/friends.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
-                    <a href="/search.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                    
+                        
+                        <a href="&#x2F;" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html')) }">首页</a>
+                        
+                        <a href="&#x2F;archives.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">归档</a>
+                        
+                        <a href="&#x2F;categories.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">分类</a>
+                        
+                        <a href="&#x2F;tags.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">标签</a>
+                        
+                        <a href="&#x2F;friends.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">友链</a>
+                        
+                        <a href="&#x2F;about.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">关于</a>
+                        
+                    
                 </div>
                 
                 <!-- 移动端菜单按钮 -->
@@ -87,9 +99,10 @@
             <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
                 <!-- 移动端搜索框 -->
                 <div class="px-3 py-2">
-                    <div class="relative">
+                    <form action="/search.html" method="get" class="relative">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="mobile-search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,322 +110,234 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 <!-- 移动端导航链接 -->
-                <a href="/" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
-                <a href="/archives.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
-                <a href="/categories.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
-                <a href="/tags.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
-                <a href="/about.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
-                <a href="/friends.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
-                <a href="/search.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+                
+                    
+                    <a href="&#x2F;" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">首页</a>
+                    
+                    <a href="&#x2F;archives.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">归档</a>
+                    
+                    <a href="&#x2F;categories.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">分类</a>
+                    
+                    <a href="&#x2F;tags.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">标签</a>
+                    
+                    <a href="&#x2F;friends.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">友链</a>
+                    
+                    <a href="&#x2F;about.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">关于</a>
+                    
+                
             </div>
         </div>
     </nav>
 
     <!-- 主要内容区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- 广告位1：Header广告 -->
-        
-        <div class="mb-6">
-            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                    <div class="flex flex-col items-center p-4 text-center">
-                        <!-- 广告编号 -->
-                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
-                            📚 广告
-                        </div>
-                        
-                        <!-- 广告图片 -->
-                        <div class="mb-3">
-                            <img src="&#x2F;images&#x2F;book-wegame.png" 
-                                 alt="微信小游戏开发" 
-                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
-                        </div>
-                        
-                        <!-- 广告信息 -->
-                        <div class="max-w-sm">
-                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
-                                微信小游戏开发
-                            </h2>
-                            
-                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
-                            
-                            
-                            <!-- 查看详情按钮 -->
-                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                </svg>
-                                查看详情
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        
-        
         <main class="min-h-screen py-8">
             
 <div class="max-w-4xl mx-auto">
-    <!-- 搜索标题 -->
-    <header class="text-center mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">搜索文章</h1>
-        <p class="text-lg text-gray-600">
-            在这里搜索你感兴趣的内容
-        </p>
-    </header>
+    <!-- 主要内容区域 -->
+    <main>
+        <!-- 搜索标题 -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">搜索文章</h1>
+            <p class="text-lg text-gray-600">
+                在这里搜索你感兴趣的内容
+            </p>
+        </header>
 
-    <!-- 搜索框 -->
-    <div class="card mb-8">
-        <div class="card-body">
-            <div class="relative">
-                <input type="text" 
-                       id="search-query" 
-                       class="w-full pl-12 pr-20 py-4 text-lg border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:outline-none transition-colors" 
-                       placeholder="输入关键词搜索文章..."
-                       autocomplete="off">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+        <!-- 搜索框 -->
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="relative">
+                    <input type="text" 
+                           id="search-query" 
+                           class="w-full pl-12 pr-20 py-4 text-lg border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:outline-none transition-colors" 
+                           placeholder="输入关键词搜索文章..."
+                           autocomplete="off">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <button id="search-btn" 
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                        <span class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                            搜索
+                        </span>
+                    </button>
                 </div>
-                <button id="search-btn" 
-                        class="absolute inset-y-0 right-0 pr-4 flex items-center">
-                    <span class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
-                        搜索
-                    </span>
-                </button>
             </div>
         </div>
-    </div>
 
-    <!-- 搜索结果 -->
-    <div id="search-results" class="hidden">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-semibold text-gray-900">
-                搜索结果 <span id="results-count" class="text-primary-600"></span>
-            </h2>
-            <button id="clear-search" 
-                    class="text-gray-500 hover:text-gray-700 text-sm">
-                清除搜索
-            </button>
+        <!-- 热门搜索词 -->
+        <div class="card mb-8">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900">热门搜索词</h3>
+            </div>
+            <div class="card-body">
+                <div class="flex flex-wrap gap-2">
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors cursor-pointer"
+                            data-keyword="Rust">
+                        🦀 Rust
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors cursor-pointer"
+                            data-keyword="编程">
+                        💻 编程
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer"
+                            data-keyword="技术">
+                        🔧 技术
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors cursor-pointer"
+                            data-keyword="教程">
+                        📚 教程
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors cursor-pointer"
+                            data-keyword="开发">
+                        🚀 开发
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors cursor-pointer"
+                            data-keyword="Web">
+                        🌐 Web
+                    </button>
+                </div>
+            </div>
         </div>
-        
-        <div id="results-container" class="space-y-6">
-            <!-- 搜索结果将在这里显示 -->
+
+        <!-- 搜索结果 -->
+        <div id="page-search-results" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">
+                    搜索结果 <span id="results-count" class="text-primary-600"></span>
+                </h2>
+                <button id="clear-search" 
+                        class="text-gray-500 hover:text-gray-700 text-sm">
+                    清除搜索
+                </button>
+            </div>
+            
+            <div id="page-results-container" class="space-y-6">
+                <!-- 搜索结果将在这里显示 -->
+            </div>
+            
+            <!-- 无结果提示 -->
+            <div id="no-results" class="hidden text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">未找到相关文章</h3>
+                <p class="text-gray-500">
+                    尝试使用不同的关键词或检查拼写
+                </p>
+            </div>
         </div>
-        
-        <!-- 无结果提示 -->
-        <div id="no-results" class="hidden text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+
+        <!-- 默认提示 -->
+        <div id="default-content" class="text-center py-12">
+            <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">未找到相关文章</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">开始搜索</h3>
             <p class="text-gray-500">
-                尝试使用不同的关键词或检查拼写
+                输入关键词或点击上方的热门搜索词开始搜索
             </p>
         </div>
-    </div>
-
-    <!-- 热门搜索 -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="text-lg font-semibold text-gray-900">热门标签</h3>
-        </div>
-        <div class="card-body">
-            
-            <div class="flex flex-wrap gap-2">
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="AI">
-                    AI
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Actix-web">
-                    Actix-web
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Angular">
-                    Angular
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="CSS">
-                    CSS
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Composition API">
-                    Composition API
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="DeFi">
-                    DeFi
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="DevOps">
-                    DevOps
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Docker">
-                    Docker
-                    <span class="ml-1 text-xs text-gray-500">2</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Flutter">
-                    Flutter
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Git">
-                    Git
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Go">
-                    Go
-                    <span class="ml-1 text-xs text-gray-500">2</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="HTTP">
-                    HTTP
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Hooks">
-                    Hooks
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="JavaScript">
-                    JavaScript
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="MySQL">
-                    MySQL
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Option">
-                    Option
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="PostgreSQL">
-                    PostgreSQL
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Promise">
-                    Promise
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="Python">
-                    Python
-                    <span class="ml-1 text-xs text-gray-500">1</span>
-                </button>
-                
-                <button class="search-tag inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors cursor-pointer"
-                        data-tag="React">
-                    React
-                    <span class="ml-1 text-xs text-gray-500">3</span>
-                </button>
-                
-            </div>
-            
-        </div>
-    </div>
+    </main>
 </div>
 
-<!-- 搜索功能脚本 -->
+<!-- 搜索功能脚本（无需 jQuery） -->
 <script>
-$(document).ready(function() {
-    const $searchInput = $('#search-query');
-    const $searchBtn = $('#search-btn');
-    const $searchResults = $('#search-results');
-    const $resultsContainer = $('#results-container');
-    const $resultsCount = $('#results-count');
-    const $noResults = $('#no-results');
-    const $clearBtn = $('#clear-search');
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-query');
+    const searchBtn = document.getElementById('search-btn');
+    const searchResults = document.getElementById('page-search-results');
+    const resultsContainer = document.getElementById('page-results-container');
+    const resultsCount = document.getElementById('results-count');
+    const noResults = document.getElementById('no-results');
+    const clearBtn = document.getElementById('clear-search');
+    const defaultContent = document.getElementById('default-content');
     
-    // 搜索数据
-    const searchData = [];
+    // 搜索数据 - 动态加载 search.json
+    let searchData = [];
+    async function loadSearchIndex() {
+        try {
+            const res = await fetch('/search.json', { cache: 'no-store' });
+            if (!res.ok) return [];
+            const data = await res.json();
+            const items = Array.isArray(data) ? data : (data.items || []);
+            return items.map(item => ({
+                title: item.title || item.slug || '',
+                content: item.content || item.summary || '',
+                url: item.url || '',
+                date: item.date || item.date_ymd || '',
+                tags: item.tags || [],
+                categories: item.categories || []
+            }));
+        } catch (e) {
+            console.error('加载搜索索引失败:', e);
+            return [];
+        }
+    }
     
     // 执行搜索
     function performSearch(query) {
-        if (!query.trim()) {
+        if (!query || !query.trim()) {
+            clearSearch();
             return;
         }
-        
+
+        const q = query.toLowerCase();
         const results = searchData.filter(post => {
-            const searchText = (post.title + ' ' + post.content + ' ' + post.tags.join(' ')).toLowerCase();
-            return searchText.includes(query.toLowerCase());
+            const searchText = (
+                (post.title || '') + ' ' +
+                (post.content || '') + ' ' +
+                (Array.isArray(post.tags) ? post.tags.join(' ') : '') + ' ' +
+                (Array.isArray(post.categories) ? post.categories.join(' ') : '')
+            ).toLowerCase();
+            return searchText.includes(q);
         });
-        
+
         displayResults(results, query);
     }
     
     // 显示搜索结果
     function displayResults(results, query) {
-        $searchResults.removeClass('hidden');
-        
+        defaultContent.classList.add('hidden');
+        searchResults.classList.remove('hidden');
+
         if (results.length === 0) {
-            $resultsContainer.addClass('hidden');
-            $noResults.removeClass('hidden');
-            $resultsCount.text('(0 篇)');
+            resultsContainer.classList.add('hidden');
+            noResults.classList.remove('hidden');
+            resultsCount.textContent = '(0 篇)';
             return;
         }
-        
-        $resultsContainer.removeClass('hidden');
-        $noResults.addClass('hidden');
-        $resultsCount.text(`(${results.length} 篇)`);
-        
+
+        resultsContainer.classList.remove('hidden');
+        noResults.classList.add('hidden');
+        resultsCount.textContent = `(${results.length} 篇)`;
+
         const html = results.map(result => {
             const title = highlightText(result.title, query);
-            const excerpt = highlightText(result.content, query);
+            const excerpt = highlightText(result.content.substring(0, 200), query);
             
             return `
                 <article class="card hover:shadow-lg transition-shadow duration-300">
@@ -423,10 +348,13 @@ $(document).ready(function() {
                             </a>
                         </h3>
                         <div class="text-gray-600 mb-3 leading-relaxed">
-                            ${excerpt}...
+                            ${excerpt}${result.content.length > 200 ? '...' : ''}
                         </div>
                         <div class="flex items-center justify-between text-sm text-gray-500">
-                            <span>${result.date}</span>
+                            <div class="flex items-center space-x-4">
+                                ${result.date ? `<span>${result.date}</span>` : ''}
+                                ${result.categories.length > 0 ? `<span>${result.categories.join(' › ')}</span>` : ''}
+                            </div>
                             <div class="flex flex-wrap gap-1">
                                 ${result.tags.map(tag => `
                                     <span class="px-2 py-1 bg-primary-100 text-primary-800 rounded-full text-xs">
@@ -440,47 +368,66 @@ $(document).ready(function() {
             `;
         }).join('');
         
-        $resultsContainer.html(html);
+        resultsContainer.innerHTML = html;
     }
     
     // 高亮搜索关键词
     function highlightText(text, query) {
         if (!query) return text;
-        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safe})`, 'gi');
         return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
     }
     
     // 清除搜索
     function clearSearch() {
-        $searchInput.val('');
-        $searchResults.addClass('hidden');
-        $searchInput.focus();
+        searchInput.value = '';
+        searchResults.classList.add('hidden');
+        defaultContent.classList.remove('hidden');
+        searchInput.focus();
     }
     
     // 事件监听
-    $searchBtn.on('click', () => {
-        performSearch($searchInput.val());
+    searchBtn.addEventListener('click', () => {
+        performSearch(searchInput.value);
     });
-    
-    $searchInput.on('keypress', (e) => {
+
+    searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            performSearch($searchInput.val());
+            performSearch(searchInput.value);
         }
     });
+
+    clearBtn.addEventListener('click', clearSearch);
+
+    // 热门搜索词点击
+    document.querySelectorAll('.search-keyword').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const keyword = btn.getAttribute('data-keyword') || '';
+            searchInput.value = keyword;
+            performSearch(keyword);
+        });
+    });
     
-    $clearBtn.on('click', clearSearch);
-    
-    // 标签搜索
-    $('.search-tag').on('click', function() {
-        const tagName = $(this).data('tag');
-        $searchInput.val(tagName);
-        performSearch(tagName);
+    // 加载索引后处理初始搜索参数
+    loadSearchIndex().then(items => {
+        searchData = items;
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+            searchInput.value = queryParam;
+            performSearch(queryParam);
+        }
     });
 });
 </script>
  
         </main>
     </div>
+    
+    <!-- 广告位1：底部广告（版权区上方） -->
+    
+
     
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-16">
@@ -489,7 +436,9 @@ $(document).ready(function() {
                 <p class="text-gray-600">
                     &copy; 2002-2025 
                     
-                        LIYI
+                        
+                        <a href="https:&#x2F;&#x2F;yishulun.com" target="_blank" rel="noopener" class="text-gray-700 hover:text-primary-600">LIYI</a>
+                        
                     
                     
                         &nbsp;|&nbsp;
@@ -507,6 +456,11 @@ $(document).ready(function() {
                           rel="noopener" 
                           class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
                 </p>
+                <p class="text-gray-500 text-sm">
+                    <a href="/rss.xml" class="hover:text-primary-600">RSS</a>
+                    &nbsp;·&nbsp;
+                    <a href="/sitemap.xml" class="hover:text-primary-600">Sitemap</a>
+                </p>
             </div>
         </div>
     </footer>
@@ -523,5 +477,52 @@ $(document).ready(function() {
     
     <!-- 搜索功能脚本 -->
     <script src="/js/search.js"></script>
+
+    
+    <!-- Google Analytics 懒加载 -->
+    <script>
+    (function(){
+        var gid = "G-8N64Q25EK9";
+        var loadGA = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://www.googletagmanager.com/gtag/js?id=" + gid;
+            s.onload = function(){
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);} // eslint-disable-line
+                gtag('js', new Date());
+                gtag('config', gid);
+            };
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadGA);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadGA, 1500); });
+        }
+    })();
+    </script>
+    
+
+    
+    <!-- Google Ads 懒加载 -->
+    <script>
+    (function(){
+        var clientId = "ca-pub-2139303336591479";
+        var loadAds = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + clientId;
+            s.crossOrigin = "anonymous";
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadAds);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadAds, 1500); });
+        }
+    })();
+    </script>
+    
 </body>
 </html>

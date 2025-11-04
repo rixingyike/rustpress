@@ -6,94 +6,50 @@
     <!-- 页面头部 -->
     <header class="text-center mb-12">
         <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">文章归档</h1>
-        <p class="text-lg text-gray-600">按时间顺序浏览所有文章</p>
+        <p class="text-lg text-gray-600">按年份浏览所有文章</p>
     </header>
     
-    {% if posts %}
-    <div class="space-y-8">
-        {% set current_year = "" %}
-        {% for post in posts %}
-            {% set post_year = post.date_ymd | date(format="%Y") %}
-            {% if post_year != current_year %}
-                {% if current_year != "" %}</div>{% endif %}
-                {% set_global current_year = post_year %}
-                <div class="year-section">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-2 border-primary-500 inline-block">
-                        {{ post_year }}
-                    </h2>
-                    <div class="space-y-4">
-            {% endif %}
-            
-            <article class="flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
-                <!-- 日期 -->
-                <div class="flex-shrink-0 mb-2 sm:mb-0 sm:mr-6">
-                    {% if post.date_ymd %}
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-primary-600">
-                            {{ post.date_ymd | date(format="%d") }}
-                        </div>
-                        <div class="text-sm text-gray-500 uppercase">
-                            {{ post.date_ymd | date(format="%b") }}
-                        </div>
-                    </div>
-                    {% endif %}
+    {% if all_years %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {# 使用后端预计算的 all_years，按年份倒序 #}
+        {% for y in all_years | sort(attribute="name") | reverse %}
+        {% set year = y.name %}
+        <div class="year-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+            <div class="p-6">
+                <div class="text-center mb-4">
+                    <h2 class="text-3xl font-bold text-primary-600 mb-2">{{ year }}</h2>
+                    <div class="w-16 h-1 bg-primary-500 mx-auto rounded-full"></div>
                 </div>
                 
-                <!-- 文章内容 -->
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-semibold mb-2">
-                        {% if post.categories and post.categories | length > 0 %}
-                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
-                           class="text-gray-900 hover:text-primary-600 transition-colors">
-                            {{ post.title | default(value=post.slug) }}
-                        </a>
-                        {% else %}
-                        <a href="{{ post.slug }}.html" 
-                           class="text-gray-900 hover:text-primary-600 transition-colors">
-                            {{ post.title | default(value=post.slug) }}
-                        </a>
-                        {% endif %}
-                    </h3>
-                    
-                    <!-- 分类信息 -->
-                    {% if post.categories %}
-                    <div class="mb-2">
-                        <span class="inline-flex items-center text-sm text-gray-600">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            </svg>
-                            {{ post.categories | join(sep=' › ') }}
-                        </span>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- 标签 -->
-                    {% if post.tags %}
-                    <div class="flex flex-wrap gap-2">
-                        {% for tag in post.tags %}
-                        <a href="tags.html#{{ tag }}" 
-                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
-                            {{ tag }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                <div class="text-center mb-4">
+                    <span class="text-gray-600 text-sm">共 {{ y.count | default(value=0) }} 篇文章</span>
                 </div>
                 
-                <!-- 阅读时间 -->
-                {% if post.reading_time %}
-                <div class="flex-shrink-0 mt-2 sm:mt-0 sm:ml-4">
-                    <span class="inline-flex items-center text-sm text-gray-500">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <!-- 年份链接 -->
+                <div class="text-center">
+                    <a href="/archives/{{ year }}.html" 
+                       class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        {{ post.reading_time }}min
-                    </span>
+                        查看 {{ year }} 年文章
+                    </a>
                 </div>
-                {% endif %}
-            </article>
+                
+                {# 月份分布不需要，移除该块 #}
+            </div>
+        </div>
         {% endfor %}
-        {% if current_year != "" %}</div></div>{% endif %}
+    </div>
+    
+    <!-- 统计信息 -->
+    <div class="mt-12 text-center">
+        <div class="inline-flex items-center px-6 py-3 bg-gray-100 rounded-lg">
+            <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span class="text-gray-700 font-medium">总计 {{ posts | length }} 篇文章，跨越 {{ all_years | length }} 年</span>
+        </div>
     </div>
     {% else %}
     <div class="text-center py-12">
@@ -105,4 +61,7 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block ad1 %}
 {% endblock %}

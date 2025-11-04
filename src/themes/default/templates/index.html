@@ -12,7 +12,7 @@
     <!-- 主内容区域 -->
     <main class="flex-1 lg:w-2/3">
         <!-- 文章列表 -->
-        <div class="space-y-6">
+        <div id="articles" class="space-y-6">
             {% if posts %}
                 {% for post in posts %}
                 <article class="card hover:shadow-lg transition-shadow duration-300">
@@ -71,7 +71,7 @@
                         {% if post.tags %}
                         <div class="flex flex-wrap gap-2">
                             {% for tag in post.tags %}
-                            <a href="/tags.html#{{ tag }}" 
+                            <a href="/tags/{{ tag }}/" 
                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
                                 {{ tag }}
                             </a>
@@ -82,22 +82,32 @@
                 </article>
                 {% endfor %}
                 
-                <!-- 分页导航 -->
-                {% if posts | length >= site.homepage.posts_per_page | default(value=10) %}
-                <div class="flex justify-center mt-8">
-                    <nav class="flex items-center space-x-2">
-                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">
-                            上一页
-                        </a>
-                        <span class="px-3 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-md">
-                            1
-                        </span>
-                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">
-                            2
-                        </a>
-                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">
-                            下一页
-                        </a>
+                <!-- 列表范围显示 -->
+                <div class="flex justify-center mt-6">
+                    <p class="text-sm text-gray-600">第 <span class="font-medium">{{ start_index }}</span> 到 <span class="font-medium">{{ end_index }}</span> 条</p>
+                </div>
+
+                <!-- 分页导航（仅显示上一页/下一页） -->
+                {% if total_pages and total_pages > 1 %}
+                <div class="flex justify-center mt-4">
+                    <nav class="flex items-center space-x-4">
+                        {% if has_previous_page %}
+                            {% set prev_page = current_page + 1 %}
+                            {% if prev_page == total_pages %}
+                                <a href="/" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">上一页</a>
+                            {% else %}
+                                <a href="/index{{ prev_page }}.html" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">上一页</a>
+                            {% endif %}
+                        {% else %}
+                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">上一页</span>
+                        {% endif %}
+
+                        {% if has_next_page %}
+                            {% set next_page = current_page - 1 %}
+                            <a href="/index{{ next_page }}.html" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">下一页</a>
+                        {% else %}
+                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">下一页</span>
+                        {% endif %}
                     </nav>
                 </div>
                 {% endif %}

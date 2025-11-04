@@ -980,8 +980,6 @@ body {
 /* 侧边栏广告位样式 */
 .sidebar-ad {
     background: #f8f9fa;
-    border: 1px solid #e1e5e9;
     border-radius: 8px;
-    padding: 1rem;
     text-align: center;
 }

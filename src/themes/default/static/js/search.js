@@ -14,7 +14,7 @@ class RustPressSearch {
 
     async loadSearchData() {
         try {
-            const response = await fetch('search.json');
+            const response = await fetch('/search.json');
             this.searchData = await response.json();
             
             // 创建Lunr搜索索引

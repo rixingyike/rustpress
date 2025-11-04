@@ -25,10 +25,11 @@
                 </div>
                 
                 <!-- 搜索框 - 桌面版 -->
-                <div class="hidden md:flex flex-1 max-w-lg mx-8">
-                    <div class="relative w-full">
+                <div class="hidden md:flex flex-1 max-w-xs mx-8">
+                    <form action="/search.html" method="get" class="relative w-full">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -36,32 +37,43 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 
                 <!-- 导航菜单 - 桌面版 -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
-                    <a href="/archives.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
-                    <a href="/categories.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
-                    <a href="/tags.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
-                    <a href="/about.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
-                    <a href="/friends.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
-                    <a href="/search.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                    
+                        
+                        <a href="&#x2F;" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html')) }">首页</a>
+                        
+                        <a href="&#x2F;archives.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">归档</a>
+                        
+                        <a href="&#x2F;categories.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">分类</a>
+                        
+                        <a href="&#x2F;tags.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">标签</a>
+                        
+                        <a href="&#x2F;friends.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">友链</a>
+                        
+                        <a href="&#x2F;about.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html')) }">关于</a>
+                        
+                    
                 </div>
                 
                 <!-- 移动端菜单按钮 -->
@@ -87,9 +99,10 @@
             <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
                 <!-- 移动端搜索框 -->
                 <div class="px-3 py-2">
-                    <div class="relative">
+                    <form action="/search.html" method="get" class="relative">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="mobile-search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,104 +110,76 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 <!-- 移动端导航链接 -->
-                <a href="/" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
-                <a href="/archives.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
-                <a href="/categories.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
-                <a href="/tags.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
-                <a href="/about.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
-                <a href="/friends.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
-                <a href="/search.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+                
+                    
+                    <a href="&#x2F;" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;' || ('&#x2F;' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">首页</a>
+                    
+                    <a href="&#x2F;archives.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;archives.html' || ('&#x2F;archives.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">归档</a>
+                    
+                    <a href="&#x2F;categories.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;categories.html' || ('&#x2F;categories.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">分类</a>
+                    
+                    <a href="&#x2F;tags.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;tags.html' || ('&#x2F;tags.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">标签</a>
+                    
+                    <a href="&#x2F;friends.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;friends.html' || ('&#x2F;friends.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">友链</a>
+                    
+                    <a href="&#x2F;about.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '&#x2F;about.html' || ('&#x2F;about.html' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">关于</a>
+                    
+                
             </div>
         </div>
     </nav>
 
     <!-- 主要内容区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- 广告位1：Header广告 -->
-        
-        <div class="mb-6">
-            <a href="https:&#x2F;&#x2F;item.jd.com&#x2F;13630053.html" target="_blank" rel="noopener" class="block">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                    <div class="flex flex-col items-center p-4 text-center">
-                        <!-- 广告编号 -->
-                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
-                            📚 广告
-                        </div>
-                        
-                        <!-- 广告图片 -->
-                        <div class="mb-3">
-                            <img src="&#x2F;images&#x2F;book-wegame.png" 
-                                 alt="微信小游戏开发" 
-                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
-                        </div>
-                        
-                        <!-- 广告信息 -->
-                        <div class="max-w-sm">
-                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
-                                微信小游戏开发
-                            </h2>
-                            
-                            <p class="text-gray-700 text-sm mb-3">学习微信小游戏开发技术，掌握游戏开发全流程</p>
-                            
-                            
-                            <!-- 查看详情按钮 -->
-                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                </svg>
-                                查看详情
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        
-        
         <main class="min-h-screen py-8">
             
 <div class="max-w-4xl mx-auto">
-    <!-- 作者介绍卡片 -->
-    <div class="card mb-8">
-        <div class="card-body">
-            <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
-                <!-- 作者头像 -->
-                <div class="flex-shrink-0">
-                    
-                    <img src="&#x2F;images&#x2F;avatar.png" 
-                         alt="LIYI" 
-                         class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxzdmcgeD0iMzIiIHk9IjMyIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMjAgMjEtMTYtMTZtMCAxM2gxM20wLTEzTDIxIDIxIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
-                    
-                </div>
-                
-                <!-- 作者信息 -->
-                <div class="flex-1 text-center md:text-left">
-                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                        LIYI
-                    </h1>
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- 主要内容 -->
+        <div class="flex-1">
+            <!-- 作者介绍卡片 -->
+            <div class="card mb-8">
+                <div class="card-body">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+                        <!-- 作者头像 -->
+                        <div class="flex-shrink-0">
+                            
+                            <img src="&#x2F;images&#x2F;avatar.png" 
+                                 alt="LIYI" 
+                                 class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxzdmcgeD0iMzIiIHk9IjMyIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMjAgMjEtMTYtMTZtMCAxM2gxM20wLTEzTDIxIDIxIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
+                            
+                        </div>
+                        
+                        <!-- 作者信息 -->
+                        <div class="flex-1 text-center md:text-left">
+                            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                                LIYI
+                            </h1>
                     
                     
                     <p class="text-lg text-gray-600 mb-4 leading-relaxed">
-                        热爱技术，专注于 Rust、Web 开发和系统架构。
+                        读书使人进步，著书亦使人进步。
                     </p>
                     
                     
@@ -241,7 +226,7 @@
                         
                         
                         
-                        <a href="https:&#x2F;&#x2F;twitter.com&#x2F;coderliyi" 
+                        <a href="https:&#x2F;&#x2F;x.com&#x2F;coderliyi" 
                            target="_blank" 
                            rel="noopener"
                            class="text-gray-400 hover:text-blue-400 transition-colors"
@@ -258,8 +243,10 @@
                            rel="noopener"
                            class="text-gray-400 hover:text-red-500 transition-colors"
                            title="微博">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9.31 8.17c-2.73-.13-4.3.53-4.3 2.26 0 2.22 2.73 4.69 6.08 4.69 2.61 0 4.08-1.74 4.08-3.17-.01-1.72-2.63-3.65-5.86-3.78zm-.46 5.63c-.65.71-1.57.4-2.03-.14-.47-.54-.42-1.43.23-2.05.63-.6 1.45-.35 1.92.2.48.55.5 1.33-.12 1.99zm1.7-.71c-.13.16-.38.21-.54.08-.17-.13-.19-.39-.04-.55.16-.17.4-.19.56-.05.15.14.16.35.02.52z"/>
+                            <!-- 使用 Bootstrap Icons 的 Sina Weibo 图标，填充遵循 currentColor，可与文本颜色联动 -->
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M10.878 1.093a4.23 4.23 0 0 1 4.031 1.305 4.22 4.22 0 0 1 .886 4.14v.001a.612.612 0 0 1-1.166-.377 3.01 3.01 0 0 0-3.495-3.873.611.611 0 1 1-.256-1.196M3.753 9.465c.548-1.11 1.972-1.74 3.233-1.411 1.304.338 1.971 1.568 1.437 2.764-.541 1.221-2.095 1.875-3.416 1.449-1.271-.411-1.812-1.67-1.254-2.802m2.658.567c.16.066.365-.009.458-.168.088-.16.03-.34-.129-.397-.156-.062-.353.013-.446.168-.09.154-.041.333.117.397m-1.607 1.314c.413.188.963.009 1.219-.4.252-.413.12-.883-.296-1.062-.41-.172-.94.005-1.194.402-.256.4-.135.874.271 1.06"/>
+                                <path d="m12.014 7.238.005.001c.919.285 1.941.974 1.939 2.188 0 2.007-2.895 4.535-7.246 4.535C3.393 13.962 0 12.352 0 9.708c0-1.385.876-2.985 2.384-4.493C4.4 3.199 6.751 2.28 7.634 3.165c.39.392.427 1.065.177 1.87-.132.405.38.182.38.182 1.63-.682 3.051-.722 3.57.02.278.397.252.951-.004 1.594-.116.293.035.34.257.407m-10.4 3.101c.172 1.738 2.46 2.936 5.109 2.674 2.647-.26 4.656-1.883 4.482-3.623-.17-1.738-2.458-2.937-5.107-2.674-2.647.263-4.656 1.883-4.484 3.623m11.681-6.484a2.06 2.06 0 0 0-1.962-.634.526.526 0 1 0 .219 1.031 1.008 1.008 0 0 1 1.17 1.296.528.528 0 0 0 1.005.325 2.06 2.06 0 0 0-.432-2.018"/>
                             </svg>
                         </a>
                         
@@ -292,54 +279,62 @@
         </div>
     </div>
 
-    <!-- 详细介绍 -->
+    <!-- 详细介绍（渲染 about.md 的 Markdown 正文） -->
     <div class="card mb-8">
         <div class="card-body prose prose-lg max-w-none">
-            <h2>关于我</h2>
-            <p>
-                你好！我是 LIYI，一名热爱技术的开发者。
-                我专注于 Rust、Web 开发和系统架构等领域，喜欢探索新技术，分享学习心得。
-            </p>
             
-            <h3>技术栈</h3>
-            <p>
-                我主要使用以下技术栈进行开发：
-            </p>
-            <ul>
-                <li><strong>后端开发：</strong>Rust, Python, Node.js</li>
-                <li><strong>前端开发：</strong>JavaScript, TypeScript, React, Vue.js</li>
-                <li><strong>数据库：</strong>PostgreSQL, MySQL, Redis</li>
-                <li><strong>云服务：</strong>AWS, Docker, Kubernetes</li>
-                <li><strong>工具：</strong>Git, Linux, VS Code</li>
-            </ul>
+            <h1>关于我</h1>
+<p>大学计算机讲师。微信学堂<a href="https://developers.weixin.qq.com/community/business/course/000606628dc2e86dc0ddcbb115940d">《小程序性能优化实践》</a>专题讲师、极客时间<a href="http://gk.link/a/10AdC">《微信小程序全栈开发实战》</a>课程讲师，国企一汽大众等企业内训讲师。著有<a href="https://item.jd.com/13630053.html">《微信小游戏开发》</a>两册、<a href="https://e.jd.com/30401467.html">《小程序从0到1》</a>等计算机畅销图书。是<a href="https://cloud.tencent.com/tvp/124">腾讯云最具价值专家（TVP）</a>、腾讯课堂年度最具影响力专家、中移联合智库 ICT 专家级讲师、极客时间荣誉讲师等。</p>
+<h2>出版著作</h2>
+<ul>
+<li>2023年02月，在机械工业出版社出版<a href="https://item.jd.com/13630053.html">《微信小游戏开发》</a>上下两册</li>
+<li>2017年12月，在机工出版<a href="https://e.jd.com/30401467.html">《小程序从0到1》</a></li>
+</ul>
+<h2>在线课程</h2>
+<ul>
+<li>2022年04月，在微信学堂上架<a href="https://developers.weixin.qq.com/community/business/course/000606628dc2e86dc0ddcbb115940d">《小程序性能优化实践》</a>视频课程</li>
+<li>2020年05月，在极客时间上架<a href="http://gk.link/a/10AdC">《微信小程序全栈开发实战》</a>视频课程</li>
+</ul>
+<h2>奖项与荣誉</h2>
+<ul>
+<li>2024年04月，被授予「极客时间荣誉讲师」称号</li>
+<li>2023年01月，被授予「中移联合智库 ICT 专家级讲师」称号</li>
+<li>2021年07月，获腾讯课堂「2021年度最具影响力专家」荣誉奖项</li>
+<li>2019年10月，获得「VIPKID 黑马大赛好技术金点子」一等奖</li>
+<li>2019年08月，获腾讯云「<a href="https://cloud.tencent.com/tvp/124">腾讯云最具价值专家（TVP）</a>」荣誉奖项</li>
+<li>2011年10月，被评为「Adobe 中国最佳贡献社区管理员」15位之一</li>
+</ul>
+<h2>公益活动</h2>
+<p>2015年05月为北医三院白血病人捐款 65577 元</p>
+<img src="assets/gongyi.HKQDVpja.jpg" alt="活动见证" style="zoom: 25%;" />
+<h2>技术栈</h2>
+<p>我主要使用以下技术栈进行开发：</p>
+<ul>
+<li><strong>后端开发：</strong> Rust, Python, Node.js</li>
+<li><strong>前端开发：</strong> JavaScript, React, Vue.js</li>
+<li><strong>数据库：</strong> PostgreSQL, MySQL, Redis</li>
+<li><strong>云服务：</strong> Docker, Kubernetes</li>
+<li><strong>工具：</strong> Git, Linux, VS Code</li>
+<li><strong>小程序开发：</strong> 微信小程序、微信小游戏</li>
+</ul>
+<h2>兴趣爱好</h2>
+<p>除了编程，我还喜欢：</p>
+<ul>
+<li>📚 阅读技术书籍和博客</li>
+<li>✍️ 技术写作和教学培训</li>
+<li>📷 摄影，记录生活中的美好瞬间</li>
+<li>🌍 旅行，体验不同的文化</li>
+<li>💡 开源项目贡献</li>
+</ul>
+<h2>联系我</h2>
+<p>欢迎来信交流。如果你对我的文章有任何问题或建议，或者想要交流技术话题，欢迎通过以下方式联系我：</p>
+<ul>
+<li>📧 邮箱：9830131@qq.com</li>
+<li>🐦 X：https://x.com/coderliyi</li>
+</ul>
+<p>感谢你的访问！</p>
+
             
-            <h3>兴趣爱好</h3>
-            <p>
-                除了编程，我还喜欢：
-            </p>
-            <ul>
-                <li>📚 阅读技术书籍和博客</li>
-                <li>🎵 听音乐，特别是古典音乐和爵士乐</li>
-                <li>🏃‍♂️ 跑步和健身</li>
-                <li>📷 摄影，记录生活中的美好瞬间</li>
-                <li>🌍 旅行，体验不同的文化</li>
-            </ul>
-            
-            <h3>联系我</h3>
-            <p>
-                如果你对我的文章有任何问题或建议，或者想要交流技术话题，欢迎通过以下方式联系我：
-            </p>
-            <ul>
-                
-                <li>📧 邮箱：<a href="mailto:9830131@qq.com">9830131@qq.com</a></li>
-                
-                
-                <li>🐙 GitHub：<a href="https:&#x2F;&#x2F;github.com&#x2F;rixingyike" target="_blank" rel="noopener">https:&#x2F;&#x2F;github.com&#x2F;rixingyike</a></li>
-                
-                
-                <li>🐦 Twitter：<a href="https:&#x2F;&#x2F;twitter.com&#x2F;coderliyi" target="_blank" rel="noopener">https:&#x2F;&#x2F;twitter.com&#x2F;coderliyi</a></li>
-                
-            </ul>
         </div>
     </div>
 
@@ -348,7 +343,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <div class="text-3xl font-bold text-primary-600 mb-2">
-                    37
+                    39
                 </div>
                 <div class="text-gray-600">篇文章</div>
             </div>
@@ -357,7 +352,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <div class="text-3xl font-bold text-primary-600 mb-2">
-                    88
+                    89
                 </div>
                 <div class="text-gray-600">个标签</div>
             </div>
@@ -369,13 +364,20 @@
                     10
                 </div>
                 <div class="text-gray-600">个分类</div>
-            </div>
-        </div>
-    </div>
-</div>
- 
+             </div>
+         </div>
+         
+         <!-- 目录侧边栏（可通过 frontmatter: toc 控制） -->
+         
+     </div>
+ </div>
+  
         </main>
     </div>
+    
+    <!-- 广告位1：底部广告（版权区上方） -->
+    
+ 
     
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-16">
@@ -384,7 +386,9 @@
                 <p class="text-gray-600">
                     &copy; 2002-2025 
                     
-                        LIYI
+                        
+                        <a href="https:&#x2F;&#x2F;yishulun.com" target="_blank" rel="noopener" class="text-gray-700 hover:text-primary-600">LIYI</a>
+                        
                     
                     
                         &nbsp;|&nbsp;
@@ -402,6 +406,11 @@
                           rel="noopener" 
                           class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
                 </p>
+                <p class="text-gray-500 text-sm">
+                    <a href="/rss.xml" class="hover:text-primary-600">RSS</a>
+                    &nbsp;·&nbsp;
+                    <a href="/sitemap.xml" class="hover:text-primary-600">Sitemap</a>
+                </p>
             </div>
         </div>
     </footer>
@@ -418,5 +427,52 @@
     
     <!-- 搜索功能脚本 -->
     <script src="/js/search.js"></script>
+
+    
+    <!-- Google Analytics 懒加载 -->
+    <script>
+    (function(){
+        var gid = "G-8N64Q25EK9";
+        var loadGA = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://www.googletagmanager.com/gtag/js?id=" + gid;
+            s.onload = function(){
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);} // eslint-disable-line
+                gtag('js', new Date());
+                gtag('config', gid);
+            };
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadGA);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadGA, 1500); });
+        }
+    })();
+    </script>
+    
+
+    
+    <!-- Google Ads 懒加载 -->
+    <script>
+    (function(){
+        var clientId = "ca-pub-2139303336591479";
+        var loadAds = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + clientId;
+            s.crossOrigin = "anonymous";
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadAds);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadAds, 1500); });
+        }
+    })();
+    </script>
+    
 </body>
 </html>

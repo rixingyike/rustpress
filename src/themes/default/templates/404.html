@@ -97,7 +97,7 @@
                     {% if all_tags %}
                     <div class="flex flex-wrap gap-2">
                         {% for tag in all_tags | slice(end=15) %}
-                        <a href="tags.html#{{ tag.name }}" 
+                        <a href="/tags/{{ tag.name }}/" 
                            class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
                             {{ tag.name }}
                             <span class="ml-1 text-xs text-gray-500">{{ tag.count }}</span>

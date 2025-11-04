@@ -69,12 +69,58 @@ impl Post {
     pub fn date(&self) -> Option<&str> {
         self.data.get("date_ymd").and_then(|v| v.as_str())
     }
+
+    /// 获取源文件路径
+    pub fn source_path(&self) -> Option<&str> {
+        self.data.get("source_path").and_then(|v| v.as_str())
+    }
+
+    /// 获取源文件的最后修改时间（UNIX秒）
+    pub fn modified_epoch(&self) -> Option<i64> {
+        self.data.get("modified_epoch").and_then(|v| v.as_i64())
+    }
 }
 
 /// 文章解析器
 pub struct PostParser;
 
 impl PostParser {
+    /// 从 Markdown 文本中提取标题：优先首个 H1（`# 标题`），否则首个任意级别标题
+    fn extract_title_from_markdown(markdown: &str) -> Option<String> {
+        // 先扫描首个 H1
+        let mut in_code_fence = false;
+        for line in markdown.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+                in_code_fence = !in_code_fence;
+                continue;
+            }
+            if in_code_fence { continue; }
+            if trimmed.starts_with("# ") {
+                let title = trimmed[2..].trim();
+                if !title.is_empty() { return Some(title.to_string()); }
+            }
+        }
+        // 若没有 H1，则退而求其次，找任意级别标题
+        in_code_fence = false;
+        for line in markdown.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+                in_code_fence = !in_code_fence;
+                continue;
+            }
+            if in_code_fence { continue; }
+            if trimmed.starts_with('#') {
+                let hashes = trimmed.chars().take_while(|c| *c == '#').count();
+                if hashes >= 1 {
+                    let title = trimmed[hashes..].trim();
+                    if !title.is_empty() { return Some(title.to_string()); }
+                }
+            }
+        }
+        None
+    }
+
     /// 列出指定目录下的所有文章
     pub fn list_posts<P: AsRef<Path>>(md_dir: P) -> Result<Vec<Post>> {
         let mut posts = Vec::new();
@@ -184,27 +230,54 @@ impl PostParser {
 
         // 处理日期相关字段
         if let Some(obj) = post.as_object_mut() {
-            // 如果没有 title 字段，用 slug 作为 title
+            // 记录源文件路径与修改时间戳（用于增量编译）
+            obj.insert(
+                "source_path".to_string(),
+                Value::String(path.to_string_lossy().to_string())
+            );
+            let modified_epoch = std::fs::metadata(path)
+                .and_then(|m| m.modified())
+                .ok()
+                .and_then(|st| st.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0);
+            obj.insert("modified_epoch".to_string(), Value::Number(modified_epoch.into()));
+
+            // 如果没有 title 字段，尝试从 Markdown 内容提取标题
             if !obj.contains_key("title") {
-                let slug = obj.get("slug").and_then(|v| v.as_str()).unwrap_or("").to_string();
-                obj.insert("title".to_string(), Value::String(slug));
+                let content_md_title = Self::extract_title_from_markdown(body).or_else(|| {
+                    // 兜底：使用 slug
+                    obj.get("slug").and_then(|v| v.as_str()).map(|s| s.to_string())
+                });
+                if let Some(title) = content_md_title { obj.insert("title".to_string(), Value::String(title)); }
             }
             
-            // 处理创建时间字段
+            // 处理创建时间字段（兼容多分隔符并归一化为 YYYY-MM-DD）
             if let Some(create_time) = obj.get("createTime").and_then(|v| v.as_str()) {
-                let create_time_str = create_time.to_string(); // 复制字符串避免借用问题
-                let date_only = if create_time_str.len() >= 10 { 
-                    &create_time_str[0..10] 
-                } else { 
-                    &create_time_str 
-                };
-                
-                let date_only_string = date_only.to_string();
-                obj.insert("date_ymd".to_string(), Value::String(date_only_string.clone()));
-                
-                if date_only.len() >= 7 {
-                    let year = &date_only[0..4];
-                    let ym = &date_only[0..7];
+                let create_time_str = create_time.to_string();
+                let date_only = if create_time_str.len() >= 10 { &create_time_str[0..10] } else { &create_time_str };
+                let mut normalized = date_only.replace('/', "-").replace('.', "-");
+                // 确保格式长度为10且分隔符在位置4和7
+                if normalized.len() == 10 {
+                    let bytes = normalized.as_bytes();
+                    let is_digit = |c: u8| c.is_ascii_digit();
+                    if !(is_digit(bytes[0]) && is_digit(bytes[1]) && is_digit(bytes[2]) && is_digit(bytes[3]) &&
+                         bytes[4] == b'-' && is_digit(bytes[5]) && is_digit(bytes[6]) &&
+                         bytes[7] == b'-' && is_digit(bytes[8]) && is_digit(bytes[9])) {
+                        // 尝试强制重组为 YYYY-MM-DD
+                        let digits: Vec<char> = date_only.chars().filter(|c| c.is_ascii_digit()).collect();
+                        if digits.len() >= 8 {
+                            let year: String = digits[0..4].iter().collect();
+                            let month: String = digits[4..6].iter().collect();
+                            let day: String = digits[6..8].iter().collect();
+                            normalized = format!("{}-{}-{}", year, month, day);
+                        }
+                    }
+                }
+                obj.insert("date_ymd".to_string(), Value::String(normalized.clone()));
+                if normalized.len() >= 7 {
+                    let year = &normalized[0..4];
+                    let ym = &normalized[0..7];
                     obj.insert("year".to_string(), Value::String(year.to_string()));
                     obj.insert("year_month".to_string(), Value::String(ym.to_string()));
                 }
@@ -378,5 +451,13 @@ impl PostParser {
             });
             Value::Array(categories)
         }
+    }
+
+    /// 对外公开的单文件Markdown解析包装方法
+    ///
+    /// 用途：当需要解析一个具体的Markdown文件内容（例如 friends.md）时，
+    /// 在模板渲染阶段可调用此方法以获得其 front matter 和 HTML 内容。
+    pub fn parse_file_content<P: AsRef<Path>>(content: &str, path: P, md_dir: P) -> Result<Option<Value>> {
+        Self::parse_post(content, path, md_dir)
     }
 }

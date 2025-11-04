@@ -25,10 +25,11 @@
                 </div>
                 
                 <!-- 搜索框 - 桌面版 -->
-                <div class="hidden md:flex flex-1 max-w-lg mx-8">
-                    <div class="relative w-full">
+                <div class="hidden md:flex flex-1 max-w-xs mx-8">
+                    <form action="/search.html" method="get" class="relative w-full">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -36,32 +37,45 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 
                 <!-- 导航菜单 - 桌面版 -->
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="/" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
-                    <a href="/archives.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
-                    <a href="/categories.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
-                    <a href="/tags.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
-                    <a href="/about.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
-                    <a href="/friends.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
-                    <a href="/search.html" 
-                       class="nav-link" 
-                       :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                    {% if site.menu and site.menu.main and site.menu.main | length > 0 %}
+                        {% for item in site.menu.main %}
+                        <a href="{{ item.url }}" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': window.location.pathname === '{{ item.url }}' || ('{{ item.url }}' === '/' && (currentPath === '' || currentPath === 'index.html')) }">{{ item.name }}</a>
+                        {% endfor %}
+                    {% else %}
+                        <a href="/" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
+                        <a href="/archives.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
+                        <a href="/categories.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
+                        <a href="/tags.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
+                        <a href="/about.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
+                        <a href="/friends.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath.includes('friends') }">友链</a>
+                        <a href="/search.html" 
+                           class="nav-link" 
+                           :class="{ 'nav-link-active': currentPath.includes('search') }">搜索</a>
+                    {% endif %}
                 </div>
                 
                 <!-- 移动端菜单按钮 -->
@@ -87,9 +101,10 @@
             <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
                 <!-- 移动端搜索框 -->
                 <div class="px-3 py-2">
-                    <div class="relative">
+                    <form action="/search.html" method="get" class="relative">
                         <input type="text" 
-                               class="form-input w-full pl-10 pr-4 py-2 text-sm" 
+                               name="q"
+                               class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500" 
                                placeholder="搜索文章..." 
                                id="mobile-search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,82 +112,92 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
                 <!-- 移动端导航链接 -->
-                <a href="/" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
-                <a href="/archives.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
-                <a href="/categories.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
-                <a href="/tags.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
-                <a href="/about.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
-                <a href="/friends.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
-                <a href="/search.html" 
-                   class="block px-3 py-2 text-base font-medium rounded-md" 
-                   :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+                {% if site.menu and site.menu.main and site.menu.main | length > 0 %}
+                    {% for item in site.menu.main %}
+                    <a href="{{ item.url }}" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': window.location.pathname === '{{ item.url }}' || ('{{ item.url }}' === '/' && (currentPath === '' || currentPath === 'index.html')), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(window.location.pathname === '{{ item.url }}' || ('{{ item.url }}' === '/' && (currentPath === '' || currentPath === 'index.html'))) }">{{ item.name }}</a>
+                    {% endfor %}
+                {% else %}
+                    <a href="/" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
+                    <a href="/archives.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
+                    <a href="/categories.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
+                    <a href="/tags.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
+                    <a href="/about.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
+                    <a href="/friends.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
+                    <a href="/search.html" 
+                       class="block px-3 py-2 text-base font-medium rounded-md" 
+                       :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('search'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('search') }">搜索</a>
+                {% endif %}
             </div>
         </div>
     </nav>
 
     <!-- 主要内容区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- 广告位1：Header广告 -->
-        {% if site.ads and site.ads.ad1_image and site.ads.ad1_link %}
-        <div class="mb-6">
-            <a href="{{ site.ads.ad1_link }}" target="_blank" rel="noopener" class="block">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                    <div class="flex flex-col items-center p-4 text-center">
-                        <!-- 广告编号 -->
-                        <div class="inline-block bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 shadow-sm">
-                            📚 广告
-                        </div>
-                        
-                        <!-- 广告图片 -->
-                        <div class="mb-3">
-                            <img src="{{ site.ads.ad1_image }}" 
-                                 alt="{{ site.ads.ad1_title | default(value='广告图片') }}" 
-                                 class="w-48 h-24 object-cover rounded-md shadow-sm mx-auto"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
-                        </div>
-                        
-                        <!-- 广告信息 -->
-                        <div class="max-w-sm">
-                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
-                                {{ site.ads.ad1_title | default(value='推荐内容') }}
-                            </h2>
-                            {% if site.ads.ad1_description %}
-                            <p class="text-gray-700 text-sm mb-3">{{ site.ads.ad1_description }}</p>
-                            {% endif %}
-                            
-                            <!-- 查看详情按钮 -->
-                            <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                </svg>
-                                查看详情
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        {% endif %}
-        
         <main class="min-h-screen py-8">
             {% block content %}{% endblock %} 
         </main>
     </div>
+    
+    <!-- 广告位1：底部广告（版权区上方） -->
+    {% block ad1 %}
+    {% if site.ads and site.ads.ad1_image and site.ads.ad1_link %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <a href="{{ site.ads.ad1_link }}" target="_blank" rel="noopener" class="block">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="flex flex-col items-center p-4 text-center">
+                    <!-- 广告图片 -->
+                    <div class="mb-3">
+                        <img src="{{ site.ads.ad1_image }}" 
+                              alt="{{ site.ads.ad1_title | default(value='推荐内容') }}" 
+                              class="w-48 h-60 object-cover rounded-md mx-auto"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                    </div>
+                    
+                    <!-- 广告信息 -->
+                    <div class="max-w-sm">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">
+                            {{ site.ads.ad1_title | default(value='推荐内容') }}
+                        </h2>
+                        {% if site.ads.ad1_description %}
+                        <p class="text-gray-700 text-sm mb-3">{{ site.ads.ad1_description }}</p>
+                        {% endif %}
+                        
+                        <!-- 查看详情按钮 -->
+                        <div class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-sm">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                            </svg>
+                            查看详情
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% endblock %}
     
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-16">
@@ -181,7 +206,11 @@
                 <p class="text-gray-600">
                     &copy; {{ site.start_year | default(value=now | date(format="%Y")) }}-{{ now | date(format="%Y") }} 
                     {% if site.author and site.author is object and site.author.name %}
+                        {% if site.author.website %}
+                        <a href="{{ site.author.website }}" target="_blank" rel="noopener" class="text-gray-700 hover:text-primary-600">{{ site.author.name }}</a>
+                        {% else %}
                         {{ site.author.name }}
+                        {% endif %}
                     {% elif site.author and site.author is string %}
                         {{ site.author }}
                     {% else %}
@@ -203,6 +232,11 @@
                           rel="noopener" 
                           class="text-primary-600 hover:text-primary-700">RustPress</a> 提供支持
                 </p>
+                <p class="text-gray-500 text-sm">
+                    <a href="/rss.xml" class="hover:text-primary-600">RSS</a>
+                    &nbsp;·&nbsp;
+                    <a href="/sitemap.xml" class="hover:text-primary-600">Sitemap</a>
+                </p>
             </div>
         </div>
     </footer>
@@ -219,5 +253,52 @@
     
     <!-- 搜索功能脚本 -->
     <script src="/js/search.js"></script>
+
+    {% if site.features and site.features.analytics and site.analytics and site.analytics.google_id %}
+    <!-- Google Analytics 懒加载 -->
+    <script>
+    (function(){
+        var gid = "{{ site.analytics.google_id }}";
+        var loadGA = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://www.googletagmanager.com/gtag/js?id=" + gid;
+            s.onload = function(){
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);} // eslint-disable-line
+                gtag('js', new Date());
+                gtag('config', gid);
+            };
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadGA);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadGA, 1500); });
+        }
+    })();
+    </script>
+    {% endif %}
+
+    {% if site.ads and site.ads.google and site.ads.google.client_id %}
+    <!-- Google Ads 懒加载 -->
+    <script>
+    (function(){
+        var clientId = "{{ site.ads.google.client_id }}";
+        var loadAds = function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + clientId;
+            s.crossOrigin = "anonymous";
+            document.head.appendChild(s);
+        };
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadAds);
+        } else {
+            window.addEventListener('load', function(){ setTimeout(loadAds, 1500); });
+        }
+    })();
+    </script>
+    {% endif %}
 </body>
 </html>
