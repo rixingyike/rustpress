@@ -7,7 +7,7 @@ push = false
 publish = false
 consolidate-commits = true
 
-dev-version = false
+
 
 
 pre-release-commit-message = "Release {{crate_name}} {{version}}"
