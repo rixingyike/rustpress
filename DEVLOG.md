@@ -21,6 +21,17 @@
 - 新增 `--force` 支持，允许覆盖生成新项目。
 - 清理所有未用模板、空目录，保持仓库整洁。
 
+## 发布日志
+
+### 0.1.6
+- 修复默认主题按钮在悬停时文字不可见的问题：移除全局 `a:hover` 文本颜色，避免覆盖按钮上的 `text-white` 等样式。
+- 调整全局链接样式：`a { @apply text-primary-600 transition-colors; }`，让组件/按钮的文本颜色优先级更高。
+- 重新编译主题 CSS：`themes/default/src/tailwind.input.css` → `public/static/css/main.css`。
+- 发布与标记：版本 `0.1.6`，Git 标签 `0.1.6`（无 `v` 前缀），并已发布到 crates.io。
+- 升级建议：`cargo install rustpress --force` 或在项目中更新依赖为 `rustpress = "0.1.6"`。
+
+注：本次修复影响的页面包括使用蓝色按钮样式的模板（如 `search.html`、`404.html`、`archives.html`、`year_archive.html` 等），无需改动模板，CSS 修复即可生效。
+
 ## 未来计划
 
 - 增加多语言支持

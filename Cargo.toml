@@ -18,6 +18,11 @@ include = [
     "config.toml",
     "build.toml",
 ]
+exclude = [
+    "themes/**/node_modules/**",
+    "themes/**/.cache/**",
+    "themes/**/public/static/css/*.map",
+]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
