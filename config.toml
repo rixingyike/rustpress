@@ -94,6 +94,7 @@ category_id = "DIC_kwDOKRUETc4CZMWK"
 mapping = "pathname"
 theme = "preferred_color_scheme"
 lang = "zh-CN"
+crossorigin = "anonymous"
 
 # 导航菜单
 [[menu.main]]
