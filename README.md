@@ -70,36 +70,20 @@ cp target/release/rustpress /usr/local/bin/
 
 下面提供四种使用方式，按你的场景选择其一即可：
 
-### 1）通过脚本一键使用（install_rustpress.sh）
+### 1）通过 crates.io 安装并使用（推荐）
 
-- 在一个包含 `source` 文章目录的文件夹中执行脚本，自动安装/检测 RustPress、构建并启动本地预览。
+- 已发布到 crates.io，推荐直接使用 `cargo install` 安装。
 - 快速开始：
 
 ```bash
-# 在含有 source 的目录中运行
-bash <(curl -fsSL https://raw.githubusercontent.com/rixingyike/rustpress/main/scripts/install_rustpress.sh) \
-  --md-dir source \
-  --output-dir public \
-  --config config.toml \
-  --port 1111
-```
+# 安装（固定版本）
+cargo install rustpress --version 0.1.5 --locked
 
-- 常用参数说明：
-  - `--dev`：开发构建（含主题 CSS 编译）
-  - `--incremental`：增量构建（基于 build.toml 的 last_build_time）
-  - `--git`：从 Git 仓库安装 RustPress（如 `--git https://github.com/rixingyike/rustpress.git`）
-  - `--local`：从本地源码安装 RustPress（如 `--local /path/to/rustpress`）
+# 构建静态站点
+rustpress -m source build -o public -c config.toml
 
-- 示例：
-
-```bash
-# 开发构建（含 CSS）+ 增量 + 指定端口
-curl -fsSL https://raw.githubusercontent.com/rixingyike/rustpress/main/scripts/install_rustpress.sh | bash -s -- \
-  --md-dir source --output-dir public --config config.toml --dev --incremental --port 8000
-
-# 从 Git 安装并构建
-curl -fsSL https://raw.githubusercontent.com/rixingyike/rustpress/main/scripts/install_rustpress.sh | bash -s -- \
-  --git https://github.com/rixingyike/rustpress.git --md-dir source --output-dir public
+# 开发预览（含热重载与主题编译）
+rustpress --dev --hotreload -m source -c config.toml -p 1111 -o public
 ```
 
 - 热重载（模板实时预览）：如需监听模板变化自动重建，请使用 CLI：
