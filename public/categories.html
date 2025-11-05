@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>一树论</title>
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="stylesheet" href="/static/css/main.css">
     <!-- Alpine.js 库 -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Lunr.js 搜索库 -->
@@ -18,7 +19,7 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo 和站点名称 -->
                 <div class="flex items-center space-x-3">
-                    <img src="/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
+                    <img src="/static/images/logo.png" alt="一树论 Logo" class="h-8 w-8 rounded-full">
                     <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
                         一树论
                     </a>
@@ -785,6 +786,70 @@
                         </button>
                         
                         
+                        <a href="/测试/" 
+                           class="text-lg font-medium text-gray-900 hover:text-primary-600 transition-colors">
+                            测试
+                        </a>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        1
+                    </span>
+                </div>
+                
+                <!-- 子分类 -->
+                
+                <div class="pl-8 space-y-2 mt-2" x-show="isOpen" x-transition>
+                    
+                    <div class="category-tree-item" x-data="{ isOpen: false }">
+                        <div class="flex items-center justify-between py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                
+                                <!-- 叶子图标，不可展开 -->
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                
+                                
+                                <a href="/测试/子类/" 
+                                   class="text-base font-medium text-gray-800 hover:text-primary-600 transition-colors">
+                                    子类
+                                </a>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                                1
+                            </span>
+                        </div>
+                        
+                        <!-- 三级分类 -->
+                        
+                    </div>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="category-tree-item" x-data="{ isOpen: false }">
+                <!-- 主分类 -->
+                <div class="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        
+                        <!-- 目录图标，可展开 -->
+                        <button @click="isOpen = !isOpen" 
+                                class="text-gray-500 hover:text-gray-700 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                 x-show="!isOpen">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" 
+                                 x-show="isOpen">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        
                         <a href="/编程语言/" 
                            class="text-lg font-medium text-gray-900 hover:text-primary-600 transition-colors">
                             编程语言
@@ -1055,7 +1120,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- 搜索功能脚本 -->
-    <script src="/js/search.js"></script>
+    <script src="/static/js/search.js"></script>
 
     
     <!-- Google Analytics 懒加载 -->

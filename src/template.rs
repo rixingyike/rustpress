@@ -8,6 +8,9 @@ use crate::post::Post;
 use chrono::prelude::*;
 use serde_json::Value;
 use tera::{Context, Tera};
+use walkdir::WalkDir;
+use crate::utils::{ThemeTemplates, RuntimePathsBuilder};
+
 
 /// 模板引擎
 pub struct TemplateEngine {
@@ -43,7 +46,107 @@ impl TemplateEngine {
     }
     /// 创建新的模板引擎
     pub fn new<P: AsRef<std::path::Path>>(config: Config, content_dir: P) -> Result<Self> {
-        let tera = Tera::new("src/themes/default/templates/**/*")?;
+        // 模板加载策略：磁盘优先（themes/{theme}/templates），若不存在则回退到嵌入模板
+        let mut tera = Tera::default();
+
+        let content_dir_buf = content_dir.as_ref().to_path_buf();
+        let runtime_paths = RuntimePathsBuilder::new()
+            .md_dir(&content_dir_buf)
+            .theme_name(config.theme_name())
+            .build();
+        let templates_dir = runtime_paths.theme_templates_dir;
+        
+        // 调试信息：打印模板目录路径
+        println!("模板目录路径: {:?}", templates_dir);
+        println!("模板目录是否存在: {}", templates_dir.exists());
+
+        let mut loaded_from_disk = false;
+        if templates_dir.exists() {
+            println!("开始加载模板文件...");
+            println!("模板目录内容:");
+            
+            // 使用 WalkDir 递归遍历模板目录及其子目录
+            let mut template_files = Vec::new();
+            for entry in walkdir::WalkDir::new(&templates_dir).into_iter().filter_map(|e| e.ok()) {
+                let path = entry.path();
+                if path.is_file() {
+                    template_files.push(path.to_path_buf());
+                }
+            }
+            
+            // 按文件名排序，确保 base.html 先被加载
+            template_files.sort();
+            
+            // 先加载 base.html（如果存在）
+            if let Some(base_path) = template_files.iter().find(|p| p.file_name().unwrap_or_default() == "base.html") {
+                let rel = match base_path.strip_prefix(&templates_dir) {
+                    Ok(p) => p.to_string_lossy().to_string(),
+                    Err(_) => "base.html".to_string(),
+                };
+                println!("优先加载基础模板: {} -> {:?}", rel, base_path);
+                let content = std::fs::read_to_string(base_path)
+                    .map_err(|e| Error::Other(format!("无法读取模板文件 {:?}: {}", base_path, e)))?;
+                tera.add_raw_template(&rel, &content)
+                    .map_err(|e| Error::Other(format!("注册模板失败 {}: {}", rel, e)))?;
+                loaded_from_disk = true;
+            }
+            
+            // 然后加载其他模板文件
+            for path in template_files {
+                if path.file_name().unwrap_or_default() == "base.html" {
+                    continue; // 已经加载过了
+                }
+                
+                let rel = match path.strip_prefix(&templates_dir) {
+                    Ok(p) => p.to_string_lossy().to_string(),
+                    Err(_) => continue,
+                };
+                println!("加载模板: {} -> {:?}", rel, path);
+                let content = std::fs::read_to_string(&path)
+                    .map_err(|e| Error::Other(format!("无法读取模板文件 {:?}: {}", path, e)))?;
+                tera.add_raw_template(&rel, &content)
+                    .map_err(|e| Error::Other(format!("注册模板失败 {}: {}", rel, e)))?;
+                loaded_from_disk = true;
+            }
+            println!("模板文件加载完成");
+        }
+
+        if !loaded_from_disk {
+            // 回退到编译期打包的默认主题模板
+            // 为了让继承链正常工作，将打包的模板名称归一化为相对名称（去掉 themes/<theme>/templates/ 前缀）
+            let theme_prefix = format!("themes/{}/templates/", config.theme_name());
+            let default_prefix = "themes/default/templates/";
+            for path in ThemeTemplates::iter() {
+                let name = path.as_ref();
+                if let Some(file) = ThemeTemplates::get(name) {
+                    let content = match std::str::from_utf8(file.data.as_ref()) {
+                        Ok(s) => s,
+                        Err(e) => return Err(Error::Other(format!(
+                            "模板文件 UTF-8 解析失败: {}: {}",
+                            name, e
+                        ))),
+                    };
+                    // 归一化名称
+                    let rel_name = if let Some(stripped) = name.strip_prefix(&theme_prefix) {
+                        stripped.to_string()
+                    } else if let Some(stripped) = name.strip_prefix(default_prefix) {
+                        stripped.to_string()
+                    } else {
+                        // 已经是相对名称或其他情况
+                        name.to_string()
+                    };
+                    tera.add_raw_template(&rel_name, content)
+                        .map_err(|e| Error::Other(format!("注册模板失败 {}: {}", rel_name, e)))?;
+                }
+            }
+        }
+        // 构建继承链以确保 extends/include 等在运行时可用
+        if let Err(e) = tera.build_inheritance_chains() {
+            return Err(Error::Other(format!(
+                "模板继承链构建失败: {}",
+                e
+            )));
+        }
         
         Ok(TemplateEngine { tera, config, content_dir: content_dir.as_ref().to_path_buf() })
     }
@@ -206,8 +309,11 @@ impl TemplateEngine {
             }
         }
         
-        // 如果存在 md_dir/build.toml，则读取其中的 sidebar 数据并注入 site.sidebar
-        let build_path = self.content_dir.join("build.toml");
+        // 如果存在 build.toml（优先项目根，其次 md_dir），则读取其中的 sidebar 数据并注入 site.sidebar
+        let build_path = {
+            let root = std::path::PathBuf::from("build.toml");
+            if root.exists() { root } else { self.content_dir.join("build.toml") }
+        };
         if build_path.exists() {
             if let Ok(content) = std::fs::read_to_string(&build_path) {
                 if let Ok(build_value) = content.parse::<toml::Value>() {
@@ -296,7 +402,71 @@ impl TemplateEngine {
         self.tera.render("index.html", &context)
             .map_err(Error::Template)
     }
-    
+
+    /// 渲染 Home（第1页，含 home.md 内容与导航）
+    pub fn render_home(&self, posts: &[Post], all_tags: &[Value], all_categories: &Value) -> Result<String> {
+        let mut context = self.create_base_context();
+
+        // 获取每页文章数量配置
+        let posts_per_page = self.config.data.get("homepage")
+            .and_then(|v| v.get("posts_per_page"))
+            .and_then(|v| v.as_integer())
+            .unwrap_or(10) as usize;
+
+        // 倒序排列：按日期降序（最新的在前）
+        let mut sorted_posts: Vec<&Post> = posts.iter().collect();
+        sorted_posts.sort_by(|a, b| {
+            let date_a = a.date().unwrap_or("");
+            let date_b = b.date().unwrap_or("");
+            date_b.cmp(date_a)
+        });
+
+        // 计算总页数
+        let total_pages = (posts.len() + posts_per_page - 1) / posts_per_page;
+
+        // 首页显示最新文章
+        let page_posts: Vec<Value> = sorted_posts
+            .iter()
+            .take(posts_per_page)
+            .map(|p| p.data.clone())
+            .collect();
+
+        // 基础上下文
+        context.insert("posts", &page_posts);
+        context.insert("all_tags", all_tags);
+        context.insert("all_categories", all_categories);
+        context.insert("current_page", &0);
+        context.insert("total_pages", &total_pages);
+        let start_display = if sorted_posts.is_empty() { 0 } else { 1 };
+        let end_display = std::cmp::min(posts_per_page, sorted_posts.len());
+        context.insert("start_index", &start_display);
+        context.insert("end_index", &end_display);
+        context.insert("has_previous_page", &false);
+        context.insert("has_next_page", &false);
+
+        // 读取并解析 home.md，注入页面内容与 frontmatter（home_navs）
+        let home_path = std::path::Path::new("source/home.md");
+        if home_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(home_path) {
+                if let Ok(Some(home_data)) = crate::post::PostParser::parse_file_content(&content, home_path, std::path::Path::new("source")) {
+                    // 注入完整的 page 数据，供模板访问 frontmatter
+                    context.insert("page", &home_data);
+                    // 注入 page_content
+                    if let Some(page_content) = home_data.get("content") {
+                        context.insert("page_content", page_content);
+                    }
+                    // 注入 home_navs（如果存在）
+                    if let Some(navs) = home_data.get("home_navs") {
+                        context.insert("home_navs", navs);
+                    }
+                }
+            }
+        }
+
+        self.tera.render("home.html", &context)
+            .map_err(Error::Template)
+    }
+
     /// 渲染首页分页页面
     pub fn render_index_page(&self, posts: &[Post], all_tags: &[Value], all_categories: &Value, page: usize) -> Result<String> {
         let mut context = self.create_base_context();
@@ -356,6 +526,78 @@ impl TemplateEngine {
         context.insert("has_next_page", &(page > 1)); // 右边（下一页）指向更旧内容
         
         self.tera.render("index.html", &context)
+            .map_err(Error::Template)
+    }
+
+    /// 渲染 Home 分页页面（倒分页，含 home.md 导航与内容）
+    pub fn render_home_page(&self, posts: &[Post], all_tags: &[Value], all_categories: &Value, page: usize) -> Result<String> {
+        let mut context = self.create_base_context();
+
+        // 获取每页文章数量配置
+        let posts_per_page = self.config.data.get("homepage")
+            .and_then(|v| v.get("posts_per_page"))
+            .and_then(|v| v.as_integer())
+            .unwrap_or(10) as usize;
+
+        // 倒序排列：按日期降序（最新的在前）
+        let mut sorted_posts: Vec<&Post> = posts.iter().collect();
+        sorted_posts.sort_by(|a, b| {
+            let date_a = a.date().unwrap_or("");
+            let date_b = b.date().unwrap_or("");
+            date_b.cmp(date_a)
+        });
+
+        // 计算总页数
+        let total_pages = (posts.len() + posts_per_page - 1) / posts_per_page;
+
+        // 验证页码
+        if page < 1 || page > total_pages {
+            return Err(Error::Other(format!("无效的页码: {}，总页数: {}", page, total_pages)));
+        }
+
+        // 倒分页切片
+        let total_posts = sorted_posts.len();
+        let start_index = total_posts.saturating_sub(page * posts_per_page);
+        let end_index = std::cmp::min(total_posts.saturating_sub((page - 1) * posts_per_page), total_posts);
+
+        let page_posts: Vec<Value> = sorted_posts[start_index..end_index]
+            .iter()
+            .map(|p| p.data.clone())
+            .collect();
+
+        // 基础上下文
+        context.insert("posts", &page_posts);
+        context.insert("all_tags", all_tags);
+        context.insert("all_categories", all_categories);
+        context.insert("current_page", &page);
+        context.insert("total_pages", &total_pages);
+        let start_display = if sorted_posts.is_empty() { 0 } else { total_posts.saturating_sub(end_index) + 1 };
+        let end_display = if sorted_posts.is_empty() { 0 } else { total_posts.saturating_sub(start_index) };
+        context.insert("start_index", &start_display);
+        context.insert("end_index", &end_display);
+        context.insert("has_previous_page", &(page < total_pages));
+        context.insert("has_next_page", &(page > 1));
+
+        // 读取并解析 home.md，注入页面内容与 frontmatter（home_navs）
+        let home_path = std::path::Path::new("source/home.md");
+        if home_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(home_path) {
+                if let Ok(Some(home_data)) = crate::post::PostParser::parse_file_content(&content, home_path, std::path::Path::new("source")) {
+                    // 注入完整的 page 数据，供模板访问 frontmatter
+                    context.insert("page", &home_data);
+                    // 注入 page_content
+                    if let Some(page_content) = home_data.get("content") {
+                        context.insert("page_content", page_content);
+                    }
+                    // 注入 home_navs（如果存在）
+                    if let Some(navs) = home_data.get("home_navs") {
+                        context.insert("home_navs", navs);
+                    }
+                }
+            }
+        }
+
+        self.tera.render("home.html", &context)
             .map_err(Error::Template)
     }
     

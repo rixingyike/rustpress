@@ -16,7 +16,8 @@
     @apply font-semibold text-gray-900;
   }
   
-  a {
+  /* 站点内普通链接统一颜色；排除所有按钮类（包含 .btn、.btn-primary 等） */
+  a:not([class*="btn"]) {
     @apply text-primary-600 hover:text-primary-700 transition-colors;
   }
 }
@@ -28,11 +29,11 @@
   }
   
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 hover:text-white focus:ring-primary-500;
   }
   
   .btn-secondary {
-    @apply btn bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500;
+    @apply btn bg-secondary-600 text-white hover:bg-secondary-700 hover:text-white focus:ring-secondary-500;
   }
   
   .btn-outline {

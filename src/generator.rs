@@ -44,10 +44,16 @@ impl Generator {
         }
         std::fs::create_dir_all(output_dir)?;
         
-        // 复制主题静态资源到输出目录
-        let theme_static_dir = "src/themes/default/static";
-        if Path::new(theme_static_dir).exists() {
-            copy_dir_recursive(theme_static_dir, output_dir)?;
+        // 写出打包在二进制中的主题静态资源到输出目录（若存在本地静态目录，随后拷贝以覆盖）
+        crate::utils::write_embedded_theme_static(output_dir)?;
+        // 若本地存在主题静态目录，拷贝以覆盖（保留用户覆盖能力）
+        let runtime_paths = crate::utils::RuntimePathsBuilder::new()
+            .md_dir(md_dir)
+            .theme_name(self.config.theme_name())
+            .build();
+        let theme_static_dir = runtime_paths.theme_static_dir;
+        if theme_static_dir.exists() {
+            copy_dir_recursive(&theme_static_dir, output_dir)?;
         }
 
         // 复制用户资源目录：<md_dir>/assets -> public/assets
@@ -56,11 +62,14 @@ impl Generator {
             let public_assets_dir = output_dir.join("assets");
             copy_dir_recursive(&source_assets_dir, &public_assets_dir)?;
         }
+
+        // 复制源目录根层的非 Markdown 且非隐藏文件（如 CNAME）到输出根目录
+        crate::utils::copy_root_non_md_non_hidden(md_dir, output_dir)?;
         
         // 列出所有文章
         let posts = PostParser::list_posts(md_dir)?;
 
-        // 首次构建时生成侧边栏数据（可手动编辑）
+        // 首次构建时生成侧边栏数据（可手动编辑，写入优先项目根）
         crate::utils::ensure_sidebar_data(md_dir, &posts)?;
 
         // 统计标签、年份和分类
@@ -77,18 +86,18 @@ impl Generator {
         // 计算总页数
         let total_pages = (posts.len() + posts_per_page - 1) / posts_per_page;
         
-        // 渲染首页（第4页 - 最新文章页）
+        // 渲染首页（Home 布局，集成 home.md 内容与导航）
         let index_html = if total_pages > 1 {
-            // 如果有分页，主页显示第4页（最新文章页）
-            self.template_engine.render_index_page(&posts, &all_tags, &all_categories, total_pages)?
+            // 有分页时，首页显示最大页（最新）
+            self.template_engine.render_home_page(&posts, &all_tags, &all_categories, total_pages)?
         } else {
-            // 如果只有1页，显示第1页
-            self.template_engine.render_index(&posts, &all_tags, &all_categories)?
+            // 仅1页时，显示 Home 第1页
+            self.template_engine.render_home(&posts, &all_tags, &all_categories)?
         };
         std::fs::write(output_dir.join("index.html"), index_html)
             .map_err(|e| Error::Other(format!("无法写入首页文件: {}", e)))?;
         
-        // 生成首页分页页面（包括第1页到第3页）
+        // 生成首页分页页面（根目录 index{n}.html，最大页为 index.html）
         self.generate_index_pages(&posts, &all_tags, &all_categories, output_dir)?;
         
         // 渲染每篇文章
@@ -433,7 +442,7 @@ impl Generator {
         // 生成所有分页页面为根目录文件 index{n}.html
         // 注意：最大页为首页 index.html，因此仅生成到 total_pages-1
         for page in 1..=std::cmp::max(1, total_pages.saturating_sub(1)) {
-            let page_html = self.template_engine.render_index_page(posts, all_tags, all_categories, page)
+            let page_html = self.template_engine.render_home_page(posts, all_tags, all_categories, page)
                 .map_err(|e| Error::Other(format!("无法渲染第{}页: {}", page, e)))?;
             
             // 根目录下命名为 index{n}.html
@@ -467,13 +476,13 @@ impl Generator {
         let mut rebuilt_paths: Vec<String> = Vec::new();
         for page in list {
             if total_pages == 1 && page == 1 {
-                let html = self.template_engine.render_index(posts, all_tags, all_categories)?;
+                let html = self.template_engine.render_home(posts, all_tags, all_categories)?;
                 let out_path = output_dir.join("index.html");
                 std::fs::write(&out_path, html)
                     .map_err(|e| Error::Other(format!("无法写入首页文件 {:?}: {}", out_path, e)))?;
                 rebuilt_paths.push("/index.html".to_string());
             } else {
-                let html = self.template_engine.render_index_page(posts, all_tags, all_categories, page)
+                let html = self.template_engine.render_home_page(posts, all_tags, all_categories, page)
                     .map_err(|e| Error::Other(format!("无法渲染第{}页: {}", page, e)))?;
                 let out_path = if page == total_pages { output_dir.join("index.html") } else { output_dir.join(format!("index{}.html", page)) };
                 std::fs::write(&out_path, html)
@@ -799,10 +808,15 @@ impl Generator {
         // 确保输出目录存在（不清理）
         if !output_dir.exists() { std::fs::create_dir_all(output_dir)?; }
 
-        // 复制主题静态资源到输出目录（覆盖更新）
-        let theme_static_dir = "src/themes/default/static";
-        if Path::new(theme_static_dir).exists() {
-            copy_dir_recursive(theme_static_dir, output_dir)?;
+        // 写出二进制内置的主题静态资源（覆盖更新），再拷贝本地以覆盖
+        crate::utils::write_embedded_theme_static(output_dir)?;
+        let runtime_paths = crate::utils::RuntimePathsBuilder::new()
+            .md_dir(md_dir)
+            .theme_name(self.config.theme_name())
+            .build();
+        let theme_static_dir = runtime_paths.theme_static_dir;
+        if theme_static_dir.exists() {
+            copy_dir_recursive(&theme_static_dir, output_dir)?;
         }
 
         // 复制用户资源目录：<md_dir>/assets -> public/assets（覆盖更新）
@@ -812,6 +826,9 @@ impl Generator {
             copy_dir_recursive(&source_assets_dir, &public_assets_dir)?;
         }
 
+        // 复制源目录根层的非 Markdown 且非隐藏文件（如 CNAME）到输出根目录（覆盖更新）
+        crate::utils::copy_root_non_md_non_hidden(md_dir, output_dir)?;
+
         // 列出所有文章（用于派生页计算）
         let posts = PostParser::list_posts(md_dir)?;
 
@@ -820,7 +837,7 @@ impl Generator {
 
         // 读取 last_build_time -> epoch（使用 NaiveDateTime 解析，并按本地时区转换）
         let last_build_epoch: i64 = {
-            let build_path = md_dir.join("build.toml");
+            let build_path = crate::utils::resolve_build_toml_path_read(md_dir);
             if !build_path.exists() {
                 0
             } else if let Ok(content) = std::fs::read_to_string(&build_path) {

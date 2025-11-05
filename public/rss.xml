@@ -284,6 +284,13 @@
     <description>这是用于验证“只重建受影响集合”的测试文章。</description>
     <pubDate></pubDate>
   </item>
+  <item>
+    <title>首页</title>
+    <link>https://yishulun.com/home.html</link>
+    <guid isPermaLink="true">https://yishulun.com/home.html</guid>
+    <description>欢迎使用RustPress 这是从 home.md 注入到首页的内容区块。你可以在这里写欢迎词、公告、推荐内容或放置任意 Markdown 文案。上方是最新文章列表与分页，下方是 6 个导航卡片。 可用字段（front matter） home_navs : 一个数组，支持字段 title 、 description 、 url 、 emoji （或 icon ）、 new_tab 、 cta 。 title / subtitle : 可选的页面标题信息（模板暂未直接使用，可用于扩展）。 提示：如不提供 home_navs ，模板会使用默认的 6 张卡片。</description>
+    <pubDate></pubDate>
+  </item>
 
 </channel>
 </rss>

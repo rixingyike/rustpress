@@ -16,17 +16,9 @@ impl Config {
     /// 从文件加载配置
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
-        
-        // 优先使用主题目录下的配置文件
-        let theme_config_path = Path::new("src/themes/default/config.toml");
-        let config_path = if theme_config_path.exists() {
-            theme_config_path
-        } else {
-            path
-        };
-        
-        let content = std::fs::read_to_string(config_path)
-            .map_err(|e| Error::Config(format!("无法读取配置文件 {:?}: {}", config_path, e)))?;
+        // 直接读取传入的配置路径（项目根 config.toml）
+        let content = std::fs::read_to_string(path)
+            .map_err(|e| Error::Config(format!("无法读取配置文件 {:?}: {}", path, e)))?;
         
         let data: toml::Value = toml::from_str(&content)
             .map_err(|e| Error::Config(format!("配置文件格式错误: {}", e)))?;
@@ -49,6 +41,15 @@ impl Config {
     /// 获取主题配置
     pub fn theme(&self) -> Option<&toml::Value> {
         self.data.get("theme")
+    }
+
+    /// 获取主题名称（默认 "default"）
+    pub fn theme_name(&self) -> String {
+        self.theme()
+            .and_then(|v| v.get("name"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("default")
+            .to_string()
     }
     
     /// 获取作者配置

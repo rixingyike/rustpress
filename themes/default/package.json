@@ -4,9 +4,9 @@
   "description": "RustPress 默认主题",
   "main": "index.js",
   "scripts": {
-    "build-css": "tailwindcss -i ./src/tailwind.input.css -o ./static/css/tailwind.css --minify",
-    "build-dev": "tailwindcss -i ./src/tailwind.input.css -o ./static/css/tailwind.dev.css --watch",
-    "watch-css": "tailwindcss -i ./src/tailwind.input.css -o ./static/css/tailwind.css --watch",
+    "build-css": "tailwindcss -i ./src/tailwind.input.css -o ./public/static/css/main.css --minify",
+    "build-dev": "tailwindcss -i ./src/tailwind.input.css -o ./public/static/css/main.dev.css --watch",
+    "watch-css": "tailwindcss -i ./src/tailwind.input.css -o ./public/static/css/main.css --watch",
     "dev": "npm run build-dev",
     "release": "npm run build-css"
   },

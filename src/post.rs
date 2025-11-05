@@ -134,6 +134,9 @@ impl PostParser {
         
         for entry in WalkDir::new(content_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().extension().map_or(false, |ext| ext == "md") {
+                // 跳过隐藏的 Markdown 文件（文件名以点开头）
+                let hidden = entry.file_name().to_string_lossy().starts_with('.');
+                if hidden { continue; }
                 let content = std::fs::read_to_string(entry.path())
                     .map_err(|e| Error::Other(format!("无法读取文件 {:?}: {}", entry.path(), e)))?;
                 

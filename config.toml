@@ -8,11 +8,14 @@ domain = "https://yishulun.com"
 icp_license = "京ICP备14007000号-8"
 start_year = 2002
 
+[theme]
+name = "default"
+
 # 作者信息
 [author]
 name = "LIYI"
 bio = "读书使人进步，著书亦使人进步。"
-avatar = "/images/avatar.png"
+avatar = "/static/images/avatar.png"
 location = "北京, 中国"
 website = "https://yishulun.com"
 email = "9830131@qq.com"
@@ -24,7 +27,7 @@ twitter = "https://x.com/coderliyi"
 youtube = "https://youtube.com/@yishulun"
 email = "9830131@qq.com"
 zhihu = "https://zhihu.com/people/liyi2005"
-wechat = "/images/qrcode.jpg"
+wechat = "/static/images/qrcode.jpg"
 weibo = "https://weibo.com/ixiaochengxu"
 bilibili = "https://space.bilibili.com/262757998"
 rss = "/rss.xml"
@@ -33,7 +36,7 @@ rss = "/rss.xml"
 [homepage]
 hero_title = "欢迎来到一树论"
 hero_subtitle = "稻盛和夫：成长不是和别人比，而是和自己的昨天比。"
-hero_background = "/images/hero-bg.jpg"
+hero_background = "/static/images/hero-bg.jpg"
 posts_per_page = 8
 show_hero = true
 
@@ -48,19 +51,19 @@ posts_per_page = 8
 # 广告位设置
 [ads]
 # 广告位1：Header广告
-ad1_image = "/images/book-wegame.png"
+ad1_image = "/static/images/book-wegame.png"
 ad1_link = "https://item.jd.com/13630053.html"
 ad1_title = "微信小游戏开发"
 ad1_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
 
 # 广告位2：侧边栏顶部广告（原推荐阅读位置）
-ad2_image = "/images/book-wegame.png"
+ad2_image = "/static/images/book-wegame.png"
 ad2_link = "https://item.jd.com/13630053.html"
 ad2_title = "微信小游戏开发"
 ad2_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
 
 # 广告位3：侧边栏底部广告（原支持我们位置）
-ad3_image = "/images/book-wegame.png"
+ad3_image = "/static/images/book-wegame.png"
 ad3_link = "https://item.jd.com/13630053.html"
 ad3_title = "微信小游戏开发"
 ad3_description = "学习微信小游戏开发技术，掌握游戏开发全流程"

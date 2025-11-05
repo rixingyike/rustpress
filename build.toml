@@ -1,6 +1,7 @@
-# 普通全量编译full，增量编译incremental
-compile_mode = "incremental"
-last_build_time = "2025-11-04 16:45:18"
+compile_mode = "full"
+last_build_time = "2025-11-05 10:39:42"
+md_dir = "source"
+output_dir = "public"
 
 [[sidebar.hot_categories]]
 count = 11

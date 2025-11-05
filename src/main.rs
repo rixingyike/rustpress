@@ -21,7 +21,19 @@ fn main() -> Result<()> {
         Commands::New { name, force } => new_project(name, *force),
         Commands::Build { output_dir, incremental } => build_site(&cli.md_dir, output_dir, &cli.config, *incremental),
         Commands::BuildDev { output_dir, incremental } => build_dev_site(&cli.md_dir, output_dir, &cli.config, *incremental),
-        Commands::BuildCss => build_theme_css(),
+        Commands::BuildCss => {
+            // 为 CSS 构建加载配置以确定主题名称
+            use std::path::Path as StdPath;
+            let config_path = {
+                let cf = StdPath::new(&cli.config);
+                if cf.is_absolute() || cf.exists() { cf.to_path_buf() } else {
+                    let candidate = StdPath::new(&cli.md_dir).join(&cli.config);
+                    if candidate.exists() { candidate } else { cf.to_path_buf() }
+                }
+            };
+            let config = Config::from_file(&config_path)?;
+            build_theme_css(&cli.md_dir, &config)
+        },
         Commands::Serve { port, output_dir, incremental } => serve_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental),
         Commands::Dev { port, output_dir, incremental } => dev_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental),
         Commands::BuildSidebar => build_sidebar(&cli.md_dir, &cli.config),
@@ -92,9 +104,9 @@ tags = ["Rust", "博客"]
     std::fs::write(project_path.join("content/first-post.md"), example_post)?;
     
     // 读取默认模板文件
-    let base_template = read_template_file("src/themes/default/templates/base.html")?;
-    let index_template = read_template_file("src/themes/default/templates/index.html")?;
-    let post_template = read_template_file("src/themes/default/templates/post.html")?;
+    let base_template = read_template_file("themes/default/templates/base.html")?;
+    let index_template = read_template_file("themes/default/templates/index.html")?;
+    let post_template = read_template_file("themes/default/templates/post.html")?;
     
     // 创建模板文件
     std::fs::write(project_path.join("templates/base.html"), base_template)?;
@@ -155,7 +167,16 @@ fn build_dev_site(md_dir: &str, output_dir: &str, config_file: &str, incremental
     
     // 先构建 CSS
     println!("正在构建主题 CSS...");
-    build_theme_css()?;
+    // 加载配置以确定主题名称
+    let config_path = {
+        let cf = std::path::Path::new(config_file);
+        if cf.is_absolute() || cf.exists() { cf.to_path_buf() } else {
+            let candidate = std::path::Path::new(md_dir).join(config_file);
+            if candidate.exists() { candidate } else { cf.to_path_buf() }
+        }
+    };
+    let config = Config::from_file(&config_path)?;
+    build_theme_css(md_dir, &config)?;
     
     // 再构建网站
     println!("正在构建网站...");

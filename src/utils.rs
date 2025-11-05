@@ -3,9 +3,100 @@
 //! 提供各种实用的辅助函数
 
 use crate::error::{Error, Result};
+use crate::config::Config;
 use crate::post::{Post, PostParser};
 use std::path::Path;
 use walkdir::WalkDir;
+use std::borrow::Cow;
+
+// 将主题静态资源打包进二进制（主题的 public 目录，包含 static 子目录）
+#[derive(rust_embed::RustEmbed)]
+#[folder = "themes/default/public"]
+pub struct ThemeStaticAssets;
+
+// 将主题模板打包进二进制
+#[derive(rust_embed::RustEmbed)]
+#[folder = "themes/default/templates"]
+pub struct ThemeTemplates;
+
+/// 运行时路径信息
+#[derive(Debug, Clone)]
+pub struct RuntimePaths {
+    pub build_toml_path: std::path::PathBuf,
+    pub theme_dir: std::path::PathBuf,
+    pub theme_templates_dir: std::path::PathBuf,
+    pub theme_static_dir: std::path::PathBuf,
+}
+
+/// 运行时路径构建器（Builder 模式）
+#[derive(Debug, Default, Clone)]
+pub struct RuntimePathsBuilder {
+    md_dir: Option<std::path::PathBuf>,
+    theme_name: Option<String>,
+}
+
+impl RuntimePathsBuilder {
+    pub fn new() -> Self { Self::default() }
+    pub fn md_dir<P: AsRef<std::path::Path>>(mut self, md_dir: P) -> Self {
+        self.md_dir = Some(md_dir.as_ref().to_path_buf());
+        self
+    }
+    pub fn theme_name<S: Into<String>>(mut self, name: S) -> Self {
+        self.theme_name = Some(name.into());
+        self
+    }
+    pub fn build(self) -> RuntimePaths {
+        let md = self.md_dir.unwrap_or_else(|| std::path::PathBuf::from("."));
+        let theme = self.theme_name.unwrap_or_else(|| "default".to_string());
+        // build.toml 路径优先项目根，其次 md_dir
+        let build_toml_path = {
+            let root = std::path::PathBuf::from("build.toml");
+            if root.exists() { root } else { md.join("build.toml") }
+        };
+
+        // 优先使用项目根目录 themes/<theme>
+        let theme_dir_in_root = std::path::PathBuf::from("themes").join(&theme);
+        // 次选在 md_dir 下 themes/<theme>
+        let theme_dir_in_md = md.join("themes").join(&theme);
+
+        // 选择存在的主题目录
+        let (theme_dir, theme_templates_dir, theme_static_dir) = if theme_dir_in_root.exists() {
+            let templates_dir = theme_dir_in_root.join("templates");
+            // 优先主题 public 目录（例如 themes/default/public/static），否则回退到 themes/default/static
+            let public_dir = theme_dir_in_root.join("public");
+            let static_dir = if public_dir.exists() { public_dir } else { theme_dir_in_root.join("static") };
+            (theme_dir_in_root, templates_dir, static_dir)
+        } else if theme_dir_in_md.exists() {
+            let templates_dir = theme_dir_in_md.join("templates");
+            let public_dir = theme_dir_in_md.join("public");
+            let static_dir = if public_dir.exists() { public_dir } else { theme_dir_in_md.join("static") };
+            (theme_dir_in_md, templates_dir, static_dir)
+        } else {
+            // 如果都不存在，默认回退到根目录路径
+            let templates_dir = theme_dir_in_root.join("templates");
+            let public_dir = theme_dir_in_root.join("public");
+            let static_dir = if public_dir.exists() { public_dir } else { theme_dir_in_root.join("static") };
+            (theme_dir_in_root, templates_dir, static_dir)
+        };
+
+        RuntimePaths { build_toml_path, theme_dir, theme_templates_dir, theme_static_dir }
+    }
+}
+
+/// 解析 build.toml 的读取路径：优先项目根目录，其次 md_dir 下
+pub fn resolve_build_toml_path_read<P: AsRef<std::path::Path>>(md_dir: P) -> std::path::PathBuf {
+    let root = std::path::PathBuf::from("build.toml");
+    let in_md = md_dir.as_ref().join("build.toml");
+    if root.exists() { root } else { in_md }
+}
+
+/// 解析 build.toml 的写入路径：优先写到项目根目录；若根不存在且 md_dir 已存在历史文件，则写回 md_dir
+pub fn resolve_build_toml_path_write<P: AsRef<std::path::Path>>(md_dir: P) -> std::path::PathBuf {
+    let root = std::path::PathBuf::from("build.toml");
+    let in_md = md_dir.as_ref().join("build.toml");
+    // 若根已存在，或 md_dir 不存在该文件，则写根；否则保持写回 md_dir 以兼容旧项目
+    if root.exists() || !in_md.exists() { root } else { in_md }
+}
 
 /// 递归复制目录
 pub fn copy_dir_recursive<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<()> {
@@ -72,7 +163,7 @@ pub fn get_npm_command() -> &'static str {
     }
 }
 
-/// 记录编译信息到 md_dir/build.toml 文件
+/// 记录编译信息到 build.toml 文件（优先项目根）
 pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
     use chrono::{DateTime, Local};
     use std::path::Path;
@@ -82,7 +173,7 @@ pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
     let beijing_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
 
     // 读取已有的 build.toml 并更新 last_build_time，保留其他键
-    let build_path = Path::new(md_dir.as_ref()).join("build.toml");
+    let build_path = resolve_build_toml_path_write(md_dir.as_ref());
     let mut root = if build_path.exists() {
         match std::fs::read_to_string(&build_path) {
             Ok(content) => content.parse::<toml::Value>().unwrap_or(toml::Value::Table(toml::value::Table::new())),
@@ -104,10 +195,14 @@ pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
     Ok(())
 }
 
-/// 构建主题 CSS
-pub fn build_theme_css() -> Result<()> {
-    let theme_dir = "src/themes/default";
-    let package_json_path = format!("{}/package.json", theme_dir);
+/// 构建主题 CSS（按配置动态选择主题目录，位于 md_dir/themes/{theme}）
+pub fn build_theme_css<P: AsRef<std::path::Path>>(md_dir: P, config: &Config) -> Result<()> {
+    let paths = RuntimePathsBuilder::new()
+        .md_dir(md_dir.as_ref())
+        .theme_name(config.theme_name())
+        .build();
+    let theme_dir = paths.theme_dir;
+    let package_json_path = format!("{}/package.json", theme_dir.display());
     
     // 检查主题是否需要 CSS 编译
     if !std::path::Path::new(&package_json_path).exists() {
@@ -120,12 +215,12 @@ pub fn build_theme_css() -> Result<()> {
     let npm_cmd = get_npm_command();
     
     // 检查是否安装了依赖
-    let node_modules_path = format!("{}/node_modules", theme_dir);
+    let node_modules_path = format!("{}/node_modules", theme_dir.display());
     if !std::path::Path::new(&node_modules_path).exists() {
         println!("正在安装主题依赖...");
         let install_status = std::process::Command::new(npm_cmd)
-            .args(&["install"])
-            .current_dir(theme_dir)
+            .args(&["install"]) 
+            .current_dir(&theme_dir)
             .status()
             .map_err(|e| Error::Other(format!("无法执行 npm install 命令: {}", e)))?;
         
@@ -138,8 +233,8 @@ pub fn build_theme_css() -> Result<()> {
     // 运行 CSS 构建命令
     println!("正在编译主题 CSS...");
     let build_status = std::process::Command::new(npm_cmd)
-        .args(&["run", "build-css"])
-        .current_dir(theme_dir)
+        .args(&["run", "build-css"]) 
+        .current_dir(&theme_dir)
         .status()
         .map_err(|e| Error::Other(format!("无法执行 npm run build-css 命令: {}", e)))?;
     
@@ -151,10 +246,9 @@ pub fn build_theme_css() -> Result<()> {
     Ok(())
 }
 
-/// 计算并确保首次生成侧边栏数据到 md_dir/build.toml（如果缺失）
+/// 计算并确保首次生成侧边栏数据到 build.toml（如果缺失，优先项目根）
 pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post]) -> Result<()> {
-    use std::path::Path;
-    let build_path = Path::new(md_dir.as_ref()).join("build.toml");
+    let build_path = resolve_build_toml_path_write(md_dir.as_ref());
     let mut root = if build_path.exists() {
         match std::fs::read_to_string(&build_path) {
             Ok(content) => content.parse::<toml::Value>().unwrap_or(toml::Value::Table(toml::value::Table::new())),
@@ -248,11 +342,10 @@ pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post])
     Ok(())
 }
 
-/// 使用当前内容重新生成并覆盖 md_dir/build.toml 中的侧边栏数据
+/// 使用当前内容重新生成并覆盖 build.toml 中的侧边栏数据（优先项目根）
 pub fn regenerate_sidebar<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post]) -> Result<()> {
     // 简单复用 ensure_sidebar_data 的逻辑：删除现有 sidebar 后重新生成
-    use std::path::Path;
-    let build_path = Path::new(md_dir.as_ref()).join("build.toml");
+    let build_path = resolve_build_toml_path_write(md_dir.as_ref());
     let mut root = if build_path.exists() {
         match std::fs::read_to_string(&build_path) {
             Ok(content) => content.parse::<toml::Value>().unwrap_or(toml::Value::Table(toml::value::Table::new())),
@@ -277,10 +370,9 @@ pub enum BuildMode {
     Full,
 }
 
-/// 从 source/build.toml 读取编译模式；默认增量
+/// 从 build.toml 读取编译模式；默认增量（优先项目根，其次 md_dir）
 pub fn read_build_mode<P: AsRef<std::path::Path>>(md_dir: P) -> BuildMode {
-    use std::path::Path;
-    let build_path = Path::new(md_dir.as_ref()).join("build.toml");
+    let build_path = resolve_build_toml_path_read(md_dir.as_ref());
     if !build_path.exists() {
         return BuildMode::Incremental;
     }
@@ -311,4 +403,48 @@ pub fn read_build_mode<P: AsRef<std::path::Path>>(md_dir: P) -> BuildMode {
         }
     }
     BuildMode::Incremental
+}
+
+/// 复制源目录根层的非 Markdown 且非隐藏文件到输出目录（用于拷贝 CNAME 等）
+pub fn copy_root_non_md_non_hidden<P: AsRef<Path>, Q: AsRef<Path>>(md_dir: P, output_dir: Q) -> Result<()> {
+    use std::fs;
+    let md_dir = md_dir.as_ref();
+    let output_dir = output_dir.as_ref();
+    if !md_dir.exists() { return Ok(()); }
+    let rd = fs::read_dir(md_dir)
+        .map_err(|e| Error::Other(format!("无法读取源目录 {:?}: {}", md_dir, e)))?;
+    for entry in rd.flatten() {
+        let path = entry.path();
+        // 仅处理根层文件
+        if path.is_file() {
+            let name = entry.file_name();
+            let name_str = name.to_string_lossy();
+            if name_str.starts_with('.') { continue; }
+            if path.extension().map_or(false, |ext| ext == "md") { continue; }
+            let dst = output_dir.join(name_str.as_ref());
+            fs::copy(&path, &dst)
+                .map_err(|e| Error::Other(format!("无法复制文件 {:?} -> {:?}: {}", path, dst, e)))?;
+        }
+    }
+    Ok(())
+}
+
+/// 将打包在二进制中的主题静态资源写出到输出目录（覆盖写出）
+pub fn write_embedded_theme_static<P: AsRef<Path>>(output_dir: P) -> Result<()> {
+    use std::fs;
+    let output_dir = output_dir.as_ref();
+    if !output_dir.exists() { fs::create_dir_all(output_dir).map_err(|e| Error::Other(format!("无法创建输出目录 {:?}: {}", output_dir, e)))?; }
+
+    for file in ThemeStaticAssets::iter() {
+        let rel: &str = file.as_ref();
+        if let Some(content) = ThemeStaticAssets::get(rel) {
+            let bytes: Cow<'static, [u8]> = content.data;
+            let dst = output_dir.join(rel);
+            if let Some(parent) = dst.parent() {
+                fs::create_dir_all(parent).map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
+            }
+            fs::write(&dst, &bytes).map_err(|e| Error::Other(format!("无法写入嵌入静态文件 {:?}: {}", dst, e)))?;
+        }
+    }
+    Ok(())
 }
