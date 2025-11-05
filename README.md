@@ -35,6 +35,21 @@ RustPress采用**倒分页设计**，整体按日期降序、固定每页 `M = h
 
 设计原则是保持内容稳定性与用户体验的平衡，侧边栏内容以相对稳定信息为主，同时包含必要的动态更新内容。相关文章功能采用智能算法，根据当前文章的标签和分类计算相似度，为用户提供真正有价值的内容推荐。
 
+## 文件复制策略（重要）
+
+RustPress 仅解析并渲染 `source` 目录中的 Markdown（`.md`）为 HTML。对非 Markdown 的静态文件，按如下策略复制到输出目录（默认 `public`）：
+
+- 递归复制：遍历 `source` 下所有子目录，将“非隐藏且非 `.md`”文件按原相对路径复制到 `public`。
+- 根层文本文件：如 `CNAME`、`robots.txt` 等放在 `source` 根层，构建后会出现在 `public` 根层。
+- 资产与附件：图片（如 `.png`、`.jpg`、`.jpeg`、`.gif`）、文本（如 `.txt`）、其它附件，保持原有相对目录层次，方便子目录独立移动；不再仅限于 `source/assets`，子目录中的 `assets` 也会被扫描并复制。
+- 隐藏文件：以 `.` 开头的文件将跳过复制（例如 `.DS_Store`）。
+
+示例：
+
+- `source/assets/img.png` -> `public/assets/img.png`
+- `source/posts/abc/assets/logo.jpg` -> `public/posts/abc/assets/logo.jpg`
+- `source/CNAME` -> `public/CNAME`
+
 ## 安装
 
 确保您已安装Rust和Cargo，然后执行以下命令：
@@ -51,86 +66,173 @@ cargo build --release
 cp target/release/rustpress /usr/local/bin/
 ```
 
-## 使用方法
+## 如何使用
 
-### 创建新的博客项目
+下面提供四种使用方式，按你的场景选择其一即可：
 
-```bash
-cargo run -- new my-blog
-# 或者如果已安装到系统路径
-# rustpress new my-blog
-```
+### 1）通过脚本一键使用（install_rustpress.sh）
 
-这将创建一个名为`my-blog`的新博客项目，包含以下目录结构：
-
-```
-my-blog/
-├── content/       # 存放Markdown文章
-├── templates/     # 存放模板文件
-├── static/        # 存放静态资源（CSS、JS、图片等）
-├── public/        # 生成的静态网站文件
-└── config.toml    # 配置文件
-```
-
-### 编写文章
-
-在`content`目录下创建Markdown文件，例如`my-first-post.md`，包含以下内容：
-
-```markdown
-+++
-title: "我的第一篇文章"
-createTime: 2023-01-01
-categories: ["技术"]
-tags: ["Rust", "博客"]
-+++
-
-# 标题
-
-这是一篇使用RustPress创建的博客文章。
-
-## 二级标题
-
-- 列表项1
-- 列表项2
-```
-
-### 构建网站
+- 在一个包含 `source` 文章目录的文件夹中执行脚本，自动安装/检测 RustPress、构建并启动本地预览。
+- 快速开始：
 
 ```bash
-cd my-blog
-cargo run -- build
-# 或者如果已安装到系统路径
-# rustpress build
+# 在含有 source 的目录中运行
+bash <(curl -fsSL https://raw.githubusercontent.com/rixingyike/rustpress/main/scripts/install_rustpress.sh) \
+  --md-dir source \
+  --output-dir public \
+  --config config.toml \
+  --port 1111
 ```
 
-这将把Markdown文章编译成HTML文件，并输出到`public`目录。
+- 常用参数说明：
+  - `--dev`：开发构建（含主题 CSS 编译）
+  - `--incremental`：增量构建（基于 build.toml 的 last_build_time）
+  - `--git`：从 Git 仓库安装 RustPress（如 `--git https://github.com/rixingyike/rustpress.git`）
+  - `--local`：从本地源码安装 RustPress（如 `--local /path/to/rustpress`）
 
-### 本地预览
+- 示例：
 
 ```bash
-cd my-blog
-cargo run -- serve
-# 或者指定端口
-# cargo run -- serve --port 8080
-# 或者如果已安装到系统路径
-# rustpress serve
+# 开发构建（含 CSS）+ 增量 + 指定端口
+curl -fsSL https://raw.githubusercontent.com/rixingyike/rustpress/main/scripts/install_rustpress.sh | bash -s -- \
+  --md-dir source --output-dir public --config config.toml --dev --incremental --port 8000
+
+# 从 Git 安装并构建
+curl -fsSL https://raw.githubusercontent.com/rixingyike/rustpress/main/scripts/install_rustpress.sh | bash -s -- \
+  --git https://github.com/rixingyike/rustpress.git --md-dir source --output-dir public
 ```
 
-这将在本地启动一个Web服务器，您可以在浏览器中访问`http://localhost:1111`来预览您的博客。
-
-### 示例：指定源目录、输出目录并启用增量模式
-
-在某些场景（例如兼容已有目录结构或在 CI 中区分构建目录），可以显式指定源目录与输出目录，并开启增量编译：
+- 热重载（模板实时预览）：如需监听模板变化自动重建，请使用 CLI：
 
 ```bash
-# 增量构建（指定源与输出目录）
-cargo run -- -m old_source -c source/config.toml build -o old_public --incremental
-
-# 启动本地预览（增量构建 + 指定端口）
-cargo run -- -m old_source -c source/config.toml serve -o old_public -p 1118 --incremental
+cargo run -- dev --hotreload --md-dir source --config config.toml -p 8000
 ```
 
-- `-m` 指定 Markdown 源目录，`-o` 指定输出目录，`-c` 指向配置文件路径；`--incremental` 显式启用增量构建（优先级高于 `build.toml`）。
+热重载适合在编写主题模板时使用。
+
+### 2）作为工程依赖使用
+
+在你自己的项目中添加依赖，并以代码方式调用构建与预览：
+
+```toml
+# Cargo.toml
+[dependencies]
+rustpress = "0.1.1" 
+```
+
+```rust
+// src/main.rs
+fn main() -> rustpress::Result<()> {
+    let config = rustpress::Config::from_file(std::path::Path::new("config.toml"))?;
+    let gen = rustpress::Generator::new(config.clone(), std::path::Path::new("source"))?;
+
+    // 构建站点到 public
+    gen.build("source", "public")?;
+
+    // 启动本地预览
+    rustpress::server::DevServer::serve_sync(1111, "public")?;
+    Ok(())
+}
+```
+
+### 3）Fork 源码进行自由定制
+
+- Fork 本仓库并克隆到本地，按需修改源码与模板：
+  - 模板路径：`themes/default/templates/`
+  - 静态资源（主题）：`themes/default/static/`
+- 本地开发建议：
+
+```bash
+# 开发环境构建（编译 CSS + 构建站点）
+cargo run -- build-dev
+
+# 开发模式（构建 + 启动预览）
+cargo run -- dev
+
+# 开启模板热重载
+cargo run -- dev --hotreload
+```
+
+### 4）通过 GitHub Actions 自动部署（示例 deploy.yml）
+
+将以下文件保存为 `.github/workflows/deploy.yml`，每次推送到 `main` 分支时自动构建并部署到 GitHub Pages：
+
+```yaml
+name: Deploy RustPress to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build site
+        run: |
+          # 推荐固定版本（发布到 crates.io 后使用）
+          cargo install rustpress --version 0.1.1
+          rustpress build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # 备选：将 public/ 推送到另一个仓库（如 rixingyike/rixingyike.github.io 的 main 分支）
+  publish-to-user-repo:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: public
+      - name: Push public to rixingyike.github.io
+        uses: cpina/github-action-push-to-another-repository@v1.6.2
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: public/
+          destination-github-username: rixingyike
+          destination-repository-name: rixingyike.github.io
+          target-branch: main
+          user-email: 9830131@qq.com
+          commit-message: "deploy: update site"
+```
+
+> 注：站点的静态文件输出目录为 `public`；根层文本（如 `CNAME`、`robots.txt`）与所有非 `.md` 附件会按原相对路径递归复制到 `public`。
 
 ## 配置
 
@@ -143,10 +245,6 @@ description = "使用RustPress创建的博客"  # 博客描述
 author = "作者"            # 作者名称
 base_url = "https://example.com"  # 博客的基础URL
 
-[taxonomies]
-category = "categories"    # 分类
-tag = "tags"               # 标签
-
 # 分类分页配置（单分类文章列表每页显示多少条）
 [categories]
 posts_per_page = 8
@@ -154,35 +252,17 @@ posts_per_page = 8
 # 标签分页配置（单标签文章列表每页显示多少条）
 [tags]
 posts_per_page = 8
+……
 ```
 
-## 模板自定义
+## 模板主题自定义
 
-您可以修改`templates`目录下的模板文件来自定义网站的外观：
+您可以修改`templates`目录下默认的 default 主题文件来自定义网站的外观：
 
 - `base.html`：基础模板，包含HTML结构和CSS样式
 - `index.html`：首页模板，显示文章列表
 - `post.html`：文章详情页模板
-
-## 部署到GitHub Pages
-
-1. 构建您的网站：`cargo run -- build`
-2. 进入`public`目录：`cd public`
-3. 初始化git仓库：`git init`
-4. 添加GitHub Pages远程仓库：`git remote add origin https://github.com/your-username/your-username.github.io.git`
-5. 提交并推送：`git add . && git commit -m "Deploy blog" && git push -u origin master`
-
-等待几分钟后，您的博客将可以在`https://your-username.github.io`访问。
-
-## 开发
-
-如果您想为RustPress贡献代码，请按照以下步骤：
-
-1. Fork并克隆仓库
-2. 创建功能分支：`git checkout -b feature/my-feature`
-3. 提交更改：`git commit -am 'Add some feature'`
-4. 推送到分支：`git push origin feature/my-feature`
-5. 提交Pull Request
+- 其他等，使用 hotreload 模式方便修改主题
 
 ## 许可证
 

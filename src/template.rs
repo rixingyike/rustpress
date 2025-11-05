@@ -345,6 +345,15 @@ impl TemplateEngine {
         }
 
         // 插入合并后的站点配置
+        // 保障 site.domain 存在：若未配置则回退 base_url 或空串
+        if !site_config.contains_key("domain") {
+            let domain_fallback = self.config.data.get("site")
+                .and_then(|v| v.get("base_url"))
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            site_config.insert("domain".to_string(), JsonValue::String(domain_fallback));
+        }
         context.insert("site", &JsonValue::Object(site_config));
         
         // 插入当前时间

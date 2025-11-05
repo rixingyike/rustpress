@@ -56,15 +56,8 @@ impl Generator {
             copy_dir_recursive(&theme_static_dir, output_dir)?;
         }
 
-        // 复制用户资源目录：<md_dir>/assets -> public/assets
-        let source_assets_dir = md_dir.join("assets");
-        if source_assets_dir.exists() {
-            let public_assets_dir = output_dir.join("assets");
-            copy_dir_recursive(&source_assets_dir, &public_assets_dir)?;
-        }
-
-        // 复制源目录根层的非 Markdown 且非隐藏文件（如 CNAME）到输出根目录
-        crate::utils::copy_root_non_md_non_hidden(md_dir, output_dir)?;
+        // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（覆盖原有顶层 assets 与根层非 md 的拷贝策略）
+        crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir)?;
         
         // 列出所有文章
         let posts = PostParser::list_posts(md_dir)?;
@@ -819,15 +812,8 @@ impl Generator {
             copy_dir_recursive(&theme_static_dir, output_dir)?;
         }
 
-        // 复制用户资源目录：<md_dir>/assets -> public/assets（覆盖更新）
-        let source_assets_dir = md_dir.join("assets");
-        if source_assets_dir.exists() {
-            let public_assets_dir = output_dir.join("assets");
-            copy_dir_recursive(&source_assets_dir, &public_assets_dir)?;
-        }
-
-        // 复制源目录根层的非 Markdown 且非隐藏文件（如 CNAME）到输出根目录（覆盖更新）
-        crate::utils::copy_root_non_md_non_hidden(md_dir, output_dir)?;
+        // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（增量模式也执行，以便更新附件）
+        crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir)?;
 
         // 列出所有文章（用于派生页计算）
         let posts = PostParser::list_posts(md_dir)?;

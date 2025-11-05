@@ -1,0 +1,11 @@
+# cargo-release 配置
+
+allow-branch = ["main", "master"]
+tag = true
+tag-prefix = "v"
+push = true
+publish = true
+consolidate-commits = true
+
+
+pre-release-commit-message = "Release {{crate_name}} v{{version}}"

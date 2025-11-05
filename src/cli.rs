@@ -83,6 +83,10 @@ pub enum Commands {
         /// 启动前执行增量编译
         #[arg(long, default_value_t = false)]
         incremental: bool,
+
+        /// 开启 hotreload（监听模板文件变化并自动重建）
+        #[arg(long, default_value_t = false)]
+        hotreload: bool,
     },
 
     /// 重新生成首页侧边栏数据到 build.toml

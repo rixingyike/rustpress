@@ -9,7 +9,7 @@ use rustpress::{
     error::Result,
     generator::Generator,
     server::DevServer,
-    utils::{build_theme_css, read_template_file},
+    utils::{build_theme_css, read_template_file, ensure_initial_setup},
 };
 use std::path::Path;
 use std::process::exit;
@@ -24,18 +24,20 @@ fn main() -> Result<()> {
         Commands::BuildCss => {
             // 为 CSS 构建加载配置以确定主题名称
             use std::path::Path as StdPath;
-            let config_path = {
-                let cf = StdPath::new(&cli.config);
-                if cf.is_absolute() || cf.exists() { cf.to_path_buf() } else {
-                    let candidate = StdPath::new(&cli.md_dir).join(&cli.config);
-                    if candidate.exists() { candidate } else { cf.to_path_buf() }
-                }
-            };
+            // 启动时初始化（themes/config.toml/build.toml 及示例页）
+            ensure_initial_setup(&cli.md_dir, &cli.config)?;
+            let config_path = StdPath::new(&cli.config).to_path_buf();
             let config = Config::from_file(&config_path)?;
             build_theme_css(&cli.md_dir, &config)
         },
         Commands::Serve { port, output_dir, incremental } => serve_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental),
-        Commands::Dev { port, output_dir, incremental } => dev_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental),
+        Commands::Dev { port, output_dir, incremental, hotreload } => {
+            if *hotreload {
+                dev_site_hotreload(*port, &cli.md_dir, output_dir, &cli.config, *incremental)
+            } else {
+                dev_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental)
+            }
+        },
         Commands::BuildSidebar => build_sidebar(&cli.md_dir, &cli.config),
     }
 }
@@ -132,16 +134,10 @@ tags = ["Rust", "博客"]
 /// 构建博客网站
 fn build_site(md_dir: &str, output_dir: &str, config_file: &str, incremental: bool) -> Result<()> {
     use std::path::Path;
-    // 动态解析配置路径：优先使用传入路径；若为相对且不存在，则尝试 md_dir/config_file
-    let config_path = {
-        let cf = Path::new(config_file);
-        if cf.is_absolute() || cf.exists() {
-            cf.to_path_buf()
-        } else {
-            let candidate = Path::new(md_dir).join(config_file);
-            if candidate.exists() { candidate } else { cf.to_path_buf() }
-        }
-    };
+    // 启动时初始化（themes/config.toml/build.toml 及示例页）
+    ensure_initial_setup(Path::new(md_dir), config_file)?;
+    // 配置仅从项目根目录解析
+    let config_path = Path::new(config_file).to_path_buf();
 
     let config = Config::from_file(&config_path)?;
     let generator = Generator::new(config, Path::new(md_dir))?;
@@ -150,8 +146,19 @@ fn build_site(md_dir: &str, output_dir: &str, config_file: &str, incremental: bo
     let file_mode = rustpress::utils::read_build_mode(std::path::Path::new(md_dir));
     let effective_incremental = if incremental { true } else { matches!(file_mode, rustpress::utils::BuildMode::Incremental) };
 
+    // 首次构建（输出目录不存在或为空）强制全量生成
+    let output_path = Path::new(output_dir);
+    let is_first_build = if !output_path.exists() {
+        true
+    } else {
+        std::fs::read_dir(output_path)
+            .map(|mut rd| rd.next().is_none())
+            .unwrap_or(true)
+    };
+    let final_incremental = if is_first_build { false } else { effective_incremental };
+
     // 记录编译日志到 md_dir/build.toml
-    if effective_incremental {
+    if final_incremental {
         generator.build_incremental(md_dir, output_dir)?;
     } else {
         generator.build(md_dir, output_dir)?;
@@ -168,13 +175,9 @@ fn build_dev_site(md_dir: &str, output_dir: &str, config_file: &str, incremental
     // 先构建 CSS
     println!("正在构建主题 CSS...");
     // 加载配置以确定主题名称
-    let config_path = {
-        let cf = std::path::Path::new(config_file);
-        if cf.is_absolute() || cf.exists() { cf.to_path_buf() } else {
-            let candidate = std::path::Path::new(md_dir).join(config_file);
-            if candidate.exists() { candidate } else { cf.to_path_buf() }
-        }
-    };
+    // 启动时初始化（themes/config.toml/build.toml 及示例页）
+    ensure_initial_setup(std::path::Path::new(md_dir), config_file)?;
+    let config_path = std::path::Path::new(config_file).to_path_buf();
     let config = Config::from_file(&config_path)?;
     build_theme_css(md_dir, &config)?;
     
@@ -204,6 +207,80 @@ fn dev_site(port: u16, md_dir: &str, output_dir: &str, config_file: &str, increm
     
     // 启动服务器
     DevServer::serve_sync(port, output_dir)
+}
+
+/// 开发模式（hotreload）：构建并启动服务器，同时监听模板变化自动重建
+fn dev_site_hotreload(port: u16, md_dir: &str, output_dir: &str, config_file: &str, incremental: bool) -> Result<()> {
+    use notify::{EventKind, RecursiveMode, Watcher};
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    println!("开发模式（hotreload）启动中...");
+
+    // 首次进行开发环境构建
+    build_dev_site(md_dir, output_dir, config_file, incremental)?;
+
+    // 启动服务器到独立线程，主线程负责监听与重建
+    let out_dir_owned = output_dir.to_string();
+    let server_port = port;
+    let server_thread = std::thread::spawn(move || {
+        let _ = DevServer::serve_sync(server_port, out_dir_owned);
+    });
+
+    // 解析配置以获取主题模板目录（优先项目根 themes/<theme>/templates）
+    let config = Config::from_file(std::path::Path::new(config_file))?;
+    let runtime_paths = rustpress::utils::RuntimePathsBuilder::new()
+        .md_dir(std::path::Path::new(md_dir))
+        .theme_name(config.theme_name())
+        .build();
+    let templates_dir = runtime_paths.theme_templates_dir;
+
+    println!("Hotreload 监听目录: {}", templates_dir.display());
+    println!("修改模板后将自动重新编译，浏览器刷新即可预览。");
+
+    // 建立文件监听
+    let (tx, rx) = mpsc::channel();
+    let mut watcher = notify::recommended_watcher(move |res: std::result::Result<notify::Event, notify::Error>| {
+        match res {
+            Ok(event) => {
+                // 关心增删改与重命名事件
+                if matches!(
+                    event.kind,
+                    EventKind::Modify(_) | EventKind::Create(_) | EventKind::Remove(_) | EventKind::Any
+                ) {
+                    let _ = tx.send(());
+                }
+            }
+            Err(e) => {
+                eprintln!("文件监听错误: {}", e);
+            }
+        }
+    }).map_err(|e| rustpress::error::Error::Other(format!("初始化文件监听失败: {}", e)))?;
+
+    watcher
+        .watch(&templates_dir, RecursiveMode::Recursive)
+        .map_err(|e| rustpress::error::Error::Other(format!("监听目录失败 {}: {}", templates_dir.display(), e)))?;
+
+    // 简单防抖：事件频繁触发时合并处理
+    let mut last_rebuild = std::time::Instant::now();
+    loop {
+        if rx.recv().is_err() { break; }
+
+        // 防抖阈值 150ms
+        if last_rebuild.elapsed() < Duration::from_millis(150) { continue; }
+        last_rebuild = std::time::Instant::now();
+
+        println!("检测到模板变更，正在重新编译...");
+        if let Err(e) = build_site(md_dir, output_dir, config_file, false) {
+            eprintln!("重新编译失败: {}", e);
+        } else {
+            println!("编译完成，刷新浏览器查看最新效果。");
+        }
+    }
+
+    // 正常情况下不会到达此处，按 Ctrl+C 退出进程；确保子线程回收
+    let _ = server_thread.join();
+    Ok(())
 }
 
 /// 重新生成首页侧边栏数据到 build.toml（热门文章/标签/分类）
