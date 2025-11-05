@@ -5,6 +5,9 @@ description = "增量编译倒分页无后端 Rust 纯静态博客程序"
 edition = "2024"
 license = "MIT"
 authors = ["LIYI <9830131@qq.com>"]
+repository = "https://github.com/rixingyike/rustpress"
+homepage = "https://github.com/rixingyike/rustpress"
+readme = "README.md"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
