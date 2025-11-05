@@ -12,17 +12,17 @@ use std::borrow::Cow;
 use rust_embed::RustEmbed;
 
 // 将主题静态资源打包进二进制（主题的 public 目录，包含 static 子目录）
-#[derive(rust_embed::RustEmbed)]
+#[derive(RustEmbed)]
 #[folder = "themes/default/public"]
 pub struct ThemeStaticAssets;
 
 // 将主题模板打包进二进制
-#[derive(rust_embed::RustEmbed)]
+#[derive(RustEmbed)]
 #[folder = "themes/default/templates"]
 pub struct ThemeTemplates;
 
 // 将默认页面（home.md/about.md/friends.md）打包进二进制
-#[derive(rust_embed::RustEmbed)]
+#[derive(RustEmbed)]
 #[folder = "themes/default/pages"]
 pub struct DefaultPages;
 
