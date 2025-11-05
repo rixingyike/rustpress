@@ -62,18 +62,21 @@ RustPress 仅解析并渲染 `source` 目录中的 Markdown（`.md`）为 HTML�
 ```bash
 # 安装（固定版本）
 cargo install rustpress --version 0.1.5 --locked
+或 cargo install rustpress
 
 # 构建静态站点
 rustpress -m source build -o public -c config.toml
+或 rustpress build
 
 # 开发预览（含热重载与主题编译）
-rustpress --dev --hotreload -m source -c config.toml -p 1111 -o public
+rustpress dev --hotreload -m source -c config.toml -p 1111 -o public
+或 rustpress dev --hotreload
 ```
 
 - 热重载（模板实时预览）：如需监听模板变化自动重建，请使用 CLI：
 
 ```bash
-cargo run -- dev --hotreload --md-dir source --config config.toml -p 8000
+cargo dev --hotreload --md-dir source --config config.toml -p 8000
 ```
 
 热重载适合在编写主题模板时使用。
