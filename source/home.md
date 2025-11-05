@@ -1,6 +1,7 @@
 ---
 title: "首页"
-subtitle: "欢迎来到 RustPress"
+subtitle: "欢迎来到一树论博客"
+layout: home
 home_navs:
   - title: "浏览分类"
     description: "按主题分类查看文章"

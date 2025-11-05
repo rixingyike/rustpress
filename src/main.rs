@@ -26,7 +26,8 @@ fn main() -> Result<()> {
             use std::path::Path as StdPath;
             // 启动时初始化（themes/config.toml/build.toml 及示例页）
             ensure_initial_setup(&cli.md_dir, &cli.config)?;
-            let config_path = StdPath::new(&cli.config).to_path_buf();
+            // 配置读取优先 source 目录
+            let config_path = rustpress::utils::resolve_config_toml_path_read(&cli.md_dir, &cli.config);
             let config = Config::from_file(&config_path)?;
             build_theme_css(&cli.md_dir, &config)
         },
@@ -136,8 +137,8 @@ fn build_site(md_dir: &str, output_dir: &str, config_file: &str, incremental: bo
     use std::path::Path;
     // 启动时初始化（themes/config.toml/build.toml 及示例页）
     ensure_initial_setup(Path::new(md_dir), config_file)?;
-    // 配置仅从项目根目录解析
-    let config_path = Path::new(config_file).to_path_buf();
+    // 配置解析：优先从 source 目录读取，否则回退到项目根
+    let config_path = rustpress::utils::resolve_config_toml_path_read(Path::new(md_dir), config_file);
 
     let config = Config::from_file(&config_path)?;
     let generator = Generator::new(config, Path::new(md_dir))?;
@@ -177,7 +178,7 @@ fn build_dev_site(md_dir: &str, output_dir: &str, config_file: &str, incremental
     // 加载配置以确定主题名称
     // 启动时初始化（themes/config.toml/build.toml 及示例页）
     ensure_initial_setup(std::path::Path::new(md_dir), config_file)?;
-    let config_path = std::path::Path::new(config_file).to_path_buf();
+    let config_path = rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
     let config = Config::from_file(&config_path)?;
     build_theme_css(md_dir, &config)?;
     
@@ -228,7 +229,8 @@ fn dev_site_hotreload(port: u16, md_dir: &str, output_dir: &str, config_file: &s
     });
 
     // 解析配置以获取主题模板目录（优先项目根 themes/<theme>/templates）
-    let config = Config::from_file(std::path::Path::new(config_file))?;
+    let config_path = rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
+    let config = Config::from_file(&config_path)?;
     let runtime_paths = rustpress::utils::RuntimePathsBuilder::new()
         .md_dir(std::path::Path::new(md_dir))
         .theme_name(config.theme_name())

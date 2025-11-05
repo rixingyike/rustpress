@@ -61,8 +61,7 @@ RustPress 仅解析并渲染 `source` 目录中的 Markdown（`.md`）为 HTML�
 
 ```bash
 # 安装（固定版本）
-cargo install rustpress --version 0.1.5 --locked
-或 cargo install rustpress
+cargo install rustpress
 
 # 构建静态站点
 rustpress -m source build -o public -c config.toml
@@ -150,7 +149,7 @@ jobs:
 
       - name: Build site
         run: |
-          cargo install rustpress --version 0.1.5
+          cargo install rustpress
           rustpress build
 
       - name: Upload artifact

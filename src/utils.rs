@@ -54,8 +54,12 @@ impl RuntimePathsBuilder {
     }
     pub fn build(self) -> RuntimePaths {
         let theme = self.theme_name.unwrap_or_else(|| "default".to_string());
-        // build.toml 路径固定为项目根
-        let build_toml_path = std::path::PathBuf::from("build.toml");
+        // build.toml 路径：优先 md_dir，其次项目根
+        let md_dir_for_resolve = self
+            .md_dir
+            .clone()
+            .unwrap_or_else(|| std::path::PathBuf::from("."));
+        let build_toml_path = resolve_build_toml_path_read(&md_dir_for_resolve);
 
         // 优先使用项目根目录 themes/<theme>
         let theme_dir_in_root = std::path::PathBuf::from("themes").join(&theme);
@@ -86,14 +90,42 @@ impl RuntimePathsBuilder {
     }
 }
 
-/// 解析 build.toml 的读取路径：固定为项目根目录
-pub fn resolve_build_toml_path_read<P: AsRef<std::path::Path>>(_md_dir: P) -> std::path::PathBuf {
-    std::path::PathBuf::from("build.toml")
+/// 解析 build.toml 的读取路径：优先 `md_dir/build.toml`，否则回退到项目根 `build.toml`
+pub fn resolve_build_toml_path_read<P: AsRef<std::path::Path>>(md_dir: P) -> std::path::PathBuf {
+    let md_build = md_dir.as_ref().join("build.toml");
+    if md_build.exists() {
+        md_build
+    } else {
+        std::path::PathBuf::from("build.toml")
+    }
 }
 
-/// 解析 build.toml 的写入路径：固定为项目根目录
-pub fn resolve_build_toml_path_write<P: AsRef<std::path::Path>>(_md_dir: P) -> std::path::PathBuf {
-    std::path::PathBuf::from("build.toml")
+/// 解析 build.toml 的写入路径：
+/// - 若 `md_dir/build.toml` 存在则写入该处；
+/// - 若项目根存在 `build.toml` 则写入根；
+/// - 若都不存在，选择在 `md_dir` 下创建（符合首次处理 source 的策略）。
+pub fn resolve_build_toml_path_write<P: AsRef<std::path::Path>>(md_dir: P) -> std::path::PathBuf {
+    let md_build = md_dir.as_ref().join("build.toml");
+    if md_build.exists() {
+        md_build
+    } else {
+        let root_build = std::path::PathBuf::from("build.toml");
+        if root_build.exists() {
+            root_build
+        } else {
+            md_build
+        }
+    }
+}
+
+/// 解析 config.toml 的读取路径：优先 `md_dir/<config_filename>`，否则回退到项目根 `<config_filename>`
+pub fn resolve_config_toml_path_read<P: AsRef<std::path::Path>>(md_dir: P, config_filename: &str) -> std::path::PathBuf {
+    let md_config = md_dir.as_ref().join(config_filename);
+    if md_config.exists() {
+        md_config
+    } else {
+        std::path::PathBuf::from(config_filename)
+    }
 }
 
 /// 递归复制目录
@@ -791,10 +823,84 @@ friends:
     Ok(())
 }
 
-/// 启动时初始化：在项目根放置 themes、build.toml、config.toml；在源目录补全 home/about/friends
+/// 在源目录 md_dir 保障 `config.toml` 与 `build.toml` 存在：
+/// - 若 md_dir 下不存在且项目根存在，则复制到 md_dir
+/// - 若都不存在，则在 md_dir 写入最小化示例
+pub fn ensure_source_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
+    use std::fs;
+    let md_dir = md_dir.as_ref();
+
+    if !md_dir.exists() {
+        fs::create_dir_all(md_dir)
+            .map_err(|e| Error::Other(format!("无法创建源目录 {:?}: {}", md_dir, e)))?;
+    }
+
+    // 处理 config.toml（优先生成到 source）
+    let md_config = md_dir.join(config_filename);
+    if !md_config.exists() {
+        let root_config = std::path::Path::new(config_filename);
+        if root_config.exists() {
+            fs::copy(&root_config, &md_config)
+                .map_err(|e| Error::Other(format!("复制配置文件失败 {:?} -> {:?}: {}", root_config, md_config, e)))?;
+            println!("已从根目录复制配置到源目录: {}", md_config.display());
+        } else {
+            let default_config = r#"# RustPress 配置示例（完整）
+
+[site]
+name = "我的博客"
+description = "使用 RustPress 创建的博客"
+author = "作者"
+# 站点基础URL（开发环境可用 http://localhost:1111）
+base_url = "http://localhost:1111"
+# 在RSS与外链中使用的主域名（优先于 base_url）
+domain = "https://example.com"
+# ICP 备案号（可选）
+icp_license = ""
+# 建站年份（用于页脚年份范围显示）
+start_year = 2024
+
+[theme]
+name = "default"
+
+# 作者信息（用于侧边栏与关于页）
+[author]
+name = "作者名"
+bio = "一句话简介"
+avatar = "/static/images/avatar.png"
+location = "城市, 国家"
+"#;
+            fs::write(&md_config, default_config)
+                .map_err(|e| Error::Other(format!("写入默认配置失败 {:?}: {}", md_config, e)))?;
+            println!("已在源目录创建默认配置: {}", md_config.display());
+        }
+    }
+
+    // 处理 build.toml（优先生成到 source）
+    let md_build = md_dir.join("build.toml");
+    if !md_build.exists() {
+        let root_build = std::path::Path::new("build.toml");
+        if root_build.exists() {
+            fs::copy(&root_build, &md_build)
+                .map_err(|e| Error::Other(format!("复制构建文件失败 {:?} -> {:?}: {}", root_build, md_build, e)))?;
+            println!("已从根目录复制构建配置到源目录: {}", md_build.display());
+        } else {
+            let default_build = r#"# RustPress build config
+# 默认增量构建；实际模式以命令行或文件字段决定
+incremental = true
+"#;
+            fs::write(&md_build, default_build)
+                .map_err(|e| Error::Other(format!("写入默认构建文件失败 {:?}: {}", md_build, e)))?;
+            println!("已在源目录创建默认构建文件: {}", md_build.display());
+        }
+    }
+
+    Ok(())
+}
+
+/// 启动时初始化：在源目录补全 config.toml、build.toml 与 home/about/friends；在项目根写出主题资源
 pub fn ensure_initial_setup<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
-    // 1) 保障根目录的配置与构建文件
-    ensure_root_config_and_build(md_dir.as_ref(), config_filename)?;
+    // 1) 在源目录保障配置与构建文件
+    ensure_source_config_and_build(md_dir.as_ref(), config_filename)?;
     // 2) 写出嵌入的主题模板与静态资源到根 themes（缺失时生成，不覆盖已有）
     write_embedded_theme_templates_to_root()?;
     write_embedded_theme_static_to_root()?;

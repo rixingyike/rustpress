@@ -1,0 +1,131 @@
+[site]
+name = "一树论"
+description = "一花一世界，一树一菩提。"
+author = "LIYI"
+base_url = "http://localhost:1111"
+# 在RSS中公开显示的域名
+domain = "https://yishulun.com"
+icp_license = "京ICP备14007000号-8"
+start_year = 2002
+
+[theme]
+name = "default"
+
+# 作者信息
+[author]
+name = "LIYI"
+bio = "读书使人进步，著书亦使人进步。"
+avatar = "/static/images/avatar.png"
+location = "北京, 中国"
+website = "https://yishulun.com"
+email = "9830131@qq.com"
+
+# 社交链接
+[social]
+github = "https://github.com/rixingyike"
+twitter = "https://x.com/coderliyi"
+youtube = "https://youtube.com/@yishulun"
+email = "9830131@qq.com"
+zhihu = "https://zhihu.com/people/liyi2005"
+wechat = "/static/images/qrcode.jpg"
+weibo = "https://weibo.com/ixiaochengxu"
+bilibili = "https://space.bilibili.com/262757998"
+rss = "/rss.xml"
+
+# 首页设置
+[homepage]
+hero_title = "欢迎来到一树论"
+hero_subtitle = "稻盛和夫：成长不是和别人比，而是和自己的昨天比。"
+hero_background = "/static/images/hero-bg.jpg"
+posts_per_page = 8
+show_hero = true
+
+# 分类列表设置
+[categories]
+posts_per_page = 8
+
+# 标签列表设置
+[tags]
+posts_per_page = 8
+
+# 广告位设置
+[ads]
+# 广告位1：Header广告
+ad1_image = "/static/images/book-wegame.png"
+ad1_link = "https://item.jd.com/13630053.html"
+ad1_title = "微信小游戏开发"
+ad1_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
+
+# 广告位2：侧边栏顶部广告（原推荐阅读位置）
+ad2_image = "/static/images/book-wegame.png"
+ad2_link = "https://item.jd.com/13630053.html"
+ad2_title = "微信小游戏开发"
+ad2_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
+
+# 广告位3：侧边栏底部广告（原支持我们位置）
+ad3_image = "/static/images/book-wegame.png"
+ad3_link = "https://item.jd.com/13630053.html"
+ad3_title = "微信小游戏开发"
+ad3_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
+
+# 功能开关
+[features]
+search = true
+comments = true
+analytics = true
+rss = true
+sitemap = true
+
+# Google Analytics 配置
+[analytics]
+google_id = "G-8N64Q25EK9"
+
+# Google Ads 配置
+[ads.google]
+client_id = "ca-pub-2139303336591479"
+
+# 评论（giscus）配置
+[comments]
+enabled = true
+repo = "rixingyike/yishulun.com_discus"
+repo_id = "R_kgDOKRUETQ"
+category = "General"
+category_id = "DIC_kwDOKRUETc4CZMWK"
+mapping = "pathname"
+theme = "preferred_color_scheme"
+lang = "zh-CN"
+
+# 导航菜单
+[[menu.main]]
+name = "首页"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "归档"
+url = "/archives.html"
+weight = 2
+
+[[menu.main]]
+name = "分类"
+url = "/categories.html"
+weight = 3
+
+[[menu.main]]
+name = "标签"
+url = "/tags.html"
+weight = 4
+
+[[menu.main]]
+name = "友链"
+url = "/friends.html"
+weight = 5
+
+[[menu.main]]
+name = "关于"
+url = "/about.html"
+weight = 6
+
+[taxonomies]
+category = "categories"
+tag = "tags"

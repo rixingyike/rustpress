@@ -16,9 +16,9 @@
     @apply font-semibold text-gray-900;
   }
   
-  /* 站点内普通链接统一颜色；排除所有按钮类（包含 .btn、.btn-primary 等） */
-  a:not([class*="btn"]) {
-    @apply text-primary-600 hover:text-primary-700 transition-colors;
+  /* 站点内普通链接默认颜色（不设置全局 hover 以避免覆盖按钮） */
+  a {
+    @apply text-primary-600 transition-colors;
   }
 }
 

@@ -1,0 +1,176 @@
+compile_mode = "full"
+last_build_time = "2025-11-05 16:41:27"
+md_dir = "source"
+output_dir = "public"
+
+[[sidebar.hot_categories]]
+count = 11
+name = "技术"
+
+[[sidebar.hot_categories]]
+count = 6
+name = "编程语言"
+
+[[sidebar.hot_categories]]
+count = 4
+name = "web"
+
+[[sidebar.hot_categories]]
+count = 3
+name = "tutorial"
+
+[[sidebar.hot_categories]]
+count = 3
+name = "数据与安全"
+
+[[sidebar.hot_categories]]
+count = 2
+name = "design"
+
+[[sidebar.hot_categories]]
+count = 2
+name = "技术架构"
+
+[[sidebar.hot_categories]]
+count = 1
+name = "区块链技术"
+
+[[sidebar.hot_posts]]
+categories = ["技术"]
+date_ymd = "2025-11-04"
+slug = "rust-tag-test"
+title = "Rust 标签功能测试"
+
+[[sidebar.hot_posts]]
+categories = ["web"]
+date_ymd = "2025-03-03"
+slug = "4"
+title = "现代CSS技术"
+
+[[sidebar.hot_posts]]
+categories = ["web"]
+date_ymd = "2025-02-02"
+slug = "3"
+title = "前端框架对比"
+
+[[sidebar.hot_posts]]
+categories = ["web"]
+date_ymd = "2025-02-01"
+slug = "2"
+title = "WebAssembly 应用场景"
+
+[[sidebar.hot_posts]]
+categories = ["区块链技术", "基础理论", "核心概念"]
+date_ymd = "2024-11-25"
+slug = "blockchain-fundamentals"
+title = "区块链技术基础与应用"
+
+[[sidebar.hot_posts]]
+categories = ["编程语言", "移动开发", "跨平台开发"]
+date_ymd = "2024-10-18"
+slug = "mobile-app-development"
+title = "移动应用开发技术选型指南"
+
+[[sidebar.hot_posts]]
+categories = ["数据与安全", "网络安全", "基础防护"]
+date_ymd = "2024-09-03"
+slug = "cybersecurity-basics"
+title = "网络安全基础知识"
+
+[[sidebar.hot_posts]]
+categories = ["数据与安全", "数据库技术", "性能优化"]
+date_ymd = "2024-08-14"
+slug = "database-optimization"
+title = "数据库性能优化实战"
+
+[[sidebar.hot_posts]]
+categories = ["技术架构", "微服务架构", "服务设计"]
+date_ymd = "2024-07-22"
+slug = "golang-microservices"
+title = "Go语言微服务架构实践"
+
+[[sidebar.hot_posts]]
+categories = ["编程语言", "前端开发", "JavaScript框架"]
+date_ymd = "2024-06-08"
+slug = "vue3-composition-api"
+title = "Vue 3 Composition API深入解析"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "AI"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Actix-web"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Angular"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "CSS"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Composition API"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "DeFi"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "DevOps"
+
+[[sidebar.hot_tags]]
+count = 2
+name = "Docker"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Flutter"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Git"
+
+[[sidebar.hot_tags]]
+count = 2
+name = "Go"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "HTTP"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Hooks"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "JavaScript"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "MySQL"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Option"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "PostgreSQL"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Promise"
+
+[[sidebar.hot_tags]]
+count = 1
+name = "Python"
+
+[[sidebar.hot_tags]]
+count = 3
+name = "React"
