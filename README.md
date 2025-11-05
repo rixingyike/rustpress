@@ -133,15 +133,6 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -156,7 +147,6 @@ jobs:
 
       - name: Build site
         run: |
-          # 推荐固定版本（发布到 crates.io 后使用）
           cargo install rustpress --version 0.1.5
           rustpress build
 
@@ -165,30 +155,6 @@ jobs:
         with:
           path: public
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  # 备选（简版）：构建后直接推送到用户页仓库（如 rixingyike/rixingyike.github.io 的 main 分支）
-  publish-to-user-repo:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-      - name: Install RustPress (crates.io v0.1.5)
-        run: cargo install rustpress --version 0.1.5 --locked
-      - name: Build site
-        run: rustpress -m source build -o public
       - name: Deploy to external repository
         uses: cpina/github-action-push-to-another-repository@v1.7.2
         env:
