@@ -18,10 +18,6 @@ include = [
     "config.toml",
     "build.toml",
 ]
-exclude = [
-    "**/node_modules/**",
-    "**/.DS_Store",
-]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

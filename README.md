@@ -117,7 +117,7 @@ cargo run -- dev --hotreload --md-dir source --config config.toml -p 8000
 ```toml
 # Cargo.toml
 [dependencies]
-rustpress = "0.1.4" 
+rustpress = "0.1.5" 
 ```
 
 ```rust
@@ -189,7 +189,7 @@ jobs:
       - name: Build site
         run: |
           # 推荐固定版本（发布到 crates.io 后使用）
-          cargo install rustpress --version 0.1.4
+          cargo install rustpress --version 0.1.5
           rustpress build
 
       - name: Upload artifact
