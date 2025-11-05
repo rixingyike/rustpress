@@ -50,22 +50,6 @@ RustPress 仅解析并渲染 `source` 目录中的 Markdown（`.md`）为 HTML�
 - `source/posts/abc/assets/logo.jpg` -> `public/posts/abc/assets/logo.jpg`
 - `source/CNAME` -> `public/CNAME`
 
-## 安装
-
-确保您已安装Rust和Cargo，然后执行以下命令：
-
-```bash
-# 克隆项目（假设已有仓库）
-git clone https://github.com/rixingyike/rustpress.git
-cd rustpress
-
-# 构建项目
-cargo build --release
-
-# 将可执行文件复制到系统路径（可选）
-cp target/release/rustpress /usr/local/bin/
-```
-
 ## 如何使用
 
 下面提供四种使用方式，按你的场景选择其一即可：
@@ -119,7 +103,7 @@ fn main() -> rustpress::Result<()> {
 }
 ```
 
-### 3）Fork 源码进行自由定制
+### 3）Fork 源码自由定制
 
 - Fork 本仓库并克隆到本地，按需修改源码与模板：
   - 模板路径：`themes/default/templates/`
@@ -192,28 +176,29 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # 备选：将 public/ 推送到另一个仓库（如 rixingyike/rixingyike.github.io 的 main 分支）
+  # 备选（简版）：构建后直接推送到用户页仓库（如 rixingyike/rixingyike.github.io 的 main 分支）
   publish-to-user-repo:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: github-pages
-          path: public
-      - name: Push public to rixingyike.github.io
-        uses: cpina/github-action-push-to-another-repository@v1.6.2
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Install RustPress (crates.io v0.1.5)
+        run: cargo install rustpress --version 0.1.5 --locked
+      - name: Build site
+        run: rustpress -m source build -o public
+      - name: Deploy to external repository
+        uses: cpina/github-action-push-to-another-repository@v1.7.2
         env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          API_TOKEN_GITHUB: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
         with:
           source-directory: public/
           destination-github-username: rixingyike
           destination-repository-name: rixingyike.github.io
           target-branch: main
           user-email: 9830131@qq.com
-          commit-message: "deploy: update site"
 ```
 
 > 注：站点的静态文件输出目录为 `public`；根层文本（如 `CNAME`、`robots.txt`）与所有非 `.md` 附件会按原相对路径递归复制到 `public`。
