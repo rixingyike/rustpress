@@ -1,4 +1,4 @@
-compile_mode = "full"
+compile_mode = "incremental"
 last_build_time = "2025-11-06 11:13:33"
 md_dir = "source"
 output_dir = "public"
