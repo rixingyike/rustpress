@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# AUTO_COMMIT=1 bash publish.sh
+
 # RustPress 发布脚本（更简单、自动）
 # 功能：
 # - 使用 cargo-release 提升版本号（默认 patch）
