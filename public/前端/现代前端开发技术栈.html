@@ -592,7 +592,7 @@ jobs:
 <h2>总结</h2>
 <p>现代前端开发已经形成了完整的技术体系，从框架选择到工具链配置，从开发实践到部署运维，都需要开发者具备全面的技术视野。选择合适的技术栈，建立高效的开发流程，持续关注技术发展趋势，是前端开发者持续成长的关键。</p>
 <p>随着AI编程助手、低代码平台等新工具的出现，前端开发的效率将进一步提升，但对开发者技术深度的要求也会相应提高。保持学习，拥抱变化，是现代前端开发者的必备素质。</p>
-
+<p class="italic text-gray-500">该文由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener">rustpress</a> 编译。</p>
     </div>
 
     <!-- 版权信息 -->
@@ -600,7 +600,7 @@ jobs:
         <h4 class="text-lg font-semibold mb-3 text-gray-900">版权所有</h4>
         <p class="text-sm text-gray-700">
             本文链接：
-            <a :href="link" class="text-primary-600 hover:underline" x-text="link" target="_blank" rel="noopener"></a>
+            <a :href="link" class="text-primary-600 hover:underline" x-text="decodeURI(link)" target="_blank" rel="noopener"></a>
         </p>
         <p class="text-sm text-gray-700 mt-2">
             许可证：署名-非商业性 4.0 国际 (CC-BY-NC-4.0)
@@ -641,7 +641,7 @@ jobs:
         var loadGiscus = function(){
             var s = document.createElement('script');
             s.src = 'https://giscus.app/client.js';
-            s.setAttribute('data-repo', 'rixingyike&#x2F;yishulun.com_discus');
+            s.setAttribute('data-repo', 'rixingyike/yishulun.com_discus');
             s.setAttribute('data-repo-id', 'R_kgDOKRUETQ');
             s.setAttribute('data-category', 'General');
             s.setAttribute('data-category-id', 'DIC_kwDOKRUETc4CZMWK');

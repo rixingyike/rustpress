@@ -190,7 +190,7 @@ impl PostParser {
         // 转换元数据为JSON
         let metadata_json = serde_json::to_value(&metadata)?;
 
-        // 解析Markdown为HTML
+        // 解析Markdown为HTML（不在解析阶段追加任何额外内容）
         let html = Self::markdown_to_html(body);
 
         // 优先使用 front matter 中的 slug 字段，否则用文件名

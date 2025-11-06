@@ -76,9 +76,7 @@
   }
   
   /* 博客文章样式 */
-  .article-content {
-    @apply prose prose-lg max-w-none;
-  }
+  /* 使用模板中的类名 `prose prose-lg max-w-none`，避免在 CSS 中 @apply 导致 circular dependency */
   
   /* 文章内容代码块自动换行，避免拉宽页面 */
   .article-content.prose pre {

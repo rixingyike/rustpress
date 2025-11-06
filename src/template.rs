@@ -613,7 +613,22 @@ impl TemplateEngine {
     /// 渲染文章页面
     pub fn render_post(&self, post: &Post, all_posts: &[Post]) -> Result<String> {
         let mut context = self.create_base_context();
-        context.insert("page", &post.data);
+        // 仅在文章详情页内容末尾追加广告小字
+        let mut page = post.data.clone();
+        if let Some(content_str) = page.get("content").and_then(|v| v.as_str()) {
+            let promo_html: &str = r#"<p class="italic text-gray-500">该文由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener">rustpress</a> 编译。</p>"#;
+            let already_has = content_str.contains("https://github.com/rixingyike/rustpress") || content_str.contains("该文由 rustpress 编译");
+            if !already_has {
+                let mut new_content = String::with_capacity(content_str.len() + promo_html.len() + 2);
+                new_content.push_str(content_str.trim_end());
+                new_content.push_str("\n");
+                new_content.push_str(promo_html);
+                if let Some(obj) = page.as_object_mut() {
+                    obj.insert("content".to_string(), Value::String(new_content));
+                }
+            }
+        }
+        context.insert("page", &page);
         
         // 计算相关文章
         let related_posts = self.calculate_related_posts(post, all_posts);

@@ -2,12 +2,9 @@
 
 allow-branch = ["main", "master"]
 tag = true
-tag-prefix = ""
-push = false
-publish = false
+tag-prefix = "v"
+push = true
+publish = true
 consolidate-commits = true
-
-
-
 
 pre-release-commit-message = "Release {{crate_name}} {{version}}"
