@@ -53,16 +53,23 @@ impl Post {
     
     /// 获取文章标签
     pub fn tags(&self) -> Vec<String> {
-        self.data
+        let mut tags: Vec<String> = self
+            .data
             .get("tags")
             .and_then(|v| v.as_array())
             .map(|arr| {
                 arr.iter()
                     .filter_map(|v| v.as_str())
-                    .map(|s| s.to_string())
-                    .collect()
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty())
+                    .collect::<Vec<String>>()
             })
-            .unwrap_or_default()
+            .unwrap_or_default();
+
+        // 去重（保持顺序）
+        let mut seen = std::collections::HashSet::new();
+        tags.retain(|t| seen.insert(t.clone()));
+        tags
     }
     
     /// 获取文章日期
@@ -282,9 +289,39 @@ impl PostParser {
                     let year = &normalized[0..4];
                     let ym = &normalized[0..7];
                     obj.insert("year".to_string(), Value::String(year.to_string()));
-                    obj.insert("year_month".to_string(), Value::String(ym.to_string()));
+                obj.insert("year_month".to_string(), Value::String(ym.to_string()));
+            }
+
+            // 清洗标签：去除空字符串和仅空白的标签；若为空则移除
+            if let Some(tags_val) = obj.get("tags") {
+                if let Some(arr) = tags_val.as_array() {
+                    let mut sanitized: Vec<Value> = arr
+                        .iter()
+                        .filter_map(|v| v.as_str())
+                        .map(|s| s.trim())
+                        .filter(|s| !s.is_empty())
+                        .map(|s| Value::String(s.to_string()))
+                        .collect();
+                    // 去重（保持顺序）
+                    let mut seen = std::collections::HashSet::new();
+                    sanitized.retain(|v| {
+                        if let Some(s) = v.as_str() {
+                            seen.insert(s.to_string())
+                        } else {
+                            false
+                        }
+                    });
+                    if sanitized.is_empty() {
+                        obj.remove("tags");
+                    } else {
+                        obj.insert("tags".to_string(), Value::Array(sanitized));
+                    }
+                } else {
+                    // 非数组字段的非法标签，移除以避免渲染层误用
+                    obj.remove("tags");
                 }
             }
+        }
         }
 
         Ok(Some(post))

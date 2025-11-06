@@ -33,3 +33,4 @@ echo ":: 清扫完成"
 # HARD=1 bash clean.sh
 # cargo run -- -m ./testblog/source build -o ./testblog/public
 # cargo run -- -m ./testblog/source serve -o ./testblog/public
+# cargo run -- dev --hotreload
