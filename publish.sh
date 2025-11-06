@@ -17,6 +17,7 @@ SKIP_PUBLISH="${SKIP_PUBLISH:-0}"
 STRICT_CLEAN="${STRICT_CLEAN:-1}"
 CLEAN_IGNORED="${CLEAN_IGNORED:-1}"
 AUTO_COMMIT="${AUTO_COMMIT:-0}"
+PRESERVE_IGNORED="${PRESERVE_IGNORED:-testblog/}"
 
 echo ":: 发布级别: ${LEVEL}"
 echo ":: Git 远端: ${REMOTE}"
@@ -27,6 +28,7 @@ echo ":: 清理 .gitignore 指定文件: ${CLEAN_IGNORED}"
 echo ":: 自动提交未跟踪/改动文件: ${AUTO_COMMIT}"
 echo ":: 清理 node_modules: ${CLEAN_NODE_MODULES}"
 echo ":: 跳过 crates.io 发布: ${SKIP_PUBLISH}"
+echo ":: 保留被忽略路径: ${PRESERVE_IGNORED}"
 
 # Ensure we are at repo root
 if [[ ! -f "Cargo.toml" ]]; then
@@ -43,8 +45,18 @@ fi
 
 # 检查 crates.io 发布凭据（仅当不跳过发布时）
 if [[ "$SKIP_PUBLISH" != "1" ]]; then
-  if [[ -z "${CARGO_REGISTRY_TOKEN:-}" && ! -f "${HOME}/.cargo/credentials" ]]; then
-    echo "错误: 未检测到 crates.io 凭据。请运行 'cargo login <token>' 或导出 CARGO_REGISTRY_TOKEN。" >&2
+  CARGO_HOME_DIR="${CARGO_HOME:-$HOME/.cargo}"
+  has_token="0"
+  # 环境变量方式
+  if [[ -n "${CARGO_REGISTRY_TOKEN:-}" ]]; then
+    has_token="1"
+  fi
+  # 文件方式（兼容新的 credentials.toml 与旧的 credentials）
+  if [[ -f "${CARGO_HOME_DIR}/credentials" || -f "${CARGO_HOME_DIR}/credentials.toml" ]]; then
+    has_token="1"
+  fi
+  if [[ "$has_token" != "1" ]]; then
+    echo "错误: 未检测到 crates.io 凭据。请运行 'cargo login'（推荐从 stdin 输入 token）或导出 CARGO_REGISTRY_TOKEN。" >&2
     echo "提示: 可设置 SKIP_PUBLISH=1 仅做版本、标签与推送。" >&2
     exit 1
   fi
@@ -62,8 +74,15 @@ fi
 ensure_clean_worktree() {
   # 可选：清理 .gitignore 指定的临时文件/目录
   if [[ "$CLEAN_IGNORED" == "1" ]]; then
-    echo ":: 清理 .gitignore 指定的文件（git clean -fdX）"
-    git clean -fdX || true
+    echo ":: 清理 .gitignore 指定的文件（git clean -fdX），保留: ${PRESERVE_IGNORED}"
+    exclude_flags=()
+    if [[ -n "$PRESERVE_IGNORED" ]]; then
+      IFS=',' read -r -a preserve_arr <<< "$PRESERVE_IGNORED"
+      for pat in "${preserve_arr[@]}"; do
+        exclude_flags+=( -e "$pat" )
+      done
+    fi
+    git clean -fdX "${exclude_flags[@]}" || true
   fi
   if [[ -n "$(git status --porcelain)" ]]; then
     if [[ "$AUTO_COMMIT" == "1" ]]; then

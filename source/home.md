@@ -35,6 +35,9 @@ home_navs:
 
 这是从 `home.md` 注入到首页的内容区块。你可以在这里写欢迎词、公告、推荐内容或放置任意 Markdown 文案。上方是最新文章列表与分页，下方是 6 个导航卡片。
 
+仓库：https://github.com/rixingyike/rustpress
+包：https://crates.io/crates/rustpress
+
 ## 可用字段（front matter）
 
 - `home_navs`: 一个数组，支持字段 `title`、`description`、`url`、`emoji`（或 `icon`）、`new_tab`、`cta`。

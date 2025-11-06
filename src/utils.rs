@@ -899,7 +899,7 @@ incremental = true
 
 /// 启动时初始化：在源目录补全 config.toml、build.toml 与 home/about/friends；在项目根写出主题资源
 pub fn ensure_initial_setup<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
-    // 1) 在源目录保障配置与构建文件
+    // 1) 在源目录保障配置与构建文件（首次运行在 source 生成缺失文件）
     ensure_source_config_and_build(md_dir.as_ref(), config_filename)?;
     // 2) 写出嵌入的主题模板与静态资源到根 themes（缺失时生成，不覆盖已有）
     write_embedded_theme_templates_to_root()?;
