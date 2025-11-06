@@ -37,9 +37,9 @@ if [[ -z "${CARGO_REGISTRY_TOKEN:-}" && ! -f "${HOME}/.cargo/credentials" ]]; th
   echo "      将继续执行，但发布到 crates.io 可能失败。" >&2
 fi
 
-# 处理脏工作区：直接提交并推送，确保发布在干净状态进行
-if ! git diff --quiet || ! git diff --cached --quiet; then
-  echo ":: 检测到未提交改动，正在自动提交到 ${REMOTE}"
+# 处理脏工作区：直接提交并推送（检测包含未跟踪文件）
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo ":: 检测到未提交改动（包含未跟踪文件），正在自动提交到 ${REMOTE}"
   git add -A || true
   if ! git diff --cached --quiet; then
     pre_commit_msg="chore: pre-release auto commit $(date -Iseconds)"
