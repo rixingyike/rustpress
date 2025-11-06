@@ -12,11 +12,17 @@ LEVEL="${LEVEL:-patch}"
 REMOTE="${REMOTE:-origin}"
 TAG_PREFIX="${TAG_PREFIX:-v}"
 NO_CONFIRM="${NO_CONFIRM:-1}"
+ALLOW_DIRTY="${ALLOW_DIRTY:-0}"
+CLEAN_NODE_MODULES="${CLEAN_NODE_MODULES:-0}"
+SKIP_PUBLISH="${SKIP_PUBLISH:-0}"
 
 echo ":: 发布级别: ${LEVEL}"
 echo ":: Git 远端: ${REMOTE}"
 echo ":: 标签前缀: ${TAG_PREFIX}"
 echo ":: 无交互模式: ${NO_CONFIRM}"
+echo ":: 允许脏工作区: ${ALLOW_DIRTY}"
+echo ":: 清理 node_modules: ${CLEAN_NODE_MODULES}"
+echo ":: 跳过 crates.io 发布: ${SKIP_PUBLISH}"
 
 # Ensure we are at repo root
 if [[ ! -f "Cargo.toml" ]]; then
@@ -35,6 +41,15 @@ fi
 if [[ -z "${CARGO_REGISTRY_TOKEN:-}" && ! -f "${HOME}/.cargo/credentials" ]]; then
   echo "警告: 未检测到 crates.io 凭据。请运行 'cargo login <token>' 或导出 CARGO_REGISTRY_TOKEN。" >&2
   echo "      将继续执行，但发布到 crates.io 可能失败。" >&2
+fi
+
+# 可选：清理依赖目录以避免脏工作区（默认不清理，设置 CLEAN_NODE_MODULES=1 启用）
+if [[ "$CLEAN_NODE_MODULES" == "1" ]]; then
+  echo ":: 清理 themes/*/node_modules 以保证发布检查通过"
+  while IFS= read -r -d '' nm; do
+    echo "   - 删除: $nm"
+    rm -rf "$nm"
+  done < <(find themes -type d -name node_modules -prune -print0)
 fi
 
 # 处理脏工作区：直接提交并推送（检测包含未跟踪文件）
@@ -62,6 +77,19 @@ echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）
 release_flags=("$LEVEL" --execute --publish --push --tag-prefix "$TAG_PREFIX" --push-remote "$REMOTE")
 if [[ "$NO_CONFIRM" == "1" ]]; then
   release_flags+=(--no-confirm)
+fi
+if [[ "$ALLOW_DIRTY" == "1" ]]; then
+  release_flags+=(--allow-dirty)
+fi
+if [[ "$SKIP_PUBLISH" == "1" ]]; then
+  # 覆盖默认的 --publish，改为 --no-publish
+  # 先移除数组中的 --publish（若存在）
+  for i in "${!release_flags[@]}"; do
+    if [[ "${release_flags[$i]}" == "--publish" ]]; then
+      unset 'release_flags[$i]'
+    fi
+  done
+  release_flags+=(--no-publish)
 fi
 cargo release "${release_flags[@]}"
 
