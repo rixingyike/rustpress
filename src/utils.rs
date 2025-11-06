@@ -10,6 +10,9 @@ use walkdir::WalkDir;
 use std::borrow::Cow;
 // 使派生的 RustEmbed trait 在作用域内，从而可调用 ::get()
 use rust_embed::RustEmbed;
+// 将根目录的配置编译进二进制，作为默认模板来源
+pub const EMBEDDED_ROOT_CONFIG_TOML: &str = include_str!("../config.toml");
+pub const EMBEDDED_ROOT_BUILD_TOML: &str = include_str!("../build.toml");
 
 // 将主题静态资源打包进二进制（主题的 public 目录，包含 static 子目录）
 #[derive(RustEmbed)]
@@ -196,7 +199,6 @@ pub fn get_npm_command() -> &'static str {
 /// 记录编译信息到 build.toml 文件（优先项目根）
 pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
     use chrono::{DateTime, Local};
-    use std::path::Path;
     
     // 获取当前时间
     let now: DateTime<Local> = Local::now();
@@ -569,7 +571,7 @@ pub fn write_embedded_theme_static_to_root() -> Result<()> {
 
 /// 在项目根保障 `config.toml` 与 `build.toml` 存在：
 /// - 若根不存在且 `md_dir` 下存在，则复制到根
-/// - 若都不存在，则写入最小化示例
+/// - 若都不存在，则写入内嵌（编译进二进制）的根默认配置
 pub fn ensure_root_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
@@ -583,141 +585,8 @@ pub fn ensure_root_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: 
                 .map_err(|e| Error::Other(format!("复制配置文件失败 {:?} -> {:?}: {}", md_config, root_config, e)))?;
             println!("已从源目录复制配置到根: {}", root_config.display());
         } else {
-            let default_config = r#"# RustPress 配置示例（完整）
-
-[site]
-name = "我的博客"
-description = "使用 RustPress 创建的博客"
-author = "作者"
-# 站点基础URL（开发环境可用 http://localhost:1111）
-base_url = "http://localhost:1111"
-# 在RSS与外链中使用的主域名（优先于 base_url）
-domain = "https://example.com"
-# ICP 备案号（可选）
-icp_license = ""
-# 建站年份（用于页脚年份范围显示）
-start_year = 2024
-
-[theme]
-name = "default"
-
-# 作者信息（用于侧边栏与关于页）
-[author]
-name = "作者名"
-bio = "一句话简介"
-avatar = "/static/images/avatar.png"
-location = "城市, 国家"
-website = "https://example.com"
-email = "you@example.com"
-
-# 社交链接（用于侧边栏与关于页）
-[social]
-github = "https://github.com/yourname"
-twitter = "https://x.com/yourname"
-youtube = "https://youtube.com/@yourname"
-email = "you@example.com"
-zhihu = "https://zhihu.com/people/yourname"
-wechat = "/static/images/qrcode.jpg"
-weibo = "https://weibo.com/yourname"
-bilibili = "https://space.bilibili.com/123456"
-rss = "/rss.xml"
-
-# 首页设置
-[homepage]
-hero_title = "欢迎来到我的博客"
-hero_subtitle = "这里记录技术与生活。"
-hero_background = "/static/images/hero-bg.jpg"
-posts_per_page = 8
-show_hero = true
-
-# 分类列表设置
-[categories]
-posts_per_page = 8
-
-# 标签列表设置
-[tags]
-posts_per_page = 8
-
-# 广告位设置（示例）
-[ads]
-ad1_image = "/static/images/ad1.png"
-ad1_link = "https://example.com/ad1"
-ad1_title = "广告位1"
-ad1_description = "这里是广告位1描述"
-
-ad2_image = "/static/images/ad2.png"
-ad2_link = "https://example.com/ad2"
-ad2_title = "广告位2"
-ad2_description = "这里是广告位2描述"
-
-ad3_image = "/static/images/ad3.png"
-ad3_link = "https://example.com/ad3"
-ad3_title = "广告位3"
-ad3_description = "这里是广告位3描述"
-
-# 功能开关
-[features]
-search = true
-comments = true
-analytics = true
-rss = true
-sitemap = true
-
-# Google Analytics 配置
-[analytics]
-google_id = "G-XXXXXXXXXX"
-
-# Google Ads 配置（示例）
-[ads.google]
-client_id = "ca-pub-XXXXXXXXXXXXXXXX"
-
-# 评论（giscus）配置
-[comments]
-enabled = false
-repo = "your/repo"
-repo_id = "REPO_ID"
-category = "General"
-category_id = "CATEGORY_ID"
-mapping = "pathname"
-theme = "preferred_color_scheme"
-lang = "zh-CN"
-
-# 导航菜单
-[[menu.main]]
-name = "首页"
-url = "/"
-weight = 1
-
-[[menu.main]]
-name = "归档"
-url = "/archives.html"
-weight = 2
-
-[[menu.main]]
-name = "分类"
-url = "/categories.html"
-weight = 3
-
-[[menu.main]]
-name = "标签"
-url = "/tags.html"
-weight = 4
-
-[[menu.main]]
-name = "友链"
-url = "/friends.html"
-weight = 5
-
-[[menu.main]]
-name = "关于"
-url = "/about.html"
-weight = 6
-
-[taxonomies]
-category = "categories"
-tag = "tags"
-"#;
-            fs::write(&root_config, default_config)
+            // 使用嵌入的根默认配置写出
+            fs::write(&root_config, EMBEDDED_ROOT_CONFIG_TOML)
                 .map_err(|e| Error::Other(format!("写入默认配置失败 {:?}: {}", root_config, e)))?;
             println!("已在根目录创建默认配置: {}", root_config.display());
         }
@@ -732,11 +601,8 @@ tag = "tags"
                 .map_err(|e| Error::Other(format!("复制构建文件失败 {:?} -> {:?}: {}", md_build, root_build, e)))?;
             println!("已从源目录复制构建配置到根: {}", root_build.display());
         } else {
-            let default_build = r#"# RustPress build config
-# 默认增量构建；实际模式以命令行或文件字段决定
-incremental = true
-"#;
-            fs::write(&root_build, default_build)
+            // 使用嵌入的根默认构建文件写出
+            fs::write(&root_build, EMBEDDED_ROOT_BUILD_TOML)
                 .map_err(|e| Error::Other(format!("写入默认构建文件失败 {:?}: {}", root_build, e)))?;
             println!("已在根目录创建默认构建文件: {}", root_build.display());
         }
@@ -825,7 +691,7 @@ friends:
 
 /// 在源目录 md_dir 保障 `config.toml` 与 `build.toml` 存在：
 /// - 若 md_dir 下不存在且项目根存在，则复制到 md_dir
-/// - 若都不存在，则在 md_dir 写入最小化示例
+/// - 若都不存在，则在 md_dir 写入内嵌（编译进二进制）的根默认配置
 pub fn ensure_source_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
@@ -844,32 +710,8 @@ pub fn ensure_source_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename
                 .map_err(|e| Error::Other(format!("复制配置文件失败 {:?} -> {:?}: {}", root_config, md_config, e)))?;
             println!("已从根目录复制配置到源目录: {}", md_config.display());
         } else {
-            let default_config = r#"# RustPress 配置示例（完整）
-
-[site]
-name = "我的博客"
-description = "使用 RustPress 创建的博客"
-author = "作者"
-# 站点基础URL（开发环境可用 http://localhost:1111）
-base_url = "http://localhost:1111"
-# 在RSS与外链中使用的主域名（优先于 base_url）
-domain = "https://example.com"
-# ICP 备案号（可选）
-icp_license = ""
-# 建站年份（用于页脚年份范围显示）
-start_year = 2024
-
-[theme]
-name = "default"
-
-# 作者信息（用于侧边栏与关于页）
-[author]
-name = "作者名"
-bio = "一句话简介"
-avatar = "/static/images/avatar.png"
-location = "城市, 国家"
-"#;
-            fs::write(&md_config, default_config)
+            // 使用嵌入的根默认配置写出到源目录
+            fs::write(&md_config, EMBEDDED_ROOT_CONFIG_TOML)
                 .map_err(|e| Error::Other(format!("写入默认配置失败 {:?}: {}", md_config, e)))?;
             println!("已在源目录创建默认配置: {}", md_config.display());
         }
@@ -884,11 +726,8 @@ location = "城市, 国家"
                 .map_err(|e| Error::Other(format!("复制构建文件失败 {:?} -> {:?}: {}", root_build, md_build, e)))?;
             println!("已从根目录复制构建配置到源目录: {}", md_build.display());
         } else {
-            let default_build = r#"# RustPress build config
-# 默认增量构建；实际模式以命令行或文件字段决定
-incremental = true
-"#;
-            fs::write(&md_build, default_build)
+            // 使用嵌入的根默认构建文件写出到源目录
+            fs::write(&md_build, EMBEDDED_ROOT_BUILD_TOML)
                 .map_err(|e| Error::Other(format!("写入默认构建文件失败 {:?}: {}", md_build, e)))?;
             println!("已在源目录创建默认构建文件: {}", md_build.display());
         }
@@ -899,7 +738,9 @@ incremental = true
 
 /// 启动时初始化：在源目录补全 config.toml、build.toml 与 home/about/friends；在项目根写出主题资源
 pub fn ensure_initial_setup<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
-    // 1) 在源目录保障配置与构建文件（首次运行在 source 生成缺失文件）
+    // 0) 优先在项目根保障配置与构建文件（若缺失，写出内嵌默认）
+    ensure_root_config_and_build(md_dir.as_ref(), config_filename)?;
+    // 1) 在源目录保障配置与构建文件（若缺失，写出内嵌默认或从根复制）
     ensure_source_config_and_build(md_dir.as_ref(), config_filename)?;
     // 2) 写出嵌入的主题模板与静态资源到根 themes（缺失时生成，不覆盖已有）
     write_embedded_theme_templates_to_root()?;

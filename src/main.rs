@@ -23,7 +23,6 @@ fn main() -> Result<()> {
         Commands::BuildDev { output_dir, incremental } => build_dev_site(&cli.md_dir, output_dir, &cli.config, *incremental),
         Commands::BuildCss => {
             // 为 CSS 构建加载配置以确定主题名称
-            use std::path::Path as StdPath;
             // 启动时初始化（themes/config.toml/build.toml 及示例页）
             ensure_initial_setup(&cli.md_dir, &cli.config)?;
             // 配置读取优先 source 目录

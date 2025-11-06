@@ -8,27 +8,24 @@ set -euo pipefail
 # - 将提交与标签推送到 Git 远端
 # 默认参数：LEVEL=patch, TAG_PREFIX=v, REMOTE=origin
 
+# 发布参数
+# 说明：默认不清理 .gitignore 指定的文件，以保留本地预览输出（如 public/）和测试目录（如 testblog/）。
+# 如需清理可在运行时设置 CLEAN_IGNORED=1（保留列表由 PRESERVE_IGNORED 控制）。
 LEVEL="${LEVEL:-patch}"
 REMOTE="${REMOTE:-origin}"
 TAG_PREFIX="${TAG_PREFIX:-v}"
 NO_CONFIRM="${NO_CONFIRM:-1}"
-CLEAN_NODE_MODULES="${CLEAN_NODE_MODULES:-0}"
 SKIP_PUBLISH="${SKIP_PUBLISH:-0}"
 STRICT_CLEAN="${STRICT_CLEAN:-1}"
-CLEAN_IGNORED="${CLEAN_IGNORED:-1}"
 AUTO_COMMIT="${AUTO_COMMIT:-0}"
-PRESERVE_IGNORED="${PRESERVE_IGNORED:-testblog/}"
 
 echo ":: 发布级别: ${LEVEL}"
 echo ":: Git 远端: ${REMOTE}"
 echo ":: 标签前缀: ${TAG_PREFIX}"
 echo ":: 无交互模式: ${NO_CONFIRM}"
 echo ":: 严格要求干净工作区: ${STRICT_CLEAN}"
-echo ":: 清理 .gitignore 指定文件: ${CLEAN_IGNORED}"
 echo ":: 自动提交未跟踪/改动文件: ${AUTO_COMMIT}"
-echo ":: 清理 node_modules: ${CLEAN_NODE_MODULES}"
 echo ":: 跳过 crates.io 发布: ${SKIP_PUBLISH}"
-echo ":: 保留被忽略路径: ${PRESERVE_IGNORED}"
 
 # Ensure we are at repo root
 if [[ ! -f "Cargo.toml" ]]; then
@@ -62,28 +59,7 @@ if [[ "$SKIP_PUBLISH" != "1" ]]; then
   fi
 fi
 
-# 可选：清理依赖目录以避免脏工作区（默认不清理，设置 CLEAN_NODE_MODULES=1 启用）
-if [[ "$CLEAN_NODE_MODULES" == "1" ]]; then
-  echo ":: 清理 themes/*/node_modules 以保证发布检查通过"
-  while IFS= read -r -d '' nm; do
-    echo "   - 删除: $nm"
-    rm -rf "$nm"
-  done < <(find themes -type d -name node_modules -prune -print0)
-fi
-
 ensure_clean_worktree() {
-  # 可选：清理 .gitignore 指定的临时文件/目录
-  if [[ "$CLEAN_IGNORED" == "1" ]]; then
-    echo ":: 清理 .gitignore 指定的文件（git clean -fdX），保留: ${PRESERVE_IGNORED}"
-    exclude_flags=()
-    if [[ -n "$PRESERVE_IGNORED" ]]; then
-      IFS=',' read -r -a preserve_arr <<< "$PRESERVE_IGNORED"
-      for pat in "${preserve_arr[@]}"; do
-        exclude_flags+=( -e "$pat" )
-      done
-    fi
-    git clean -fdX "${exclude_flags[@]}" || true
-  fi
   if [[ -n "$(git status --porcelain)" ]]; then
     if [[ "$AUTO_COMMIT" == "1" ]]; then
       echo ":: 自动提交改动以保证干净工作区"
@@ -98,7 +74,7 @@ ensure_clean_worktree() {
       if [[ "$STRICT_CLEAN" == "1" ]]; then
         echo "错误: 工作区存在未提交改动。请提交或清理后再发布。" >&2
         git status --porcelain || true
-        echo "提示: 可设置 AUTO_COMMIT=1 自动提交，或启用 CLEAN_IGNORED=1 清理被忽略文件。" >&2
+        echo "提示: 可设置 AUTO_COMMIT=1 自动提交。" >&2
         exit 1
       fi
     fi

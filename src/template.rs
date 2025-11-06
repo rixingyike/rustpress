@@ -8,7 +8,6 @@ use crate::post::Post;
 use chrono::prelude::*;
 use serde_json::Value;
 use tera::{Context, Tera};
-use walkdir::WalkDir;
 use crate::utils::{ThemeTemplates, RuntimePathsBuilder};
 
 
