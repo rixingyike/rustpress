@@ -19,6 +19,8 @@ include = [
     "build.toml",
 ]
 exclude = [
+    "/public/**",
+    "/testblog/**",
     "themes/**/node_modules/**",
     "themes/**/.cache/**",
     "themes/**/public/static/css/*.map",

@@ -12,15 +12,19 @@ LEVEL="${LEVEL:-patch}"
 REMOTE="${REMOTE:-origin}"
 TAG_PREFIX="${TAG_PREFIX:-v}"
 NO_CONFIRM="${NO_CONFIRM:-1}"
-ALLOW_DIRTY="${ALLOW_DIRTY:-0}"
 CLEAN_NODE_MODULES="${CLEAN_NODE_MODULES:-0}"
 SKIP_PUBLISH="${SKIP_PUBLISH:-0}"
+STRICT_CLEAN="${STRICT_CLEAN:-1}"
+CLEAN_IGNORED="${CLEAN_IGNORED:-1}"
+AUTO_COMMIT="${AUTO_COMMIT:-0}"
 
 echo ":: 发布级别: ${LEVEL}"
 echo ":: Git 远端: ${REMOTE}"
 echo ":: 标签前缀: ${TAG_PREFIX}"
 echo ":: 无交互模式: ${NO_CONFIRM}"
-echo ":: 允许脏工作区: ${ALLOW_DIRTY}"
+echo ":: 严格要求干净工作区: ${STRICT_CLEAN}"
+echo ":: 清理 .gitignore 指定文件: ${CLEAN_IGNORED}"
+echo ":: 自动提交未跟踪/改动文件: ${AUTO_COMMIT}"
 echo ":: 清理 node_modules: ${CLEAN_NODE_MODULES}"
 echo ":: 跳过 crates.io 发布: ${SKIP_PUBLISH}"
 
@@ -37,10 +41,13 @@ if [[ "$branch" != "main" && "$branch" != "master" ]]; then
   exit 1
 fi
 
-# 检查 crates.io 发布凭据：优先环境变量，其次本地登录
-if [[ -z "${CARGO_REGISTRY_TOKEN:-}" && ! -f "${HOME}/.cargo/credentials" ]]; then
-  echo "警告: 未检测到 crates.io 凭据。请运行 'cargo login <token>' 或导出 CARGO_REGISTRY_TOKEN。" >&2
-  echo "      将继续执行，但发布到 crates.io 可能失败。" >&2
+# 检查 crates.io 发布凭据（仅当不跳过发布时）
+if [[ "$SKIP_PUBLISH" != "1" ]]; then
+  if [[ -z "${CARGO_REGISTRY_TOKEN:-}" && ! -f "${HOME}/.cargo/credentials" ]]; then
+    echo "错误: 未检测到 crates.io 凭据。请运行 'cargo login <token>' 或导出 CARGO_REGISTRY_TOKEN。" >&2
+    echo "提示: 可设置 SKIP_PUBLISH=1 仅做版本、标签与推送。" >&2
+    exit 1
+  fi
 fi
 
 # 可选：清理依赖目录以避免脏工作区（默认不清理，设置 CLEAN_NODE_MODULES=1 启用）
@@ -52,19 +59,34 @@ if [[ "$CLEAN_NODE_MODULES" == "1" ]]; then
   done < <(find themes -type d -name node_modules -prune -print0)
 fi
 
-# 处理脏工作区：直接提交并推送（检测包含未跟踪文件）
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo ":: 检测到未提交改动（包含未跟踪文件），正在自动提交到 ${REMOTE}"
-  git add -A || true
-  if ! git diff --cached --quiet; then
-    pre_commit_msg="chore: pre-release auto commit $(date -Iseconds)"
-    git commit -m "$pre_commit_msg" || true
-    echo ":: 推送预提交到 ${REMOTE}"
-    git push "$REMOTE" || true
-  else
-    echo ":: 无改动需要提交"
+ensure_clean_worktree() {
+  # 可选：清理 .gitignore 指定的临时文件/目录
+  if [[ "$CLEAN_IGNORED" == "1" ]]; then
+    echo ":: 清理 .gitignore 指定的文件（git clean -fdX）"
+    git clean -fdX || true
   fi
-fi
+  if [[ -n "$(git status --porcelain)" ]]; then
+    if [[ "$AUTO_COMMIT" == "1" ]]; then
+      echo ":: 自动提交改动以保证干净工作区"
+      git add -A || true
+      if ! git diff --cached --quiet; then
+        pre_commit_msg="chore: pre-release auto commit $(date -Iseconds)"
+        git commit -m "$pre_commit_msg" || true
+        echo ":: 推送预提交到 ${REMOTE}"
+        git push "$REMOTE" || true
+      fi
+    else
+      if [[ "$STRICT_CLEAN" == "1" ]]; then
+        echo "错误: 工作区存在未提交改动。请提交或清理后再发布。" >&2
+        git status --porcelain || true
+        echo "提示: 可设置 AUTO_COMMIT=1 自动提交，或启用 CLEAN_IGNORED=1 清理被忽略文件。" >&2
+        exit 1
+      fi
+    fi
+  fi
+}
+
+ensure_clean_worktree
 
 # 不再使用暂存/恢复流程，发布从干净工作区进行
 
@@ -73,22 +95,12 @@ current_version=$(sed -n 's/^version\s*=\s*"\([^"]\+\)"/\1/p' Cargo.toml | head 
 echo ":: 当前 Cargo.toml 版本: ${current_version:-unknown}"
 
 echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
-# Build flags for non-interactive release if requested
-release_flags=("$LEVEL" --execute --publish --push --tag-prefix "$TAG_PREFIX" --push-remote "$REMOTE")
+# 构建 release 参数（显式执行，不传 tag-prefix，避免重复 v）
+release_flags=("$LEVEL" --execute)
 if [[ "$NO_CONFIRM" == "1" ]]; then
   release_flags+=(--no-confirm)
 fi
-if [[ "$ALLOW_DIRTY" == "1" ]]; then
-  release_flags+=(--allow-dirty)
-fi
 if [[ "$SKIP_PUBLISH" == "1" ]]; then
-  # 覆盖默认的 --publish，改为 --no-publish
-  # 先移除数组中的 --publish（若存在）
-  for i in "${!release_flags[@]}"; do
-    if [[ "${release_flags[$i]}" == "--publish" ]]; then
-      unset 'release_flags[$i]'
-    fi
-  done
   release_flags+=(--no-publish)
 fi
 cargo release "${release_flags[@]}"

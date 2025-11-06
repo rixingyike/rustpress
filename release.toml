@@ -2,7 +2,7 @@
 
 allow-branch = ["main", "master"]
 tag = true
-tag-prefix = "v"
+tag-name = "v{{version}}"
 push = true
 publish = true
 consolidate-commits = true
