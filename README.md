@@ -128,35 +128,73 @@ cargo run -- dev --hotreload
 将以下文件保存为 `.github/workflows/deploy.yml`，每次推送到 `main` 分支时自动构建并部署到 GitHub Pages：
 
 ```yaml
-name: Deploy RustPress to GitHub Pages
+name: deploy
 
 on:
+  # 每当 push 到 main 分支时触发部署
+  # Deployment is triggered whenever a push is made to the main branch.
   push:
-    branches: [ main ]
+    branches: [main]
+  # 手动触发部署
+  # Manually trigger deployment
   workflow_dispatch:
 
+# 统一版本号，后续只需改这里
+env:
+  RUSTPRESS_VERSION: "0.1.12"
+
 jobs:
-  build:
+  docs:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          # “最近更新时间” 等 git 日志相关信息，需要拉取全部提交记录
+          # "Last updated time" and other git log-related information require fetching all commit records.
+          fetch-depth: 0
 
-      - name: Setup Rust
+      - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Build site
-        run: |
-          cargo install rustpress
-          rustpress build
+      # 缓存 rustpress 二进制，命中后跳过安装
+      - name: Cache rustpress binary
+        id: cache-rustpress
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/rustpress
+          key: rustpress-bin-${{ runner.os }}-${{ env.RUSTPRESS_VERSION }}
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      # 可选：缓存 crates 索引与源码，加速首次安装或版本升级
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-registry-${{ runner.os }}-stable
+
+      # 仅在未命中二进制缓存时安装固定版本的 RustPress
+      - name: Install RustPress (if missing)
+        if: steps.cache-rustpress.outputs.cache-hit != 'true'
+        run: cargo install rustpress --version ${{ env.RUSTPRESS_VERSION }} --locked
+
+      - name: Verify RustPress
+        run: rustpress -V
+
+      - name: Build site with RustPress
+        run: rustpress -m source build -o public
+
+      # 上传构建结果到 GitHub Pages
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
           path: public
 
+      # 部署到外部仓库
       - name: Deploy to external repository
         uses: cpina/github-action-push-to-another-repository@v1.7.2
         env:
@@ -165,8 +203,8 @@ jobs:
           source-directory: public/
           destination-github-username: rixingyike
           destination-repository-name: rixingyike.github.io
-          target-branch: main
           user-email: 9830131@qq.com
+          target-branch: "main"
 ```
 
 > 注：站点的静态文件输出目录为 `public`；根层文本（如 `CNAME`、`robots.txt`）与所有非 `.md` 附件会按原相对路径递归复制到 `public`。
