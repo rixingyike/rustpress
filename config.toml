@@ -95,6 +95,8 @@ mapping = "pathname"
 theme = "preferred_color_scheme"
 lang = "zh-CN"
 crossorigin = "anonymous"
+# 添加严格的origin验证，确保与GitHub仓库设置匹配
+strict = "1"
 
 # 导航菜单
 [[menu.main]]

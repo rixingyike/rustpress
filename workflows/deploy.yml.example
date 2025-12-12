@@ -1,0 +1,64 @@
+name: deploy
+
+on:
+  # 每当 push 到 main 分支时触发部署
+  # Deployment is triggered whenever a push is made to the main branch.
+  push:
+    branches: [main]
+  # 手动触发部署
+  # Manually trigger deployment
+  workflow_dispatch:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # “最近更新时间” 等 git 日志相关信息，需要拉取全部提交记录
+          # "Last updated time" and other git log-related information require fetching all commit records.
+          fetch-depth: 0
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      # 可选：缓存 crates 索引与源码，加速首次安装或版本升级
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-registry-${{ runner.os }}-stable
+
+      # 安装最新版本的 RustPress（每次都会检查并安装最新版本）
+      - name: Install RustPress
+        run: cargo install rustpress --locked
+
+      - name: Verify RustPress
+        run: rustpress -V
+
+      - name: Build site with RustPress
+        run: rustpress -m source build -o public
+
+      # 上传构建结果到 GitHub Pages
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: public
+
+      # 部署到外部仓库
+      - name: Deploy to external repository
+        uses: cpina/github-action-push-to-another-repository@v1.7.2
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
+        with:
+          source-directory: public/
+          destination-github-username: rixingyike
+          destination-repository-name: rixingyike.github.io
+          user-email: 9830131@qq.com
+          target-branch: "main"
