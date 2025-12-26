@@ -94,6 +94,10 @@ if [ -d "themes/default/node_modules" ]; then
   echo ":: Cleaning up themes/default/node_modules..."
   rm -rf themes/default/node_modules
 fi
+if [ -d "public" ]; then
+  echo ":: Cleaning up public/..."
+  rm -rf public
+fi
 
 echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
 # 构建 release 参数（显式执行，不传 tag-prefix，避免重复 v）
