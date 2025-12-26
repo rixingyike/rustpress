@@ -1,6 +1,6 @@
 [package]
 name = "rustpress"
-version = "0.1.13"
+version = "0.1.14"
 description = "增量编译倒分页无后端 Rust 纯静态博客程序"
 edition = "2024"
 rust-version = "1.85"
