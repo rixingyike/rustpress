@@ -1,9 +1,9 @@
 //! 文章处理模块
-//! 
+//!
 //! 负责解析 Markdown 文件，提取元数据和内容
 
 use crate::error::{Error, Result};
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{Options, Parser, html};
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -21,22 +21,22 @@ impl Post {
     pub fn from_value(data: Value) -> Self {
         Post { data }
     }
-    
+
     /// 获取文章标题
     pub fn title(&self) -> Option<&str> {
         self.data.get("title").and_then(|v| v.as_str())
     }
-    
+
     /// 获取文章 slug
     pub fn slug(&self) -> Option<&str> {
         self.data.get("slug").and_then(|v| v.as_str())
     }
-    
+
     /// 获取文章内容
     pub fn content(&self) -> Option<&str> {
         self.data.get("content").and_then(|v| v.as_str())
     }
-    
+
     /// 获取文章分类
     pub fn categories(&self) -> Vec<String> {
         self.data
@@ -50,7 +50,7 @@ impl Post {
             })
             .unwrap_or_default()
     }
-    
+
     /// 获取文章标签
     pub fn tags(&self) -> Vec<String> {
         let mut tags: Vec<String> = self
@@ -71,7 +71,7 @@ impl Post {
         tags.retain(|t| seen.insert(t.clone()));
         tags
     }
-    
+
     /// 获取文章日期
     pub fn date(&self) -> Option<&str> {
         self.data.get("date_ymd").and_then(|v| v.as_str())
@@ -102,10 +102,14 @@ impl PostParser {
                 in_code_fence = !in_code_fence;
                 continue;
             }
-            if in_code_fence { continue; }
+            if in_code_fence {
+                continue;
+            }
             if trimmed.starts_with("# ") {
                 let title = trimmed[2..].trim();
-                if !title.is_empty() { return Some(title.to_string()); }
+                if !title.is_empty() {
+                    return Some(title.to_string());
+                }
             }
         }
         // 若没有 H1，则退而求其次，找任意级别标题
@@ -116,12 +120,16 @@ impl PostParser {
                 in_code_fence = !in_code_fence;
                 continue;
             }
-            if in_code_fence { continue; }
+            if in_code_fence {
+                continue;
+            }
             if trimmed.starts_with('#') {
                 let hashes = trimmed.chars().take_while(|c| *c == '#').count();
                 if hashes >= 1 {
                     let title = trimmed[hashes..].trim();
-                    if !title.is_empty() { return Some(title.to_string()); }
+                    if !title.is_empty() {
+                        return Some(title.to_string());
+                    }
                 }
             }
         }
@@ -132,42 +140,55 @@ impl PostParser {
     pub fn list_posts<P: AsRef<Path>>(md_dir: P) -> Result<Vec<Post>> {
         let mut posts = Vec::new();
         let content_dir = md_dir.as_ref();
-        
+
         // 检查目录是否存在
         if !content_dir.exists() {
-            println!("警告: Markdown目录 '{}' 不存在，创建空目录...", content_dir.display());
+            println!(
+                "警告: Markdown目录 '{}' 不存在，创建空目录...",
+                content_dir.display()
+            );
             std::fs::create_dir_all(content_dir)?;
         }
-        
+
         for entry in WalkDir::new(content_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().extension().map_or(false, |ext| ext == "md") {
                 // 跳过隐藏的 Markdown 文件（文件名以点开头）
                 let hidden = entry.file_name().to_string_lossy().starts_with('.');
-                if hidden { continue; }
+                if hidden {
+                    continue;
+                }
                 let content = std::fs::read_to_string(entry.path())
                     .map_err(|e| Error::Other(format!("无法读取文件 {:?}: {}", entry.path(), e)))?;
-                
+
                 if let Some(post_data) = Self::parse_post(&content, entry.path(), content_dir)? {
-                    posts.push(Post::from_value(post_data));
+                    // 检查 draft 字段，如果是 true 则跳过
+                    let is_draft = post_data
+                        .get("draft")
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false);
+
+                    if !is_draft {
+                        posts.push(Post::from_value(post_data));
+                    }
                 }
             }
         }
-        
+
         // 按日期排序（最新的在前）
         posts.sort_by(|a, b| {
             let date_a = a.date().unwrap_or("");
             let date_b = b.date().unwrap_or("");
             date_b.cmp(date_a)
         });
-        
+
         Ok(posts)
     }
-    
+
     /// 解析单篇文章
     fn parse_post<P: AsRef<Path>>(content: &str, path: P, md_dir: P) -> Result<Option<Value>> {
         let path = path.as_ref();
         let md_dir = md_dir.as_ref();
-        
+
         // 检查 front matter 类型
         let (fm_marker, end_marker) = if content.starts_with("+++") {
             ("+++", "+++\n")
@@ -190,22 +211,29 @@ impl PostParser {
         let front_matter = &content[start..end];
         let body = &content[end + fm_marker.len()..];
 
-        // 解析front matter（YAML）
-        let metadata: serde_yaml::Value = serde_yaml::from_str(front_matter)
-            .map_err(|e| Error::Markdown(format!("解析front matter失败 {:?}: {}", path, e)))?;
-
-        // 转换元数据为JSON
-        let metadata_json = serde_json::to_value(&metadata)?;
+        // 解析front matter
+        let metadata_json = if fm_marker == "+++" {
+            let metadata: toml::Value = toml::from_str(front_matter).map_err(|e| {
+                Error::Markdown(format!("解析TOML front matter失败 {:?}: {}", path, e))
+            })?;
+            serde_json::to_value(metadata)?
+        } else {
+            let metadata: serde_yaml::Value = serde_yaml::from_str(front_matter).map_err(|e| {
+                Error::Markdown(format!("解析YAML front matter失败 {:?}: {}", path, e))
+            })?;
+            serde_json::to_value(metadata)?
+        };
 
         // 解析Markdown为HTML（不在解析阶段追加任何额外内容）
         let html = Self::markdown_to_html(body);
 
         // 优先使用 front matter 中的 slug 字段，否则用文件名
-        let mut slug = path.file_stem()
+        let mut slug = path
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("")
             .to_string();
-        
+
         if let Value::Object(ref obj) = metadata_json {
             if let Some(Value::String(s)) = obj.get("slug") {
                 if !s.is_empty() {
@@ -228,7 +256,7 @@ impl PostParser {
                 obj.insert("slug".to_string(), Value::String(slug));
                 obj.insert("categories".to_string(), Value::Array(categories_json));
                 Value::Object(obj)
-            },
+            }
             _ => {
                 let mut obj = serde_json::Map::new();
                 obj.insert("content".to_string(), Value::String(html));
@@ -243,7 +271,7 @@ impl PostParser {
             // 记录源文件路径与修改时间戳（用于增量编译）
             obj.insert(
                 "source_path".to_string(),
-                Value::String(path.to_string_lossy().to_string())
+                Value::String(path.to_string_lossy().to_string()),
             );
             let modified_epoch = std::fs::metadata(path)
                 .and_then(|m| m.modified())
@@ -251,31 +279,56 @@ impl PostParser {
                 .and_then(|st| st.duration_since(std::time::UNIX_EPOCH).ok())
                 .map(|d| d.as_secs() as i64)
                 .unwrap_or(0);
-            obj.insert("modified_epoch".to_string(), Value::Number(modified_epoch.into()));
+            obj.insert(
+                "modified_epoch".to_string(),
+                Value::Number(modified_epoch.into()),
+            );
 
             // 如果没有 title 字段，尝试从 Markdown 内容提取标题
             if !obj.contains_key("title") {
                 let content_md_title = Self::extract_title_from_markdown(body).or_else(|| {
                     // 兜底：使用 slug
-                    obj.get("slug").and_then(|v| v.as_str()).map(|s| s.to_string())
+                    obj.get("slug")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
                 });
-                if let Some(title) = content_md_title { obj.insert("title".to_string(), Value::String(title)); }
+                if let Some(title) = content_md_title {
+                    obj.insert("title".to_string(), Value::String(title));
+                }
             }
-            
+
             // 处理创建时间字段（兼容多分隔符并归一化为 YYYY-MM-DD）
-            if let Some(create_time) = obj.get("createTime").and_then(|v| v.as_str()) {
+            // 优先使用 createTime，如果不存在则尝试使用 date
+            if let Some(create_time) = obj
+                .get("createTime")
+                .or_else(|| obj.get("date"))
+                .and_then(|v| v.as_str())
+            {
                 let create_time_str = create_time.to_string();
-                let date_only = if create_time_str.len() >= 10 { &create_time_str[0..10] } else { &create_time_str };
+                let date_only = if create_time_str.len() >= 10 {
+                    &create_time_str[0..10]
+                } else {
+                    &create_time_str
+                };
                 let mut normalized = date_only.replace('/', "-").replace('.', "-");
                 // 确保格式长度为10且分隔符在位置4和7
                 if normalized.len() == 10 {
                     let bytes = normalized.as_bytes();
                     let is_digit = |c: u8| c.is_ascii_digit();
-                    if !(is_digit(bytes[0]) && is_digit(bytes[1]) && is_digit(bytes[2]) && is_digit(bytes[3]) &&
-                         bytes[4] == b'-' && is_digit(bytes[5]) && is_digit(bytes[6]) &&
-                         bytes[7] == b'-' && is_digit(bytes[8]) && is_digit(bytes[9])) {
+                    if !(is_digit(bytes[0])
+                        && is_digit(bytes[1])
+                        && is_digit(bytes[2])
+                        && is_digit(bytes[3])
+                        && bytes[4] == b'-'
+                        && is_digit(bytes[5])
+                        && is_digit(bytes[6])
+                        && bytes[7] == b'-'
+                        && is_digit(bytes[8])
+                        && is_digit(bytes[9]))
+                    {
                         // 尝试强制重组为 YYYY-MM-DD
-                        let digits: Vec<char> = date_only.chars().filter(|c| c.is_ascii_digit()).collect();
+                        let digits: Vec<char> =
+                            date_only.chars().filter(|c| c.is_ascii_digit()).collect();
                         if digits.len() >= 8 {
                             let year: String = digits[0..4].iter().collect();
                             let month: String = digits[4..6].iter().collect();
@@ -289,50 +342,50 @@ impl PostParser {
                     let year = &normalized[0..4];
                     let ym = &normalized[0..7];
                     obj.insert("year".to_string(), Value::String(year.to_string()));
-                obj.insert("year_month".to_string(), Value::String(ym.to_string()));
-            }
+                    obj.insert("year_month".to_string(), Value::String(ym.to_string()));
+                }
 
-            // 清洗标签：去除空字符串和仅空白的标签；若为空则移除
-            if let Some(tags_val) = obj.get("tags") {
-                if let Some(arr) = tags_val.as_array() {
-                    let mut sanitized: Vec<Value> = arr
-                        .iter()
-                        .filter_map(|v| v.as_str())
-                        .map(|s| s.trim())
-                        .filter(|s| !s.is_empty())
-                        .map(|s| Value::String(s.to_string()))
-                        .collect();
-                    // 去重（保持顺序）
-                    let mut seen = std::collections::HashSet::new();
-                    sanitized.retain(|v| {
-                        if let Some(s) = v.as_str() {
-                            seen.insert(s.to_string())
+                // 清洗标签：去除空字符串和仅空白的标签；若为空则移除
+                if let Some(tags_val) = obj.get("tags") {
+                    if let Some(arr) = tags_val.as_array() {
+                        let mut sanitized: Vec<Value> = arr
+                            .iter()
+                            .filter_map(|v| v.as_str())
+                            .map(|s| s.trim())
+                            .filter(|s| !s.is_empty())
+                            .map(|s| Value::String(s.to_string()))
+                            .collect();
+                        // 去重（保持顺序）
+                        let mut seen = std::collections::HashSet::new();
+                        sanitized.retain(|v| {
+                            if let Some(s) = v.as_str() {
+                                seen.insert(s.to_string())
+                            } else {
+                                false
+                            }
+                        });
+                        if sanitized.is_empty() {
+                            obj.remove("tags");
                         } else {
-                            false
+                            obj.insert("tags".to_string(), Value::Array(sanitized));
                         }
-                    });
-                    if sanitized.is_empty() {
-                        obj.remove("tags");
                     } else {
-                        obj.insert("tags".to_string(), Value::Array(sanitized));
+                        // 非数组字段的非法标签，移除以避免渲染层误用
+                        obj.remove("tags");
                     }
-                } else {
-                    // 非数组字段的非法标签，移除以避免渲染层误用
-                    obj.remove("tags");
                 }
             }
-        }
         }
 
         Ok(Some(post))
     }
-    
+
     /// 从文件路径提取分类信息
     fn extract_categories_from_path<P: AsRef<Path>>(path: P, md_dir: P) -> Vec<String> {
         let path = path.as_ref();
         let md_dir = md_dir.as_ref();
         let mut categories = Vec::new();
-        
+
         // 获取相对于md_dir的路径
         if let Ok(relative_path) = path.strip_prefix(md_dir) {
             // 获取父目录路径
@@ -347,10 +400,10 @@ impl PostParser {
                 }
             }
         }
-        
+
         categories
     }
-    
+
     /// 将Markdown转换为HTML
     fn markdown_to_html(markdown: &str) -> String {
         let mut options = Options::empty();
@@ -358,24 +411,24 @@ impl PostParser {
         options.insert(Options::ENABLE_FOOTNOTES);
         options.insert(Options::ENABLE_STRIKETHROUGH);
         options.insert(Options::ENABLE_TASKLISTS);
-        
+
         let parser = Parser::new_ext(markdown, options);
         let mut html = String::new();
         html::push_html(&mut html, parser);
-        
+
         html
     }
-    
+
     /// 统计所有标签及计数
     pub fn collect_tags(posts: &[Post]) -> Vec<Value> {
         let mut tag_to_count: BTreeMap<String, usize> = BTreeMap::new();
-        
+
         for post in posts {
             for tag in post.tags() {
                 *tag_to_count.entry(tag).or_insert(0) += 1;
             }
         }
-        
+
         tag_to_count
             .into_iter()
             .map(|(name, count)| {
@@ -386,17 +439,17 @@ impl PostParser {
             })
             .collect()
     }
-    
+
     /// 统计所有年份及计数
     pub fn collect_years(posts: &[Post]) -> Vec<Value> {
         let mut year_to_count: BTreeMap<String, usize> = BTreeMap::new();
-        
+
         for post in posts {
             if let Some(year) = post.data.get("year").and_then(|v| v.as_str()) {
                 *year_to_count.entry(year.to_string()).or_insert(0) += 1;
             }
         }
-        
+
         year_to_count
             .into_iter()
             .map(|(name, count)| {
@@ -407,11 +460,11 @@ impl PostParser {
             })
             .collect()
     }
-    
+
     /// 生成层次化的分类结构
     pub fn generate_hierarchical_categories(posts: &[Post]) -> Value {
         use std::collections::HashMap;
-        
+
         // 构建分类树结构
         #[derive(Debug)]
         struct CategoryNode {
@@ -420,7 +473,7 @@ impl PostParser {
             children: HashMap<String, CategoryNode>,
             full_path: Vec<String>,
         }
-        
+
         impl CategoryNode {
             fn new(name: String, full_path: Vec<String>) -> Self {
                 Self {
@@ -430,17 +483,24 @@ impl PostParser {
                     full_path,
                 }
             }
-            
+
             fn to_json(&self) -> Value {
                 let mut obj = serde_json::Map::new();
                 obj.insert("name".to_string(), Value::String(self.name.clone()));
                 obj.insert("count".to_string(), Value::from(self.count as u64));
-                obj.insert("path".to_string(), Value::Array(
-                    self.full_path.iter().map(|s| Value::String(s.clone())).collect()
-                ));
-                
+                obj.insert(
+                    "path".to_string(),
+                    Value::Array(
+                        self.full_path
+                            .iter()
+                            .map(|s| Value::String(s.clone()))
+                            .collect(),
+                    ),
+                );
+
                 if !self.children.is_empty() {
-                    let mut children: Vec<Value> = self.children
+                    let mut children: Vec<Value> = self
+                        .children
                         .values()
                         .map(|child| child.to_json())
                         .collect();
@@ -451,13 +511,13 @@ impl PostParser {
                     });
                     obj.insert("children".to_string(), Value::Array(children));
                 }
-                
+
                 Value::Object(obj)
             }
         }
-        
+
         let mut root = CategoryNode::new("root".to_string(), vec![]);
-        
+
         // 遍历所有文章，构建分类树
         for post in posts {
             let categories = post.categories();
@@ -465,22 +525,23 @@ impl PostParser {
                 // 在分类路径上的每个节点都增加计数
                 let mut current = &mut root;
                 let mut current_path = vec![];
-                
+
                 for category in &categories {
                     current_path.push(category.clone());
-                    current = current.children
-                        .entry(category.clone())
-                        .or_insert_with(|| CategoryNode::new(category.clone(), current_path.clone()));
+                    current = current.children.entry(category.clone()).or_insert_with(|| {
+                        CategoryNode::new(category.clone(), current_path.clone())
+                    });
                     current.count += 1;
                 }
             }
         }
-        
+
         // 转换为JSON格式
         if root.children.is_empty() {
             Value::Array(vec![])
         } else {
-            let mut categories: Vec<Value> = root.children
+            let mut categories: Vec<Value> = root
+                .children
                 .values()
                 .map(|child| child.to_json())
                 .collect();
@@ -497,7 +558,11 @@ impl PostParser {
     ///
     /// 用途：当需要解析一个具体的Markdown文件内容（例如 friends.md）时，
     /// 在模板渲染阶段可调用此方法以获得其 front matter 和 HTML 内容。
-    pub fn parse_file_content<P: AsRef<Path>>(content: &str, path: P, md_dir: P) -> Result<Option<Value>> {
+    pub fn parse_file_content<P: AsRef<Path>>(
+        content: &str,
+        path: P,
+        md_dir: P,
+    ) -> Result<Option<Value>> {
         Self::parse_post(content, path, md_dir)
     }
 }

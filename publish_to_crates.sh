@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# AUTO_COMMIT=1 bash publish.sh
+# AUTO_COMMIT=1 bash publish_to_crates.sh
 
 # RustPress 发布脚本（更简单、自动）
 # 功能：
@@ -85,15 +85,14 @@ ensure_clean_worktree() {
 
 ensure_clean_worktree
 
-# 不再使用暂存/恢复流程，发布从干净工作区进行
-
 # Show current version
 current_version=$(sed -n 's/^version\s*=\s*"\([^"]\+\)"/\1/p' Cargo.toml | head -n 1 || true)
 echo ":: 当前 Cargo.toml 版本: ${current_version:-unknown}"
 
 echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
 # 构建 release 参数（显式执行，不传 tag-prefix，避免重复 v）
-release_flags=("$LEVEL" --execute)
+# 加上 --no-push 确保本地只打 tag，不推送到远端（由 workflow 处理）
+release_flags=("$LEVEL" --execute --no-push)
 if [[ "$NO_CONFIRM" == "1" ]]; then
   release_flags+=(--no-confirm)
 fi
@@ -101,15 +100,3 @@ if [[ "$SKIP_PUBLISH" == "1" ]]; then
   release_flags+=(--no-publish)
 fi
 cargo release "${release_flags[@]}"
-
-# 显式推送提交与标签（以防某些环境下 --push 未生效）
-echo ":: 显式推送提交与标签到 ${REMOTE}"
-git push "$REMOTE" || true
-git push "$REMOTE" --tags || true
-
-# 显示最新标签
-last_tag=$(git tag --list "${TAG_PREFIX}*" --sort=-version:refname | head -n 1 || true)
-echo ":: 发布完成。最新标签（前缀 '${TAG_PREFIX}'）: ${last_tag:-<none>}"
-
-echo ":: 提示: 可用环境变量覆盖默认值，例如："
-echo "   TAG_PREFIX=v LEVEL=patch REMOTE=origin bash publish.sh"

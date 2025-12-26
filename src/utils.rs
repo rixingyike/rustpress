@@ -1,13 +1,13 @@
 //! 工具函数模块
-//! 
+//!
 //! 提供各种实用的辅助函数
 
-use crate::error::{Error, Result};
 use crate::config::Config;
+use crate::error::{Error, Result};
 use crate::post::{Post, PostParser};
+use std::borrow::Cow;
 use std::path::Path;
 use walkdir::WalkDir;
-use std::borrow::Cow;
 // 使派生的 RustEmbed trait 在作用域内，从而可调用 ::get()
 use rust_embed::RustEmbed;
 // 将根目录的配置编译进二进制，作为默认模板来源
@@ -46,7 +46,9 @@ pub struct RuntimePathsBuilder {
 }
 
 impl RuntimePathsBuilder {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
     pub fn md_dir<P: AsRef<std::path::Path>>(mut self, md_dir: P) -> Self {
         self.md_dir = Some(md_dir.as_ref().to_path_buf());
         self
@@ -67,29 +69,50 @@ impl RuntimePathsBuilder {
         // 优先使用项目根目录 themes/<theme>
         let theme_dir_in_root = std::path::PathBuf::from("themes").join(&theme);
         // 兼容历史：若根目录不存在主题目录，可回退到 md_dir 下 themes/<theme>
-        let theme_dir_in_md = self.md_dir.unwrap_or_else(|| std::path::PathBuf::from(".")).join("themes").join(&theme);
+        let theme_dir_in_md = self
+            .md_dir
+            .unwrap_or_else(|| std::path::PathBuf::from("."))
+            .join("themes")
+            .join(&theme);
 
         // 选择存在的主题目录
         let (theme_dir, theme_templates_dir, theme_static_dir) = if theme_dir_in_root.exists() {
             let templates_dir = theme_dir_in_root.join("templates");
             // 优先主题 public 目录（例如 themes/default/public/static），否则回退到 themes/default/static
             let public_dir = theme_dir_in_root.join("public");
-            let static_dir = if public_dir.exists() { public_dir } else { theme_dir_in_root.join("static") };
+            let static_dir = if public_dir.exists() {
+                public_dir
+            } else {
+                theme_dir_in_root.join("static")
+            };
             (theme_dir_in_root, templates_dir, static_dir)
         } else if theme_dir_in_md.exists() {
             let templates_dir = theme_dir_in_md.join("templates");
             let public_dir = theme_dir_in_md.join("public");
-            let static_dir = if public_dir.exists() { public_dir } else { theme_dir_in_md.join("static") };
+            let static_dir = if public_dir.exists() {
+                public_dir
+            } else {
+                theme_dir_in_md.join("static")
+            };
             (theme_dir_in_md, templates_dir, static_dir)
         } else {
             // 如果都不存在，默认回退到根目录路径
             let templates_dir = theme_dir_in_root.join("templates");
             let public_dir = theme_dir_in_root.join("public");
-            let static_dir = if public_dir.exists() { public_dir } else { theme_dir_in_root.join("static") };
+            let static_dir = if public_dir.exists() {
+                public_dir
+            } else {
+                theme_dir_in_root.join("static")
+            };
             (theme_dir_in_root, templates_dir, static_dir)
         };
 
-        RuntimePaths { build_toml_path, theme_dir, theme_templates_dir, theme_static_dir }
+        RuntimePaths {
+            build_toml_path,
+            theme_dir,
+            theme_templates_dir,
+            theme_static_dir,
+        }
     }
 }
 
@@ -122,7 +145,10 @@ pub fn resolve_build_toml_path_write<P: AsRef<std::path::Path>>(md_dir: P) -> st
 }
 
 /// 解析 config.toml 的读取路径：优先 `md_dir/<config_filename>`，否则回退到项目根 `<config_filename>`
-pub fn resolve_config_toml_path_read<P: AsRef<std::path::Path>>(md_dir: P, config_filename: &str) -> std::path::PathBuf {
+pub fn resolve_config_toml_path_read<P: AsRef<std::path::Path>>(
+    md_dir: P,
+    config_filename: &str,
+) -> std::path::PathBuf {
     let md_config = md_dir.as_ref().join(config_filename);
     if md_config.exists() {
         md_config
@@ -135,17 +161,18 @@ pub fn resolve_config_toml_path_read<P: AsRef<std::path::Path>>(md_dir: P, confi
 pub fn copy_dir_recursive<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<()> {
     let src_path = src.as_ref();
     let dst_path = dst.as_ref();
-    
+
     if !src_path.exists() {
         return Ok(());
     }
-    
+
     for entry in WalkDir::new(src_path).into_iter().filter_map(|e| e.ok()) {
         let src_file = entry.path();
-        let relative_path = src_file.strip_prefix(src_path)
+        let relative_path = src_file
+            .strip_prefix(src_path)
             .map_err(|e| Error::Other(format!("无法获取相对路径 {:?}: {}", src_file, e)))?;
         let dst_file = dst_path.join(relative_path);
-        
+
         if src_file.is_dir() {
             std::fs::create_dir_all(&dst_file)
                 .map_err(|e| Error::Other(format!("无法创建目录 {:?}: {}", dst_file, e)))?;
@@ -154,11 +181,15 @@ pub fn copy_dir_recursive<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Res
                 std::fs::create_dir_all(parent)
                     .map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
             }
-            std::fs::copy(src_file, &dst_file)
-                .map_err(|e| Error::Other(format!("无法复制文件 {:?} -> {:?}: {}", src_file, dst_file, e)))?;
+            std::fs::copy(src_file, &dst_file).map_err(|e| {
+                Error::Other(format!(
+                    "无法复制文件 {:?} -> {:?}: {}",
+                    src_file, dst_file, e
+                ))
+            })?;
         }
     }
-    
+
     Ok(())
 }
 
@@ -173,7 +204,7 @@ pub fn read_template_file<P: AsRef<Path>>(path: P) -> Result<String> {
 pub fn strip_html_tags(html: &str) -> String {
     let mut result = String::new();
     let mut in_tag = false;
-    
+
     for ch in html.chars() {
         match ch {
             '<' => in_tag = true,
@@ -182,7 +213,7 @@ pub fn strip_html_tags(html: &str) -> String {
             _ => {}
         }
     }
-    
+
     // 清理多余的空白字符
     result.split_whitespace().collect::<Vec<&str>>().join(" ")
 }
@@ -199,7 +230,7 @@ pub fn get_npm_command() -> &'static str {
 /// 记录编译信息到 build.toml 文件（优先项目根）
 pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
     use chrono::{DateTime, Local};
-    
+
     // 获取当前时间
     let now: DateTime<Local> = Local::now();
     let beijing_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -208,7 +239,9 @@ pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
     let build_path = resolve_build_toml_path_write(md_dir.as_ref());
     let mut root = if build_path.exists() {
         match std::fs::read_to_string(&build_path) {
-            Ok(content) => content.parse::<toml::Value>().unwrap_or(toml::Value::Table(toml::value::Table::new())),
+            Ok(content) => content
+                .parse::<toml::Value>()
+                .unwrap_or(toml::Value::Table(toml::value::Table::new())),
             Err(_) => toml::Value::Table(toml::value::Table::new()),
         }
     } else {
@@ -217,12 +250,17 @@ pub fn log_build_info<P: AsRef<std::path::Path>>(md_dir: P) -> Result<()> {
 
     // 设置 last_build_time
     if let toml::Value::Table(ref mut table) = root {
-        table.insert("last_build_time".to_string(), toml::Value::String(beijing_time));
+        table.insert(
+            "last_build_time".to_string(),
+            toml::Value::String(beijing_time),
+        );
     }
 
     // 写回 build.toml
-    let toml_str = toml::to_string(&root).map_err(|e| Error::Other(format!("序列化 build.toml 失败: {}", e)))?;
-    std::fs::write(&build_path, toml_str).map_err(|e| Error::Other(format!("写入 build.toml 失败: {}", e)))?;
+    let toml_str = toml::to_string(&root)
+        .map_err(|e| Error::Other(format!("序列化 build.toml 失败: {}", e)))?;
+    std::fs::write(&build_path, toml_str)
+        .map_err(|e| Error::Other(format!("写入 build.toml 失败: {}", e)))?;
     println!("编译信息已更新到: {}", build_path.display());
     Ok(())
 }
@@ -235,45 +273,45 @@ pub fn build_theme_css<P: AsRef<std::path::Path>>(md_dir: P, config: &Config) ->
         .build();
     let theme_dir = paths.theme_dir;
     let package_json_path = format!("{}/package.json", theme_dir.display());
-    
+
     // 检查主题是否需要 CSS 编译
     if !std::path::Path::new(&package_json_path).exists() {
         println!("主题不需要 CSS 编译，跳过...");
         return Ok(());
     }
-    
+
     println!("检测到主题需要 CSS 编译，正在构建...");
-    
+
     let npm_cmd = get_npm_command();
-    
+
     // 检查是否安装了依赖
     let node_modules_path = format!("{}/node_modules", theme_dir.display());
     if !std::path::Path::new(&node_modules_path).exists() {
         println!("正在安装主题依赖...");
         let install_status = std::process::Command::new(npm_cmd)
-            .args(&["install"]) 
+            .args(&["install"])
             .current_dir(&theme_dir)
             .status()
             .map_err(|e| Error::Other(format!("无法执行 npm install 命令: {}", e)))?;
-        
+
         if !install_status.success() {
             return Err(Error::Other("npm install 失败".to_string()));
         }
         println!("主题依赖安装完成");
     }
-    
+
     // 运行 CSS 构建命令
     println!("正在编译主题 CSS...");
     let build_status = std::process::Command::new(npm_cmd)
-        .args(&["run", "build-css"]) 
+        .args(&["run", "build-css"])
         .current_dir(&theme_dir)
         .status()
         .map_err(|e| Error::Other(format!("无法执行 npm run build-css 命令: {}", e)))?;
-    
+
     if !build_status.success() {
         return Err(Error::Other("CSS 构建失败".to_string()));
     }
-    
+
     println!("主题 CSS 编译完成");
     Ok(())
 }
@@ -283,7 +321,9 @@ pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post])
     let build_path = resolve_build_toml_path_write(md_dir.as_ref());
     let mut root = if build_path.exists() {
         match std::fs::read_to_string(&build_path) {
-            Ok(content) => content.parse::<toml::Value>().unwrap_or(toml::Value::Table(toml::value::Table::new())),
+            Ok(content) => content
+                .parse::<toml::Value>()
+                .unwrap_or(toml::Value::Table(toml::value::Table::new())),
             Err(_) => toml::Value::Table(toml::value::Table::new()),
         }
     } else {
@@ -311,12 +351,24 @@ pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post])
         .take(10)
         .map(|p| {
             let mut item = toml::value::Table::new();
-            if let Some(slug) = p.slug() { item.insert("slug".to_string(), toml::Value::String(slug.to_string())); }
-            if let Some(title) = p.title() { item.insert("title".to_string(), toml::Value::String(title.to_string())); }
-            if let Some(date) = p.date() { item.insert("date_ymd".to_string(), toml::Value::String(date.to_string())); }
+            if let Some(slug) = p.slug() {
+                item.insert("slug".to_string(), toml::Value::String(slug.to_string()));
+            }
+            if let Some(title) = p.title() {
+                item.insert("title".to_string(), toml::Value::String(title.to_string()));
+            }
+            if let Some(date) = p.date() {
+                item.insert(
+                    "date_ymd".to_string(),
+                    toml::Value::String(date.to_string()),
+                );
+            }
             let cats = p.categories();
             if !cats.is_empty() {
-                item.insert("categories".to_string(), toml::Value::Array(cats.into_iter().map(toml::Value::String).collect()));
+                item.insert(
+                    "categories".to_string(),
+                    toml::Value::Array(cats.into_iter().map(toml::Value::String).collect()),
+                );
             }
             toml::Value::Table(item)
         })
@@ -328,7 +380,11 @@ pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post])
         .into_iter()
         .take(20)
         .map(|v| {
-            let name = v.get("name").and_then(|x| x.as_str()).unwrap_or("").to_string();
+            let name = v
+                .get("name")
+                .and_then(|x| x.as_str())
+                .unwrap_or("")
+                .to_string();
             let count = v.get("count").and_then(|x| x.as_i64()).unwrap_or(0);
             let mut item = toml::value::Table::new();
             item.insert("name".to_string(), toml::Value::String(name));
@@ -338,7 +394,8 @@ pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post])
         .collect();
 
     // 计算热门分类（按出现次数，取前8，顶层名统计）
-    let mut category_count: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+    let mut category_count: std::collections::HashMap<String, i64> =
+        std::collections::HashMap::new();
     for post in posts {
         let cats = post.categories();
         if let Some(top) = cats.first() {
@@ -362,14 +419,19 @@ pub fn ensure_sidebar_data<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post])
     let mut sidebar = toml::value::Table::new();
     sidebar.insert("hot_posts".to_string(), toml::Value::Array(hot_posts));
     sidebar.insert("hot_tags".to_string(), toml::Value::Array(hot_tags));
-    sidebar.insert("hot_categories".to_string(), toml::Value::Array(hot_categories));
+    sidebar.insert(
+        "hot_categories".to_string(),
+        toml::Value::Array(hot_categories),
+    );
 
     if let toml::Value::Table(ref mut table) = root {
         table.insert("sidebar".to_string(), toml::Value::Table(sidebar));
     }
 
-    let toml_str = toml::to_string(&root).map_err(|e| Error::Other(format!("序列化 build.toml 失败: {}", e)))?;
-    std::fs::write(&build_path, toml_str).map_err(|e| Error::Other(format!("写入 build.toml 失败: {}", e)))?;
+    let toml_str = toml::to_string(&root)
+        .map_err(|e| Error::Other(format!("序列化 build.toml 失败: {}", e)))?;
+    std::fs::write(&build_path, toml_str)
+        .map_err(|e| Error::Other(format!("写入 build.toml 失败: {}", e)))?;
     println!("已生成侧边栏数据到 {}（可手动修改）", build_path.display());
     Ok(())
 }
@@ -380,7 +442,9 @@ pub fn regenerate_sidebar<P: AsRef<std::path::Path>>(md_dir: P, posts: &[Post]) 
     let build_path = resolve_build_toml_path_write(md_dir.as_ref());
     let mut root = if build_path.exists() {
         match std::fs::read_to_string(&build_path) {
-            Ok(content) => content.parse::<toml::Value>().unwrap_or(toml::Value::Table(toml::value::Table::new())),
+            Ok(content) => content
+                .parse::<toml::Value>()
+                .unwrap_or(toml::Value::Table(toml::value::Table::new())),
             Err(_) => toml::Value::Table(toml::value::Table::new()),
         }
     } else {
@@ -424,13 +488,23 @@ pub fn read_build_mode<P: AsRef<std::path::Path>>(md_dir: P) -> BuildMode {
         if let Some(v) = tbl.get("compile_mode").or_else(|| tbl.get("build_mode")) {
             match v {
                 toml::Value::String(s) => return read_string_mode(s),
-                toml::Value::Boolean(b) => return if *b { BuildMode::Incremental } else { BuildMode::Full },
+                toml::Value::Boolean(b) => {
+                    return if *b {
+                        BuildMode::Incremental
+                    } else {
+                        BuildMode::Full
+                    };
+                }
                 _ => {}
             }
         }
         if let Some(v) = tbl.get("incremental") {
             if let Some(b) = v.as_bool() {
-                return if b { BuildMode::Incremental } else { BuildMode::Full };
+                return if b {
+                    BuildMode::Incremental
+                } else {
+                    BuildMode::Full
+                };
             }
         }
     }
@@ -438,11 +512,16 @@ pub fn read_build_mode<P: AsRef<std::path::Path>>(md_dir: P) -> BuildMode {
 }
 
 /// 复制源目录根层的非 Markdown 且非隐藏文件到输出目录（用于拷贝 CNAME 等）
-pub fn copy_root_non_md_non_hidden<P: AsRef<Path>, Q: AsRef<Path>>(md_dir: P, output_dir: Q) -> Result<()> {
+pub fn copy_root_non_md_non_hidden<P: AsRef<Path>, Q: AsRef<Path>>(
+    md_dir: P,
+    output_dir: Q,
+) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
     let output_dir = output_dir.as_ref();
-    if !md_dir.exists() { return Ok(()); }
+    if !md_dir.exists() {
+        return Ok(());
+    }
     let rd = fs::read_dir(md_dir)
         .map_err(|e| Error::Other(format!("无法读取源目录 {:?}: {}", md_dir, e)))?;
     for entry in rd.flatten() {
@@ -451,11 +530,16 @@ pub fn copy_root_non_md_non_hidden<P: AsRef<Path>, Q: AsRef<Path>>(md_dir: P, ou
         if path.is_file() {
             let name = entry.file_name();
             let name_str = name.to_string_lossy();
-            if name_str.starts_with('.') { continue; }
-            if path.extension().map_or(false, |ext| ext == "md") { continue; }
+            if name_str.starts_with('.') {
+                continue;
+            }
+            if path.extension().map_or(false, |ext| ext == "md") {
+                continue;
+            }
             let dst = output_dir.join(name_str.as_ref());
-            fs::copy(&path, &dst)
-                .map_err(|e| Error::Other(format!("无法复制文件 {:?} -> {:?}: {}", path, dst, e)))?;
+            fs::copy(&path, &dst).map_err(|e| {
+                Error::Other(format!("无法复制文件 {:?} -> {:?}: {}", path, dst, e))
+            })?;
         }
     }
     Ok(())
@@ -468,32 +552,52 @@ pub fn copy_root_non_md_non_hidden<P: AsRef<Path>, Q: AsRef<Path>>(md_dir: P, ou
 /// - source/assets/img.png -> public/assets/img.png
 /// - source/foo/assets/logo.jpg -> public/foo/assets/logo.jpg
 /// - 跳过以 '.' 开头的隐藏文件与所有 .md 文件
-pub fn copy_non_md_recursive_preserve_paths<P: AsRef<Path>, Q: AsRef<Path>>(md_dir: P, output_dir: Q) -> Result<()> {
+pub fn copy_non_md_recursive_preserve_paths<P: AsRef<Path>, Q: AsRef<Path>>(
+    md_dir: P,
+    output_dir: Q,
+) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
     let output_dir = output_dir.as_ref();
-    if !md_dir.exists() { return Ok(()); }
-    if !output_dir.exists() { fs::create_dir_all(output_dir).map_err(|e| Error::Other(format!("无法创建输出目录 {:?}: {}", output_dir, e)))?; }
+    if !md_dir.exists() {
+        return Ok(());
+    }
+    if !output_dir.exists() {
+        fs::create_dir_all(output_dir)
+            .map_err(|e| Error::Other(format!("无法创建输出目录 {:?}: {}", output_dir, e)))?;
+    }
 
     for entry in WalkDir::new(md_dir).into_iter().filter_map(|e| e.ok()) {
         let src_path = entry.path();
         if src_path.is_file() {
             // 跳过隐藏文件（文件名以 '.' 开头）
-            let name = src_path.file_name().map(|s| s.to_string_lossy()).unwrap_or(std::borrow::Cow::Borrowed(""));
-            if name.starts_with('.') { continue; }
+            let name = src_path
+                .file_name()
+                .map(|s| s.to_string_lossy())
+                .unwrap_or(std::borrow::Cow::Borrowed(""));
+            if name.starts_with('.') {
+                continue;
+            }
             // 跳过 Markdown 文件
-            if src_path.extension().map_or(false, |ext| ext == "md") { continue; }
+            if src_path.extension().map_or(false, |ext| ext == "md") {
+                continue;
+            }
 
             // 计算相对路径并复制
-            let rel = src_path.strip_prefix(md_dir)
+            let rel = src_path
+                .strip_prefix(md_dir)
                 .map_err(|e| Error::Other(format!("无法计算相对路径 {:?}: {}", src_path, e)))?;
             let dst_path = output_dir.join(rel);
             if let Some(parent) = dst_path.parent() {
                 fs::create_dir_all(parent)
                     .map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
             }
-            fs::copy(src_path, &dst_path)
-                .map_err(|e| Error::Other(format!("无法复制文件 {:?} -> {:?}: {}", src_path, dst_path, e)))?;
+            fs::copy(src_path, &dst_path).map_err(|e| {
+                Error::Other(format!(
+                    "无法复制文件 {:?} -> {:?}: {}",
+                    src_path, dst_path, e
+                ))
+            })?;
         }
     }
     Ok(())
@@ -503,7 +607,10 @@ pub fn copy_non_md_recursive_preserve_paths<P: AsRef<Path>, Q: AsRef<Path>>(md_d
 pub fn write_embedded_theme_static<P: AsRef<Path>>(output_dir: P) -> Result<()> {
     use std::fs;
     let output_dir = output_dir.as_ref();
-    if !output_dir.exists() { fs::create_dir_all(output_dir).map_err(|e| Error::Other(format!("无法创建输出目录 {:?}: {}", output_dir, e)))?; }
+    if !output_dir.exists() {
+        fs::create_dir_all(output_dir)
+            .map_err(|e| Error::Other(format!("无法创建输出目录 {:?}: {}", output_dir, e)))?;
+    }
 
     for file in ThemeStaticAssets::iter() {
         let rel: &str = file.as_ref();
@@ -511,9 +618,11 @@ pub fn write_embedded_theme_static<P: AsRef<Path>>(output_dir: P) -> Result<()> 
             let bytes: Cow<'static, [u8]> = content.data;
             let dst = output_dir.join(rel);
             if let Some(parent) = dst.parent() {
-                fs::create_dir_all(parent).map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
+                fs::create_dir_all(parent)
+                    .map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
             }
-            fs::write(&dst, &bytes).map_err(|e| Error::Other(format!("无法写入嵌入静态文件 {:?}: {}", dst, e)))?;
+            fs::write(&dst, &bytes)
+                .map_err(|e| Error::Other(format!("无法写入嵌入静态文件 {:?}: {}", dst, e)))?;
         }
     }
     Ok(())
@@ -524,7 +633,8 @@ pub fn write_embedded_theme_templates_to_root() -> Result<()> {
     use std::fs;
     let base = std::path::Path::new("themes/default/templates");
     if !base.exists() {
-        fs::create_dir_all(base).map_err(|e| Error::Other(format!("无法创建模板目录 {:?}: {}", base, e)))?;
+        fs::create_dir_all(base)
+            .map_err(|e| Error::Other(format!("无法创建模板目录 {:?}: {}", base, e)))?;
     }
 
     for file in ThemeTemplates::iter() {
@@ -533,11 +643,13 @@ pub fn write_embedded_theme_templates_to_root() -> Result<()> {
             let bytes: Cow<'static, [u8]> = content.data;
             let dst = base.join(rel);
             if let Some(parent) = dst.parent() {
-                fs::create_dir_all(parent).map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
+                fs::create_dir_all(parent)
+                    .map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
             }
             // 仅在文件不存在时写入，避免覆盖用户修改
             if !dst.exists() {
-                fs::write(&dst, &bytes).map_err(|e| Error::Other(format!("无法写入嵌入模板文件 {:?}: {}", dst, e)))?;
+                fs::write(&dst, &bytes)
+                    .map_err(|e| Error::Other(format!("无法写入嵌入模板文件 {:?}: {}", dst, e)))?;
             }
         }
     }
@@ -549,7 +661,8 @@ pub fn write_embedded_theme_static_to_root() -> Result<()> {
     use std::fs;
     let base = std::path::Path::new("themes/default/public");
     if !base.exists() {
-        fs::create_dir_all(base).map_err(|e| Error::Other(format!("无法创建主题静态目录 {:?}: {}", base, e)))?;
+        fs::create_dir_all(base)
+            .map_err(|e| Error::Other(format!("无法创建主题静态目录 {:?}: {}", base, e)))?;
     }
 
     for file in ThemeStaticAssets::iter() {
@@ -558,11 +671,13 @@ pub fn write_embedded_theme_static_to_root() -> Result<()> {
             let bytes: Cow<'static, [u8]> = content.data;
             let dst = base.join(rel);
             if let Some(parent) = dst.parent() {
-                fs::create_dir_all(parent).map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
+                fs::create_dir_all(parent)
+                    .map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
             }
             // 仅在文件不存在时写入，避免覆盖用户修改
             if !dst.exists() {
-                fs::write(&dst, &bytes).map_err(|e| Error::Other(format!("无法写入嵌入静态文件 {:?}: {}", dst, e)))?;
+                fs::write(&dst, &bytes)
+                    .map_err(|e| Error::Other(format!("无法写入嵌入静态文件 {:?}: {}", dst, e)))?;
             }
         }
     }
@@ -572,7 +687,10 @@ pub fn write_embedded_theme_static_to_root() -> Result<()> {
 /// 在项目根保障 `config.toml` 与 `build.toml` 存在：
 /// - 若根不存在且 `md_dir` 下存在，则复制到根
 /// - 若都不存在，则写入内嵌（编译进二进制）的根默认配置
-pub fn ensure_root_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
+pub fn ensure_root_config_and_build<P: AsRef<Path>>(
+    md_dir: P,
+    config_filename: &str,
+) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
 
@@ -581,8 +699,12 @@ pub fn ensure_root_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: 
     if !root_config.exists() {
         let md_config = md_dir.join(config_filename);
         if md_config.exists() {
-            fs::copy(&md_config, &root_config)
-                .map_err(|e| Error::Other(format!("复制配置文件失败 {:?} -> {:?}: {}", md_config, root_config, e)))?;
+            fs::copy(&md_config, &root_config).map_err(|e| {
+                Error::Other(format!(
+                    "复制配置文件失败 {:?} -> {:?}: {}",
+                    md_config, root_config, e
+                ))
+            })?;
             println!("已从源目录复制配置到根: {}", root_config.display());
         } else {
             // 使用嵌入的根默认配置写出
@@ -597,13 +719,18 @@ pub fn ensure_root_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: 
     if !root_build.exists() {
         let md_build = md_dir.join("build.toml");
         if md_build.exists() {
-            fs::copy(&md_build, &root_build)
-                .map_err(|e| Error::Other(format!("复制构建文件失败 {:?} -> {:?}: {}", md_build, root_build, e)))?;
+            fs::copy(&md_build, &root_build).map_err(|e| {
+                Error::Other(format!(
+                    "复制构建文件失败 {:?} -> {:?}: {}",
+                    md_build, root_build, e
+                ))
+            })?;
             println!("已从源目录复制构建配置到根: {}", root_build.display());
         } else {
             // 使用嵌入的根默认构建文件写出
-            fs::write(&root_build, EMBEDDED_ROOT_BUILD_TOML)
-                .map_err(|e| Error::Other(format!("写入默认构建文件失败 {:?}: {}", root_build, e)))?;
+            fs::write(&root_build, EMBEDDED_ROOT_BUILD_TOML).map_err(|e| {
+                Error::Other(format!("写入默认构建文件失败 {:?}: {}", root_build, e))
+            })?;
             println!("已在根目录创建默认构建文件: {}", root_build.display());
         }
     }
@@ -623,7 +750,9 @@ pub fn ensure_default_pages<P: AsRef<Path>>(md_dir: P) -> Result<()> {
     // 优先从嵌入资源写出，若缺失则回退到内置字符串
     let write_if_missing = |name: &str, fallback: &str| -> Result<()> {
         let path = md_dir.join(name);
-        if path.exists() { return Ok(()); }
+        if path.exists() {
+            return Ok(());
+        }
         if let Some(file) = DefaultPages::get(name) {
             std::fs::write(&path, file.data)
                 .map_err(|e| Error::Other(format!("写入嵌入默认页失败 {:?}: {}", path, e)))?;
@@ -692,7 +821,10 @@ friends:
 /// 在源目录 md_dir 保障 `config.toml` 与 `build.toml` 存在：
 /// - 若 md_dir 下不存在且项目根存在，则复制到 md_dir
 /// - 若都不存在，则在 md_dir 写入内嵌（编译进二进制）的根默认配置
-pub fn ensure_source_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
+pub fn ensure_source_config_and_build<P: AsRef<Path>>(
+    md_dir: P,
+    config_filename: &str,
+) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
 
@@ -706,8 +838,12 @@ pub fn ensure_source_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename
     if !md_config.exists() {
         let root_config = std::path::Path::new(config_filename);
         if root_config.exists() {
-            fs::copy(&root_config, &md_config)
-                .map_err(|e| Error::Other(format!("复制配置文件失败 {:?} -> {:?}: {}", root_config, md_config, e)))?;
+            fs::copy(&root_config, &md_config).map_err(|e| {
+                Error::Other(format!(
+                    "复制配置文件失败 {:?} -> {:?}: {}",
+                    root_config, md_config, e
+                ))
+            })?;
             println!("已从根目录复制配置到源目录: {}", md_config.display());
         } else {
             // 使用嵌入的根默认配置写出到源目录
@@ -722,8 +858,12 @@ pub fn ensure_source_config_and_build<P: AsRef<Path>>(md_dir: P, config_filename
     if !md_build.exists() {
         let root_build = std::path::Path::new("build.toml");
         if root_build.exists() {
-            fs::copy(&root_build, &md_build)
-                .map_err(|e| Error::Other(format!("复制构建文件失败 {:?} -> {:?}: {}", root_build, md_build, e)))?;
+            fs::copy(&root_build, &md_build).map_err(|e| {
+                Error::Other(format!(
+                    "复制构建文件失败 {:?} -> {:?}: {}",
+                    root_build, md_build, e
+                ))
+            })?;
             println!("已从根目录复制构建配置到源目录: {}", md_build.display());
         } else {
             // 使用嵌入的根默认构建文件写出到源目录

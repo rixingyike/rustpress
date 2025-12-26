@@ -8,11 +8,11 @@ use clap::{Parser, Subcommand};
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
-    
+
     /// 指定Markdown源文件目录
     #[arg(short, long, default_value = "source")]
     pub md_dir: String,
-    
+
     /// 指定配置文件（默认从 md_dir 下解析）
     #[arg(short, long, default_value = "config.toml")]
     pub config: String,
@@ -29,7 +29,7 @@ pub enum Commands {
         #[arg(short, long, default_value_t = false)]
         force: bool,
     },
-    
+
     /// 生产环境构建（快速，只处理 Markdown）
     Build {
         /// 指定输出目录
@@ -40,7 +40,7 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         incremental: bool,
     },
-    
+
     /// 开发环境构建（包含 CSS 编译）
     BuildDev {
         /// 指定输出目录
@@ -51,16 +51,16 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         incremental: bool,
     },
-    
+
     /// 构建主题 CSS
     BuildCss,
-    
+
     /// 在本地预览博客
     Serve {
         /// 服务器端口
         #[arg(short, long, default_value_t = 1111)]
         port: u16,
-        
+
         /// 指定输出目录
         #[arg(short, long, default_value = "public")]
         output_dir: String,
@@ -69,13 +69,13 @@ pub enum Commands {
         #[arg(long, default_value_t = false)]
         incremental: bool,
     },
-    
+
     /// 开发模式：构建并启动本地预览服务器
     Dev {
         /// 服务器端口
         #[arg(short, long, default_value_t = 1111)]
         port: u16,
-        
+
         /// 指定输出目录
         #[arg(short, long, default_value = "public")]
         output_dir: String,
