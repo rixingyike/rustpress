@@ -50,7 +50,7 @@ description: 发布 RustPress 新版本 (自动化: Changelog -> Crates.io -> Gi
    - 自动生成 Release Notes (GitHub 风格)。
    ```bash
    # 获取 Cargo.toml 中的最新版本 (由 publish_to_crates.sh 更新)
-   CURRENT_VERSION=$(sed -n 's/^version\s*=\s*"\([^"]\+\)"/\1/p' Cargo.toml | head -n 1)
+   CURRENT_VERSION=$(sed -n 's/^version[ ]*=[ ]*"\([^"]\+\)"/\1/p' Cargo.toml | head -n 1)
    echo "🚀 检测到新版本: v$CURRENT_VERSION"
    
    # 确保推送到远端后再创建 Release

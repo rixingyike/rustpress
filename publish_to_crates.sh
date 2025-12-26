@@ -86,7 +86,7 @@ ensure_clean_worktree() {
 ensure_clean_worktree
 
 # Show current version
-current_version=$(sed -n 's/^version\s*=\s*"\([^"]\+\)"/\1/p' Cargo.toml | head -n 1 || true)
+current_version=$(sed -n 's/^version[ ]*=[ ]*"\([^"]\+\)"/\1/p' Cargo.toml | head -n 1 || true)
 echo ":: 当前 Cargo.toml 版本: ${current_version:-unknown}"
 
 echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
