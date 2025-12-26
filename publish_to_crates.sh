@@ -86,13 +86,13 @@ ensure_clean_worktree() {
 ensure_clean_worktree
 
 # Show current version
-current_version=$(sed -n 's/^version[ ]*=[ ]*"\([^"]\+\)"/\1/p' Cargo.toml | head -n 1 || true)
+current_version=$(sed -n 's/^version[ ]*=[ ]*"\([^"]*\)"/\1/p' Cargo.toml | head -n 1 || true)
 echo ":: 当前 Cargo.toml 版本: ${current_version:-unknown}"
 
 echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
 # 构建 release 参数（显式执行，不传 tag-prefix，避免重复 v）
 # 加上 --no-push 确保本地只打 tag，不推送到远端（由 workflow 处理）
-release_flags=("$LEVEL" --execute --no-push)
+release_flags=("$LEVEL" --execute --no-push --registry crates-io)
 if [[ "$NO_CONFIRM" == "1" ]]; then
   release_flags+=(--no-confirm)
 fi
