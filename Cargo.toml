@@ -9,16 +9,7 @@ authors = ["LIYI <9830131@qq.com>"]
 repository = "https://github.com/rixingyike/rustpress"
 homepage = "https://github.com/rixingyike/rustpress"
 readme = "README.md"
-include = [
-    "src/**",
-    "themes/default/public/**",
-    "themes/default/templates/**",
-    "themes/default/pages/**",
-    "README.md",
-    "LICENSE",
-    "config.toml",
-    "build.toml",
-]
+
 exclude = [
     "/public/**",
     "/testblog/**",
