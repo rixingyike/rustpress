@@ -1,3 +1,10 @@
+## [Unreleased] - 2026-01-03
+
+- fix: refine frontmatter regex and add test for issue 2
+- feat: enhance frontmatter parsing robustness and add regression test
+
+---
+
 ## [Unreleased] - 2025-12-26
 
 
