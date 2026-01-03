@@ -3,7 +3,7 @@
 //! 负责解析 Markdown 文件，提取元数据和内容
 
 use crate::error::{Error, Result};
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{Options, Parser, html};
 use regex::Regex;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -221,7 +221,7 @@ impl PostParser {
         } else {
             // 针对 YAML 做鲁棒性处理：修复缺少空格的键值对 (e.g. "key:value" -> "key: value")
             // 匹配行首(可能有缩进)的 key，冒号后紧跟非空白字符的情况
-            let re = Regex::new(r"(?m)^([ \t]*[a-zA-Z0-9_-]+):([^ \t\r\n].*)$").unwrap();
+            let re = Regex::new(r"(?m)^([ \t]*[a-zA-Z0-9_-]+):([^\s].*)$").unwrap();
             let fixed_front_matter = re.replace_all(front_matter, "${1}: ${2}");
 
             let metadata: serde_yaml::Value =
