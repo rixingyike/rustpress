@@ -1343,6 +1343,7 @@ dependencies = [
  "hyper",
  "notify",
  "pulldown-cmark",
+ "regex",
  "rust-embed",
  "serde",
  "serde_derive",

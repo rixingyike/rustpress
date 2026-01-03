@@ -3,7 +3,8 @@
 //! 负责解析 Markdown 文件，提取元数据和内容
 
 use crate::error::{Error, Result};
-use pulldown_cmark::{Options, Parser, html};
+use pulldown_cmark::{html, Options, Parser};
+use regex::Regex;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -218,9 +219,16 @@ impl PostParser {
             })?;
             serde_json::to_value(metadata)?
         } else {
-            let metadata: serde_yaml::Value = serde_yaml::from_str(front_matter).map_err(|e| {
-                Error::Markdown(format!("解析YAML front matter失败 {:?}: {}", path, e))
-            })?;
+            // 针对 YAML 做鲁棒性处理：修复缺少空格的键值对 (e.g. "key:value" -> "key: value")
+            // 匹配行首(可能有缩进)的 key，冒号后紧跟非空白字符的情况
+            let re = Regex::new(r"(?m)^([ \t]*[a-zA-Z0-9_-]+):([^ \t\r\n].*)$").unwrap();
+            let fixed_front_matter = re.replace_all(front_matter, "${1}: ${2}");
+
+            let metadata: serde_yaml::Value =
+                serde_yaml::from_str(&fixed_front_matter).map_err(|e| {
+                    // 如果解析失败，打印原始内容以便调试，虽然我们已经尝试修复了
+                    Error::Markdown(format!("解析YAML front matter失败 {:?}: {}", path, e))
+                })?;
             serde_json::to_value(metadata)?
         };
 
