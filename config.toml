@@ -1,7 +1,7 @@
 [site]
 name = "一树论"
 description = "一花一世界，一树一菩提。"
-author = "LIYI"
+author = "小树"
 base_url = "http://localhost:1111"
 # 在RSS中公开显示的域名
 domain = "https://yishulun.com"
@@ -13,7 +13,7 @@ name = "default"
 
 # 作者信息
 [author]
-name = "LIYI"
+name = "小树"
 bio = "读书使人进步，著书亦使人进步。"
 avatar = "/static/images/avatar.png"
 location = "北京, 中国"
