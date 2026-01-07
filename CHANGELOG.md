@@ -1,3 +1,10 @@
+## [Unreleased] - 2026-01-07
+
+- chore: update author info and remove legacy jQuery
+- feat: implement technical SEO (robots.txt, meta tags, json-ld)
+
+---
+
 ## [Unreleased] - 2026-01-03
 
 - fix: refine frontmatter regex and add test for issue 2
