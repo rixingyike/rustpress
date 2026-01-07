@@ -210,6 +210,25 @@ impl Generator {
 
         println!("网站构建成功！静态文件已生成到 {:?} 目录。", output_dir);
 
+        // 生成 robots.txt
+        let domain = self
+            .config
+            .site()
+            .get("domain")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_end_matches('/'))
+            .unwrap_or("")
+            .to_string();
+
+        if !domain.is_empty() {
+            let robots_txt = format!("User-agent: *\nAllow: /\n\nSitemap: {}/sitemap.xml", domain);
+            std::fs::write(output_dir.join("robots.txt"), robots_txt)
+                .map_err(|e| Error::Other(format!("无法写入 robots.txt: {}", e)))?;
+            println!("robots.txt 已生成");
+        } else {
+            println!("警告: 未配置 site.domain，跳过生成 robots.txt");
+        }
+
         Ok(())
     }
 

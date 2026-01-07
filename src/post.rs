@@ -253,15 +253,23 @@ impl PostParser {
         // 从文件路径提取分类信息
         let categories = Self::extract_categories_from_path(path, md_dir);
         let categories_json: Vec<Value> = categories
-            .into_iter()
-            .map(|cat| Value::String(cat))
+            .iter()
+            .map(|cat| Value::String(cat.clone()))
             .collect();
+
+        // 生成 URL
+        let url = if categories.is_empty() {
+            format!("/{}.html", slug)
+        } else {
+            format!("/{}/{}.html", categories.join("/"), slug)
+        };
 
         // 创建完整的文章对象
         let mut post = match metadata_json {
             Value::Object(mut obj) => {
                 obj.insert("content".to_string(), Value::String(html));
                 obj.insert("slug".to_string(), Value::String(slug));
+                obj.insert("url".to_string(), Value::String(url));
                 obj.insert("categories".to_string(), Value::Array(categories_json));
                 Value::Object(obj)
             }
@@ -269,6 +277,7 @@ impl PostParser {
                 let mut obj = serde_json::Map::new();
                 obj.insert("content".to_string(), Value::String(html));
                 obj.insert("slug".to_string(), Value::String(slug));
+                obj.insert("url".to_string(), Value::String(url));
                 obj.insert("categories".to_string(), Value::Array(categories_json));
                 Value::Object(obj)
             }
