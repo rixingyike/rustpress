@@ -1,3 +1,9 @@
+## [Unreleased] - 2026-02-19
+
+
+
+---
+
 ## [0.1.23] - 2026-02-19
 
 - feat: implement static-friendly OAuth callback (`/callback.html`) with manual token fallback

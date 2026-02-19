@@ -318,8 +318,13 @@
         // THIS IS THE KEY. We don't need to hardcode the worker URL if it's the default!
 
         var loginUrl = 'https://github.com/login/oauth/authorize?client_id=' +
-            RP_CLIENT_ID +
-            // '&redirect_uri=' + ... // Omit redirect_uri to use GitHub App default (The Worker)
+            '&client_id=' + RP_CLIENT_ID +
+            // ⚠️ 警告：
+            // 如果您的 GitHub App 配置了 Authorization callback URL 为 Worker 地址，
+            // 那么这里建议 **不传递** redirect_uri 参数，让 GitHub 使用默认配置。
+            // 
+            // 如果由于某种原因 GitHub 报错，您可以取消下面这行的注释，并填入您的 Worker 地址：
+            // '&redirect_uri=' + encodeURIComponent('https://<您的-worker-名>.<您的-subdomain>.workers.dev/callback') +
             '&state=' + encodeURIComponent(window.location.pathname) + // Worker uses this to redirect back
             '&scope=public_repo';
 

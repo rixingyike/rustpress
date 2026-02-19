@@ -19,7 +19,7 @@ TAG_PREFIX="${TAG_PREFIX:-v}"
 NO_CONFIRM="${NO_CONFIRM:-1}"
 SKIP_PUBLISH="${SKIP_PUBLISH:-0}"
 STRICT_CLEAN="${STRICT_CLEAN:-1}"
-AUTO_COMMIT="${AUTO_COMMIT:-0}"
+AUTO_COMMIT="${AUTO_COMMIT:-1}"
 
 echo ":: 发布级别: ${LEVEL}"
 echo ":: Git 远端: ${REMOTE}"
@@ -83,15 +83,39 @@ ensure_clean_worktree() {
   fi
 }
 
+# Generate Changelog
+echo ":: 生成变更日志 (CHANGELOG.md)..."
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+if [ -z "$LAST_TAG" ]; then
+  LOGS=$(git log --pretty=format:"- %s")
+else
+  LOGS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s")
+fi
+
+TODAY=$(date +%Y-%m-%d)
+TEMP_CHANGELOG=$(mktemp)
+echo "## [Unreleased] - $TODAY" > "$TEMP_CHANGELOG"
+echo "" >> "$TEMP_CHANGELOG"
+echo "$LOGS" >> "$TEMP_CHANGELOG"
+echo "" >> "$TEMP_CHANGELOG"
+echo "---" >> "$TEMP_CHANGELOG"
+echo "" >> "$TEMP_CHANGELOG"
+
+if [ -f CHANGELOG.md ]; then
+  cat CHANGELOG.md >> "$TEMP_CHANGELOG"
+fi
+mv "$TEMP_CHANGELOG" CHANGELOG.md
+echo ":: CHANGELOG.md 更新完成"
+
 ensure_clean_worktree
 
 # Show current version
 current_version=$(sed -n 's/^version[ ]*=[ ]*"\([^"]*\)"/\1/p' Cargo.toml | head -n 1 || true)
 echo ":: 当前 Cargo.toml 版本: ${current_version:-unknown}"
 echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
-# 构建 release 参数（显式执行，不传 tag-prefix，避免重复 v）
-# 加上 --no-push 确保本地只打 tag，不推送到远端（由 workflow 处理）
-release_flags=("$LEVEL" --execute --no-push --registry crates-io)
+# 构建 release 参数
+# 移除 --no-push，让 cargo-release 处理推送
+release_flags=("$LEVEL" --execute --registry crates-io)
 if [[ "$NO_CONFIRM" == "1" ]]; then
   release_flags+=(--no-confirm)
 fi
