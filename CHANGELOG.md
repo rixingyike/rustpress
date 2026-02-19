@@ -1,3 +1,9 @@
+## [0.1.23] - 2026-02-19
+
+- feat: implement static-friendly OAuth callback (`/callback.html`) with manual token fallback
+- fix: rewrite comment system to use client-side GitHub API calls for static site compatibility
+- fix: resolve 404 error on OAuth callback by adding dedicated callback page
+
 ## [0.1.22] - 2026-02-19
 
 - feat: support project listing page generation via `layout: projects`
