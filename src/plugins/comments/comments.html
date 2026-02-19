@@ -150,7 +150,19 @@
     var RP_CLIENT_ID = '{{CLIENT_ID}}';
     var rpCurrentIssueNumber = null;
 
-    // ---- Markdown 转 HTML ----
+    // ---- 工具函数 ----
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    // ---- Markdown 转 HTML (Simple) ----
     function rpMd2html(text) {
         if (!text) return '';
         var h = text
@@ -235,54 +247,68 @@
                 if (err.message === 'rate_limit') {
                     status.textContent = 'GitHub API 请求次数超限，请稍后再试';
                 } else {
+                    console.error(err);
                     status.textContent = '评论加载失败';
                 }
             });
     }
 
-    // ---- 检查登录状态 ----
+    // ---- 检查登录状态 (Static Method) ----
     function rpCheckLogin() {
-        // 如果没有配置 OAuth，不显示登录和输入框
-        if (!RP_CLIENT_ID) {
-            document.getElementById('rp-comment-form').style.display = 'none';
-            document.getElementById('rp-login-section').style.display = 'none';
-            return;
-        }
+        if (!RP_CLIENT_ID) return;
 
-        fetch('/api/comments/user', { credentials: 'same-origin' })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.logged_in) {
-                    document.getElementById('rp-comment-form').style.display = 'block';
-                    document.getElementById('rp-login-section').style.display = 'none';
-                    document.getElementById('rp-user-avatar').src = data.avatar_url;
-                    document.getElementById('rp-user-name').textContent = data.name || data.login;
-                } else {
-                    rpShowLoginButton();
-                }
+        var token = getCookie('gh_token');
+        if (token) {
+            // Verify token by fetching user
+            fetch('https://api.github.com/user', {
+                headers: { 'Authorization': 'token ' + token }
             })
-            .catch(function () {
+            .then(r => {
+                if (r.ok) return r.json();
+                throw new Error('Invalid token');
+            })
+            .then(data => {
+                document.getElementById('rp-comment-form').style.display = 'block';
+                document.getElementById('rp-login-section').style.display = 'none';
+                document.getElementById('rp-user-avatar').src = data.avatar_url;
+                document.getElementById('rp-user-name').textContent = data.name || data.login;
+            })
+            .catch(e => {
+                document.cookie = 'gh_token=; path=/; max-age=0'; // Clear invalid token
                 rpShowLoginButton();
             });
+        } else {
+            rpShowLoginButton();
+        }
     }
 
     function rpShowLoginButton() {
         document.getElementById('rp-comment-form').style.display = 'none';
         document.getElementById('rp-login-section').style.display = 'block';
+        
+        // Use local callback page
+        var redirectUri = window.location.origin + '/callback.html';
+        
         var loginUrl = 'https://github.com/login/oauth/authorize?client_id=' +
             RP_CLIENT_ID + '&redirect_uri=' +
-            encodeURIComponent(window.location.origin + '/api/comments/callback') +
+            encodeURIComponent(redirectUri) +
             '&state=' + encodeURIComponent(window.location.pathname) +
             '&scope=public_repo';
         document.getElementById('rp-login-btn').href = loginUrl;
     }
 
-    // ---- 提交评论 ----
+    // ---- 提交评论 (Static Method) ----
     function rpSubmitComment() {
         var input = document.getElementById('rp-comment-input');
         var submitBtn = document.getElementById('rp-submit-btn');
         var submitStatus = document.getElementById('rp-submit-status');
         var body = input.value.trim();
+        var token = getCookie('gh_token');
+
+        if (!token) {
+            rpCheckLogin();
+            return;
+        }
 
         if (!body) {
             submitStatus.textContent = '请输入评论内容';
@@ -295,51 +321,75 @@
         submitStatus.textContent = '发送中...';
         submitStatus.style.color = '#6b7280';
 
-        fetch('/api/comments/post', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                issue_number: rpCurrentIssueNumber,
-                title: (document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : document.title) + ' | ' + window.location.pathname,
-                body: body,
-                pathname: window.location.pathname
+        // Helper to post comment
+        function doPostLink(issueNumber) {
+            fetch('https://api.github.com/repos/' + RP_REPO + '/issues/' + issueNumber + '/comments', {
+                method: 'POST',
+                headers: { 
+                    'Authorization': 'token ' + token,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({ body: body })
             })
-        })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.success) {
+            .then(r => r.json())
+            .then(data => {
+                if (data.id) {
                     input.value = '';
                     submitStatus.textContent = '✓ 评论已发表';
                     submitStatus.style.color = '#16a34a';
-                    // 更新 issue number（首次发评论时后端会创建 issue）
-                    if (data.issue_number) {
-                        rpCurrentIssueNumber = data.issue_number;
-                    }
-                    // 延迟 1 秒后用 Issue API 直接刷新评论（避免 Search API 索引延迟）
                     setTimeout(function () {
-                        if (rpCurrentIssueNumber) {
-                            rpLoadCommentsByIssue(rpCurrentIssueNumber);
-                        } else {
-                            rpLoadComments();
-                        }
+                        rpLoadCommentsByIssue(issueNumber);
                     }, 1000);
                 } else {
-                    submitStatus.textContent = data.message;
-                    submitStatus.style.color = '#ef4444';
+                    throw new Error(data.message || 'Failed');
                 }
             })
-            .catch(function () {
-                submitStatus.textContent = '发送失败，请重试';
+            .catch(err => {
+                submitStatus.textContent = '发送失败: ' + err.message;
                 submitStatus.style.color = '#ef4444';
             })
-            .finally(function () {
+            .finally(() => {
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
             });
+        }
+
+        // If issue doesn't exist, create it first
+        if (!rpCurrentIssueNumber) {
+            var title = (document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : document.title);
+            fetch('https://api.github.com/repos/' + RP_REPO + '/issues', {
+                method: 'POST',
+                headers: { 
+                    'Authorization': 'token ' + token,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({ 
+                    title: title + ' | ' + window.location.pathname,
+                    body: 'Comment thread for ' + window.location.pathname + '\n\n' + window.location.href 
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.number) {
+                    rpCurrentIssueNumber = data.number;
+                    doPostLink(rpCurrentIssueNumber);
+                } else {
+                    throw new Error('无法创建 Issue: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                submitStatus.textContent = '初始化评论区失败: ' + err.message;
+                submitStatus.style.color = '#ef4444';
+                submitBtn.disabled = false;
+            });
+        } else {
+            doPostLink(rpCurrentIssueNumber);
+        }
     }
 
-    // ---- 通过 Issue 编号直接加载评论（绕过 Search API 延迟）----
+    // ---- 通过 Issue 编号直接加载评论 ----
     function rpLoadCommentsByIssue(issueNumber) {
         var url = 'https://api.github.com/repos/' + RP_REPO + '/issues/' + issueNumber + '/comments?per_page=100';
         fetch(url, {
@@ -350,7 +400,6 @@
                 rpRenderComments(comments);
             })
             .catch(function () {
-                // 回退到搜索方式
                 rpLoadComments();
             });
     }

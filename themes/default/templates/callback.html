@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录中...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f9fafb;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .loading {
+            color: #4b5563;
+            margin-bottom: 1rem;
+        }
+
+        .error {
+            color: #dc2626;
+            word-break: break-all;
+            text-align: left;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            background: #fee2e2;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .manual-section {
+            margin-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1rem;
+            text-align: left;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            margin: 0.5rem 0;
+            box-sizing: border-box;
+        }
+
+        .small {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h3 style="margin-top: 0;">正在进行 GitHub 授权</h3>
+        <div id="status" class="loading">正在交换令牌...</div>
+        <div id="error-msg" class="error" style="display: none;"></div>
+
+        <div id="manual-input" style="display: none;" class="manual-section">
+            <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">自动登录失败？</h4>
+            <p class="small">由于 GitHub 安全限制（CORS），静态博客可能无法自动交换令牌。请手动生成 Token 并填入下方：</p>
+            <ol class="small" style="padding-left: 1.2rem;">
+                <li>访问 <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=BlogComment"
+                        target="_blank">GitHub Tokens</a></li>
+                <li>Generate token (确保勾选 public_repo)</li>
+                <li>复制 Token 粘贴到下方</li>
+            </ol>
+            <input type="password" id="manual-token" class="input" placeholder="ghp_..." />
+            <button onclick="saveTokenAndRedirect(document.getElementById('manual-token').value)" class="btn"
+                style="width: 100%;">保存并登录</button>
+        </div>
+    </div>
+
+    <script>
+        const CLIENT_ID = '{{ site.comments.github_client_id }}';
+        const CLIENT_SECRET = '{{ site.comments.github_client_secret }}';
+
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function saveTokenAndRedirect(token) {
+            if (!token) return;
+            setCookie('gh_token', token, 30);
+            const state = getQueryParam('state') || '/';
+            document.getElementById('status').innerText = '登录成功，正在跳转...';
+            setTimeout(() => {
+                window.location.href = state;
+            }, 500);
+        }
+
+        async function exchangeToken() {
+            const code = getQueryParam('code');
+            const state = getQueryParam('state'); // Redirect target
+
+            if (!code) {
+                document.getElementById('status').innerText = '未找到授权码。';
+                document.getElementById('manual-input').style.display = 'block';
+                return;
+            }
+
+            // 尝试通过 CORS 代理或直接交换（如果浏览器允许）
+            // GitHub OAuth Token 接口不支持 CORS，通常会失败并进入 catch
+            try {
+                // 尝试 Hack: 使用 cors-anywhere (公共服务，仅作演示/Fallback)
+                // 或者直接请求 (大概率 403/Fail)
+                // 这里我们直接请求，失败后显示手动输入
+
+                // 由于静态站无后端，我们只能尝试直接发请求（会被浏览器拦截）
+                // 或提示用户手动输入
+
+                // 为了响应用户 "Write simple callback"，我们尝试 Fetch
+                // 注意：这会暴露 CLIENT_SECRET 在网络请求中
+
+                const response = await fetch('https://cors-anywhere.herokuapp.com/https://github.com/login/oauth/access_token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        client_id: CLIENT_ID,
+                        client_secret: CLIENT_SECRET,
+                        code: code
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.access_token) {
+                        saveTokenAndRedirect(data.access_token);
+                        return;
+                    } else {
+                        throw new Error(data.error_description || '交换失败');
+                    }
+                } else {
+                    throw new Error('网络请求失败: ' + response.status);
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('status').innerText = '自动交换令牌失败 (CORS限制)';
+                document.getElementById('error-msg').innerText = e.message + '。这是静态博客常见限制。';
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('manual-input').style.display = 'block';
+            }
+        }
+
+        exchangeToken();
+    </script>
+</body>
+
+</html>
