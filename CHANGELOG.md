@@ -1,6 +1,5 @@
 ## [0.1.22] - 2026-02-19
 
-- fix: migrate to official Giscus script for static site compatibility (fixes 404 on callback)
 - feat: support project listing page generation via `layout: projects`
 - feat: add `project` layout for showcasing software projects
 - feat: implement plugin system architecture for extensible features

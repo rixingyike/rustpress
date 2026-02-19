@@ -1,0 +1,367 @@
+<section id="rp-comments" style="margin-top: 3rem;">
+    <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: #111827;">评论</h4>
+
+    <!-- 评论列表 -->
+    <div id="rp-comments-list"></div>
+    <div id="rp-comments-status" style="font-size: 0.875rem; color: #6b7280; padding: 1rem 0; text-align: center;">
+        加载评论中...</div>
+
+    <!-- 评论输入区 -->
+    <div id="rp-comment-form" style="margin-top: 1.5rem; display: none;">
+        <!-- 登录用户信息 -->
+        <div id="rp-user-info"
+            style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; color: #374151;">
+            <img id="rp-user-avatar" src="" alt="" style="width: 28px; height: 28px; border-radius: 50%;">
+            <span id="rp-user-name" style="font-weight: 600;"></span>
+            <a href="#" id="rp-logout-btn"
+                style="margin-left: auto; font-size: 12px; color: #9ca3af; text-decoration: underline;"
+                onclick="rpLogout(); return false;">退出</a>
+        </div>
+        <!-- 输入框 -->
+        <textarea id="rp-comment-input"
+            style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; line-height: 1.6; resize: vertical; font-family: inherit; box-sizing: border-box;"
+            placeholder="写下你的评论（支持 Markdown）..."></textarea>
+        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+            <button id="rp-submit-btn" onclick="rpSubmitComment()"
+                style="padding: 8px 20px; font-size: 0.875rem; font-weight: 500; color: #fff; background-color: #2563eb; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;"
+                onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">
+                发表评论
+            </button>
+        </div>
+        <div id="rp-submit-status" style="font-size: 13px; color: #6b7280; margin-top: 6px; text-align: right;">
+        </div>
+    </div>
+
+    <!-- 未登录时显示登录按钮 -->
+    <div id="rp-login-section" style="margin-top: 1.5rem; text-align: center; display: none;">
+        <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">登录 GitHub 后即可发表评论</p>
+        <a id="rp-login-btn" href="#"
+            style="display: inline-flex; align-items: center; padding: 10px 20px; font-size: 0.875rem; font-weight: 500; color: #fff; background-color: #1f2937; border-radius: 6px; text-decoration: none; transition: background-color 0.2s;"
+            onmouseover="this.style.backgroundColor='#374151'" onmouseout="this.style.backgroundColor='#1f2937'">
+            <svg style="width: 18px; height: 18px; margin-right: 8px;" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+            使用 GitHub 登录
+        </a>
+    </div>
+</section>
+
+<style>
+    .rp-comment {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 16px 0;
+    }
+
+    .rp-comment:last-child {
+        border-bottom: none;
+    }
+
+    .rp-comment-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .rp-comment-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+    }
+
+    .rp-comment-author {
+        font-weight: 600;
+        color: #111827;
+        font-size: 14px;
+    }
+
+    .rp-comment-date {
+        color: #9ca3af;
+        font-size: 12px;
+    }
+
+    .rp-comment-body {
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .rp-comment-body p {
+        margin: 6px 0;
+    }
+
+    .rp-comment-body code {
+        background: #f3f4f6;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 13px;
+    }
+
+    .rp-comment-body pre {
+        background: #1f2937;
+        color: #e5e7eb;
+        padding: 12px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 13px;
+    }
+
+    .rp-comment-body pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+    }
+
+    .rp-comment-body blockquote {
+        border-left: 3px solid #d1d5db;
+        padding-left: 12px;
+        color: #6b7280;
+        margin: 8px 0;
+    }
+
+    .rp-comment-body img {
+        max-width: 100%;
+        border-radius: 6px;
+        margin: 8px 0;
+    }
+
+    .rp-comment-body a {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+
+    .rp-no-comments {
+        text-align: center;
+        color: #9ca3af;
+        padding: 24px 0;
+    }
+
+    .rp-comment-count {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+</style>
+
+<script>
+    // ---- 全局状态 ----
+    var RP_REPO = '{{REPO}}';
+    var RP_CLIENT_ID = '{{CLIENT_ID}}';
+    var rpCurrentIssueNumber = null;
+
+    // ---- Markdown 转 HTML ----
+    function rpMd2html(text) {
+        if (!text) return '';
+        var h = text
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/```([\s\S]*?)```/g, function (m, c) { return '<pre><code>' + c.trim() + '</code></pre>'; })
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+            .replace(/\n/g, '<br>');
+        h = h.replace(/<\/blockquote><br><blockquote>/g, '<br>');
+        return h;
+    }
+
+    function rpFormatDate(dateStr) {
+        var d = new Date(dateStr);
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0') + ' ' +
+            String(d.getHours()).padStart(2, '0') + ':' +
+            String(d.getMinutes()).padStart(2, '0');
+    }
+
+    // ---- 渲染评论列表 ----
+    function rpRenderComments(comments) {
+        var container = document.getElementById('rp-comments-list');
+        if (comments.length === 0) {
+            container.innerHTML = '<div class="rp-no-comments">暂无评论，成为第一个评论者吧！</div>';
+        } else {
+            container.innerHTML = '<div class="rp-comment-count">共 ' + comments.length + ' 条评论</div>' +
+                comments.map(function (c) {
+                    return '<div class="rp-comment">' +
+                        '<div class="rp-comment-header">' +
+                        '<img class="rp-comment-avatar" src="' + c.user.avatar_url + '" alt="' + c.user.login + '">' +
+                        '<span class="rp-comment-author">' + c.user.login + '</span>' +
+                        '<span class="rp-comment-date">' + rpFormatDate(c.created_at) + '</span>' +
+                        '</div>' +
+                        '<div class="rp-comment-body">' + rpMd2html(c.body) + '</div>' +
+                        '</div>';
+                }).join('');
+        }
+    }
+
+    // ---- 加载评论 ----
+    function rpLoadComments() {
+        var status = document.getElementById('rp-comments-status');
+        var pathname = window.location.pathname;
+
+        var searchUrl = 'https://api.github.com/search/issues?q=' +
+            encodeURIComponent(pathname + ' repo:' + RP_REPO + ' is:issue') +
+            '&sort=created&order=desc&per_page=1';
+
+        fetch(searchUrl, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+        })
+            .then(function (r) {
+                if (r.status === 403) throw new Error('rate_limit');
+                return r.json();
+            })
+            .then(function (data) {
+                if (!data.items || data.items.length === 0) {
+                    rpRenderComments([]);
+                    rpCurrentIssueNumber = null;
+                    status.style.display = 'none';
+                    return;
+                }
+                var issue = data.items[0];
+                rpCurrentIssueNumber = issue.number;
+
+                return fetch(issue.comments_url + '?per_page=100', {
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (comments) {
+                        rpRenderComments(comments);
+                        status.style.display = 'none';
+                    });
+            })
+            .catch(function (err) {
+                if (err.message === 'rate_limit') {
+                    status.textContent = 'GitHub API 请求次数超限，请稍后再试';
+                } else {
+                    status.textContent = '评论加载失败';
+                }
+            });
+    }
+
+    // ---- 检查登录状态 ----
+    function rpCheckLogin() {
+        // 如果没有配置 OAuth，不显示登录和输入框
+        if (!RP_CLIENT_ID) {
+            document.getElementById('rp-comment-form').style.display = 'none';
+            document.getElementById('rp-login-section').style.display = 'none';
+            return;
+        }
+
+        fetch('/api/comments/user', { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.logged_in) {
+                    document.getElementById('rp-comment-form').style.display = 'block';
+                    document.getElementById('rp-login-section').style.display = 'none';
+                    document.getElementById('rp-user-avatar').src = data.avatar_url;
+                    document.getElementById('rp-user-name').textContent = data.name || data.login;
+                } else {
+                    rpShowLoginButton();
+                }
+            })
+            .catch(function () {
+                rpShowLoginButton();
+            });
+    }
+
+    function rpShowLoginButton() {
+        document.getElementById('rp-comment-form').style.display = 'none';
+        document.getElementById('rp-login-section').style.display = 'block';
+        var loginUrl = 'https://github.com/login/oauth/authorize?client_id=' +
+            RP_CLIENT_ID + '&redirect_uri=' +
+            encodeURIComponent(window.location.origin + '/api/comments/callback') +
+            '&state=' + encodeURIComponent(window.location.pathname) +
+            '&scope=public_repo';
+        document.getElementById('rp-login-btn').href = loginUrl;
+    }
+
+    // ---- 提交评论 ----
+    function rpSubmitComment() {
+        var input = document.getElementById('rp-comment-input');
+        var submitBtn = document.getElementById('rp-submit-btn');
+        var submitStatus = document.getElementById('rp-submit-status');
+        var body = input.value.trim();
+
+        if (!body) {
+            submitStatus.textContent = '请输入评论内容';
+            submitStatus.style.color = '#ef4444';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitStatus.textContent = '发送中...';
+        submitStatus.style.color = '#6b7280';
+
+        fetch('/api/comments/post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                issue_number: rpCurrentIssueNumber,
+                title: (document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : document.title) + ' | ' + window.location.pathname,
+                body: body,
+                pathname: window.location.pathname
+            })
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    input.value = '';
+                    submitStatus.textContent = '✓ 评论已发表';
+                    submitStatus.style.color = '#16a34a';
+                    // 更新 issue number（首次发评论时后端会创建 issue）
+                    if (data.issue_number) {
+                        rpCurrentIssueNumber = data.issue_number;
+                    }
+                    // 延迟 1 秒后用 Issue API 直接刷新评论（避免 Search API 索引延迟）
+                    setTimeout(function () {
+                        if (rpCurrentIssueNumber) {
+                            rpLoadCommentsByIssue(rpCurrentIssueNumber);
+                        } else {
+                            rpLoadComments();
+                        }
+                    }, 1000);
+                } else {
+                    submitStatus.textContent = data.message;
+                    submitStatus.style.color = '#ef4444';
+                }
+            })
+            .catch(function () {
+                submitStatus.textContent = '发送失败，请重试';
+                submitStatus.style.color = '#ef4444';
+            })
+            .finally(function () {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            });
+    }
+
+    // ---- 通过 Issue 编号直接加载评论（绕过 Search API 延迟）----
+    function rpLoadCommentsByIssue(issueNumber) {
+        var url = 'https://api.github.com/repos/' + RP_REPO + '/issues/' + issueNumber + '/comments?per_page=100';
+        fetch(url, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (comments) {
+                rpRenderComments(comments);
+            })
+            .catch(function () {
+                // 回退到搜索方式
+                rpLoadComments();
+            });
+    }
+
+    // ---- 退出登录 ----
+    function rpLogout() {
+        document.cookie = 'gh_token=; path=/; max-age=0';
+        window.location.reload();
+    }
+
+    // ---- 初始化 ----
+    rpLoadComments();
+    rpCheckLogin();
+</script>
