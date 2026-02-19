@@ -1,6 +1,6 @@
 ---
 title: "首页"
-subtitle: "欢迎来到一树论博客"
+subtitle: "欢迎来到一树仑博客"
 layout: home
 home_navs:
   - title: "浏览分类"

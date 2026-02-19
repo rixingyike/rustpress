@@ -3,6 +3,7 @@ title: 关于我
 createTime: 2024-05-12 08:30:00
 layout: about
 toc: false
+comments: false
 ---
 
 # 关于我
@@ -60,7 +61,6 @@ toc: false
 欢迎来信交流。如果你对我的文章有任何问题或建议，或者想要交流技术话题，欢迎通过以下方式联系我：
 
 - 📧 邮箱：9830131@qq.com
-- 🐦 X：https://x.com/coderliyi
-- 📱 微信：9830131
+- 🐦 X：https://x.com/jinshimanong
 
 感谢你的访问！

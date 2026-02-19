@@ -1,6 +1,6 @@
 [package]
 name = "rustpress"
-version = "0.1.21"
+version = "0.1.22"
 description = "增量编译倒分页无后端 Rust 纯静态博客程序"
 edition = "2024"
 rust-version = "1.85"
@@ -39,3 +39,5 @@ toml = "0.8"
 rust-embed = "8"
 notify = "6"
 regex = "1"
+reqwest = { version = "0.12", features = ["json"] }
+linkme = "0.3"

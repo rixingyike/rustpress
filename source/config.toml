@@ -1,7 +1,7 @@
 [site]
-name = "一树论"
+name = "一树仑"
 description = "一花一世界，一树一菩提。"
-author = "LIYI"
+author = "jsmn"
 base_url = "http://localhost:1111"
 # 在RSS中公开显示的域名
 domain = "https://yishulun.com"
@@ -13,8 +13,8 @@ name = "default"
 
 # 作者信息
 [author]
-name = "LIYI"
-bio = "读书使人进步，著书亦使人进步。"
+name = "金石碼农"
+bio = "读书使人进步"
 avatar = "/static/images/avatar.png"
 location = "北京, 中国"
 website = "https://yishulun.com"
@@ -34,8 +34,8 @@ rss = "/rss.xml"
 
 # 首页设置
 [homepage]
-hero_title = "欢迎来到一树论"
-hero_subtitle = "稻盛和夫：成长不是和别人比，而是和自己的昨天比。"
+hero_title = "欢迎来到一树仑"
+hero_subtitle = "一花一世界，一树一菩提。"
 hero_background = "/static/images/hero-bg.jpg"
 posts_per_page = 8
 show_hero = true
@@ -94,6 +94,9 @@ category_id = "DIC_kwDOKRUETc4CZMWK"
 mapping = "pathname"
 theme = "preferred_color_scheme"
 lang = "zh-CN"
+strict = "1"    # 严格 origin 验证
+github_client_id = "0cdfd84658051b0f7de6"
+github_client_secret = "796a97b69953b0130a73f1fd5d50761fdb41e66f"
 
 # 导航菜单
 [[menu.main]]
@@ -120,6 +123,11 @@ weight = 4
 name = "友链"
 url = "/friends.html"
 weight = 5
+
+[[menu.main]]
+name = "项目"
+url = "/projects.html"
+weight = 6
 
 [[menu.main]]
 name = "关于"

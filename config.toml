@@ -35,7 +35,7 @@ rss = "/rss.xml"
 # 首页设置
 [homepage]
 hero_title = "欢迎来到一树论"
-hero_subtitle = "稻盛和夫：成长不是和别人比，而是和自己的昨天比。"
+hero_subtitle = "一花一世界，一树一菩提。"
 hero_background = "/static/images/hero-bg.jpg"
 posts_per_page = 8
 show_hero = true

@@ -4,6 +4,7 @@
 
 use crate::config::Config;
 use crate::error::{Error, Result};
+use crate::plugins;
 use crate::post::Post;
 use crate::utils::{RuntimePathsBuilder, ThemeTemplates};
 use chrono::prelude::*;
@@ -759,9 +760,69 @@ impl TemplateEngine {
         let related_posts = self.calculate_related_posts(post, all_posts);
         context.insert("related_posts", &related_posts);
 
+        // 调用插件处理上下文（linkme 自动收集）
+        plugins::run_post_render_hooks(&self.config, &mut context)?;
+
+        // 根据 layout 字段选择模板
+        // 内置特殊布局（about/friends/home）由各自专用 render 函数处理，这里仅路由自定义布局
+        let builtin_layouts = ["about", "friends", "home"];
+        let binding = "post.html".to_string();
+        let layout_str = page
+            .get("layout")
+            .and_then(|v| v.as_str())
+            .filter(|layout| !builtin_layouts.contains(layout));
+
+        if let Some("projects") = layout_str {
+            let projects = self.get_project_posts(all_posts);
+            context.insert("projects", &projects);
+        }
+
+        let template_name = layout_str
+            .map(|layout| format!("{}.html", layout))
+            .unwrap_or(binding);
+
         self.tera
-            .render("post.html", &context)
+            .render(&template_name, &context)
             .map_err(Error::Template)
+    }
+
+    /// 从文章列表中提取项目类型文章
+    fn get_project_posts(&self, posts: &[Post]) -> Vec<serde_json::Value> {
+        let mut projects: Vec<serde_json::Value> = Vec::new();
+        for post in posts {
+            if let Some(layout) = post.data.get("layout").and_then(|v| v.as_str()) {
+                if layout == "project" {
+                    let mut project = serde_json::Map::new();
+                    if let Some(title) = post.data.get("title") {
+                        project.insert("title".to_string(), title.clone());
+                    }
+                    if let Some(version) = post.data.get("version") {
+                        project.insert("version".to_string(), version.clone());
+                    }
+                    if let Some(desc) = post.data.get("description") {
+                        project.insert("description".to_string(), desc.clone());
+                    }
+                    if let Some(icon) = post.data.get("icon") {
+                        project.insert("icon".to_string(), icon.clone());
+                    }
+                    if let Some(tags) = post.data.get("tags") {
+                        project.insert("tags".to_string(), tags.clone());
+                    }
+                    if let Some(slug) = post.slug() {
+                        // 构造与 generator 一致的输出路径
+                        let categories = post.categories();
+                        let path = if categories.is_empty() {
+                            slug.to_string()
+                        } else {
+                            format!("{}/{}", categories.join("/"), slug)
+                        };
+                        project.insert("slug".to_string(), serde_json::Value::String(path));
+                    }
+                    projects.push(serde_json::Value::Object(project));
+                }
+            }
+        }
+        projects
     }
 
     /// 计算相关文章
@@ -1026,7 +1087,53 @@ impl TemplateEngine {
             .map_err(Error::Template)
     }
 
-    /// 渲染友链页面
+    /// 渲染项目列表页面
+    pub fn render_projects(&self, posts: &[Post]) -> Result<String> {
+        let mut context = self.create_base_context();
+
+        // 筛选 layout 为 project 的文章，提取关键信息
+        let mut projects: Vec<serde_json::Value> = Vec::new();
+        for post in posts {
+            if let Some(layout) = post.data.get("layout").and_then(|v| v.as_str()) {
+                if layout == "project" {
+                    let mut project = serde_json::Map::new();
+                    if let Some(title) = post.data.get("title") {
+                        project.insert("title".to_string(), title.clone());
+                    }
+                    if let Some(version) = post.data.get("version") {
+                        project.insert("version".to_string(), version.clone());
+                    }
+                    if let Some(desc) = post.data.get("description") {
+                        project.insert("description".to_string(), desc.clone());
+                    }
+                    if let Some(icon) = post.data.get("icon") {
+                        project.insert("icon".to_string(), icon.clone());
+                    }
+                    if let Some(tags) = post.data.get("tags") {
+                        project.insert("tags".to_string(), tags.clone());
+                    }
+                    if let Some(slug) = post.slug() {
+                        // 构造与 generator 一致的输出路径
+                        let categories = post.categories();
+                        let path = if categories.is_empty() {
+                            slug.to_string()
+                        } else {
+                            format!("{}/{}", categories.join("/"), slug)
+                        };
+                        project.insert("slug".to_string(), serde_json::Value::String(path));
+                    }
+                    projects.push(serde_json::Value::Object(project));
+                }
+            }
+        }
+
+        context.insert("projects", &projects);
+
+        self.tera
+            .render("projects.html", &context)
+            .map_err(Error::Template)
+    }
+
     pub fn render_friends(&self) -> Result<String> {
         let mut context = self.create_base_context();
 

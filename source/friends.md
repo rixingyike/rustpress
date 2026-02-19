@@ -3,7 +3,7 @@ title: 友情链接
 createTime: 2024-05-12 08:30:00
 layout: friends
 friends:
-  - name: "一树论"
+  - name: "一树仑"
     url: "https://yishulun.com/"
     description: "读书使人进步，著书亦使人进步。"
     avatar: "https://yishulun.com/favicon.ico"

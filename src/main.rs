@@ -234,8 +234,11 @@ fn serve_site(
     // 首先构建网站
     build_site(md_dir, output_dir, config_file, incremental)?;
 
-    // 启动服务器
-    DevServer::serve_sync(port, output_dir)
+    // 加载配置并启动服务器
+    let config_path =
+        rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
+    let config = Config::from_file(&config_path)?;
+    DevServer::serve_sync(port, output_dir, Some(&config))
 }
 
 /// 开发模式：构建并启动本地预览服务器
@@ -251,8 +254,11 @@ fn dev_site(
     // 先进行开发环境构建
     build_dev_site(md_dir, output_dir, config_file, incremental)?;
 
-    // 启动服务器
-    DevServer::serve_sync(port, output_dir)
+    // 加载配置并启动服务器
+    let config_path =
+        rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
+    let config = Config::from_file(&config_path)?;
+    DevServer::serve_sync(port, output_dir, Some(&config))
 }
 
 /// 开发模式（hotreload）：构建并启动服务器，同时监听模板变化自动重建
@@ -272,17 +278,20 @@ fn dev_site_hotreload(
     // 首次进行开发环境构建
     build_dev_site(md_dir, output_dir, config_file, incremental)?;
 
-    // 启动服务器到独立线程，主线程负责监听与重建
-    let out_dir_owned = output_dir.to_string();
-    let server_port = port;
-    let server_thread = std::thread::spawn(move || {
-        let _ = DevServer::serve_sync(server_port, out_dir_owned);
-    });
-
-    // 解析配置以获取主题模板目录（优先项目根 themes/<theme>/templates）
+    // 加载配置
     let config_path =
         rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
     let config = Config::from_file(&config_path)?;
+
+    // 启动服务器到独立线程，主线程负责监听与重建
+    let out_dir_owned = output_dir.to_string();
+    let server_port = port;
+    let config_for_server = config.clone();
+    let server_thread = std::thread::spawn(move || {
+        let _ = DevServer::serve_sync(server_port, out_dir_owned, Some(&config_for_server));
+    });
+
+    // 使用已加载的配置获取主题模板目录（优先项目根 themes/<theme>/templates）
     let runtime_paths = rustpress::utils::RuntimePathsBuilder::new()
         .md_dir(std::path::Path::new(md_dir))
         .theme_name(config.theme_name())

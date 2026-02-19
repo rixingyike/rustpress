@@ -10,6 +10,7 @@ pub mod cli;
 pub mod config;
 pub mod error;
 pub mod generator;
+pub mod plugins;
 pub mod post;
 pub mod server;
 pub mod template;

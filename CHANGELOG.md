@@ -1,4 +1,12 @@
-## [Unreleased] - 2026-01-07
+## [0.1.22] - 2026-02-19
+
+- feat: support project listing page generation via `layout: projects`
+- feat: add `project` layout for showcasing software projects
+- feat: implement plugin system architecture for extensible features
+- feat: add automated projects page generation
+- chore: add "Projects" link to main navigation
+
+## [0.1.21] - 2026-01-07
 
 - chore: update author info and remove legacy jQuery
 - feat: implement technical SEO (robots.txt, meta tags, json-ld)

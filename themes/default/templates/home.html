@@ -12,105 +12,126 @@
         <!-- 文章列表 -->
         <div id="articles" class="space-y-6">
             {% if posts %}
-                {% for post in posts %}
-                <article class="card hover:shadow-lg transition-shadow duration-300">
-                    {% if post.categories and post.categories | length > 0 %}
-                    <nav class="px-6 pt-4 text-sm text-gray-600">
-                        <a href="/" class="hover:text-primary-600">首页</a>
-                        {% for category in post.categories %}
-                            <span class="mx-2">›</span>
-                            <a href="/{{ post.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
-                        {% endfor %}
-                    </nav>
-                    {% endif %}
-                    <div class="card-body">
-                        <h2 class="text-xl sm:text-2xl font-semibold mb-3">
-                            {% if post.categories and post.categories | length > 0 %}
-                            <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html"
-                               class="text-gray-900 hover:text-primary-600 transition-colors">
-                                {{ post.title | default(value=post.slug) }}
-                            </a>
-                            {% else %}
-                            <a href="{{ post.slug }}.html"
-                               class="text-gray-900 hover:text-primary-600 transition-colors">
-                                {{ post.title | default(value=post.slug) }}
-                            </a>
-                            {% endif %}
-                        </h2>
-                        <div class="article-meta mb-4">
-                            {% if post.date_ymd %}
-                            <span class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                {{ post.date_ymd }}
-                            </span>
-                            {% endif %}
-                            {% if post.reading_time %}
-                            <span class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ post.reading_time }} 分钟阅读
-                            </span>
-                            {% endif %}
-                        </div>
-                        {% if post.content %}
-                        <div class="text-gray-600 leading-relaxed mb-4">
-                            {{ post.content | striptags | truncate(length=200) }}
-                        </div>
+            {% for post in posts %}
+            <article class="card hover:shadow-lg transition-shadow duration-300">
+                {% if post.categories and post.categories | length > 0 %}
+                <nav class="px-6 pt-4 text-sm text-gray-600">
+                    <a href="/" class="hover:text-primary-600">首页</a>
+                    {% for category in post.categories %}
+                    <span class="mx-2">›</span>
+                    <a href="/{{ post.categories | slice(end=loop.index) | join(sep='/') }}/"
+                        class="hover:text-primary-600">{{ category }}</a>
+                    {% endfor %}
+                </nav>
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="text-xl sm:text-2xl font-semibold mb-3">
+                        {% if post.categories and post.categories | length > 0 %}
+                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html"
+                            class="text-gray-900 hover:text-primary-600 transition-colors">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
+                        {% else %}
+                        <a href="{{ post.slug }}.html" class="text-gray-900 hover:text-primary-600 transition-colors">
+                            {{ post.title | default(value=post.slug) }}
+                        </a>
                         {% endif %}
-                        {% if post.tags %}
-                        <div class="flex flex-wrap gap-2">
-                            {% for tag in post.tags %}
-                            <a href="/tags/{{ tag }}/"
-                               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
-                                {{ tag }}
-                            </a>
-                            {% endfor %}
-                        </div>
+                    </h2>
+                    <div class="article-meta mb-4">
+                        {% if post.date_ymd %}
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            {{ post.date_ymd }}
+                        </span>
+                        {% endif %}
+                        {% if post.reading_time %}
+                        <span class="inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ post.reading_time }} 分钟阅读
+                        </span>
                         {% endif %}
                     </div>
-                </article>
-                {% endfor %}
+                    {% if post.content %}
+                    <div class="text-gray-600 leading-relaxed mb-4">
+                        {{ post.content | striptags | truncate(length=200) }}
+                    </div>
+                    {% endif %}
+                    {% if post.tags %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in post.tags %}
+                        <a href="/tags/{{ tag }}/"
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                            {{ tag }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
 
-                <!-- 列表范围显示 -->
-                <div class="flex justify-center mt-6">
-                    <p class="text-sm text-gray-600">第 <span class="font-medium">{{ start_index }}</span> 到 <span class="font-medium">{{ end_index }}</span> 条</p>
+            <!-- 列表范围显示 -->
+            <div class="flex justify-center mt-6">
+                <p class="text-sm text-gray-600">第 <span class="font-medium">{{ start_index }}</span> 到 <span
+                        class="font-medium">{{ end_index }}</span> 条</p>
+            </div>
+
+            <!-- 分页导航 -->
+            {% if total_pages and total_pages > 1 %}
+            <div class="flex flex-col items-center mt-8 space-y-4">
+                <!-- 页码信息 -->
+                <div class="text-sm text-gray-500">
+                    {% if current_page == total_pages or current_page == 0 %}
+                    共 {{ total_pages }} 页
+                    {% else %}
+                    第 {{ current_page }} 页
+                    {% endif %}
                 </div>
 
-                <!-- 分页导航（仅显示上一页/下一页） -->
-                {% if total_pages and total_pages > 1 %}
-                <div class="flex justify-center mt-4">
-                    <nav class="flex items-center space-x-4">
-                        {% if has_previous_page %}
-                            {% set prev_page = current_page + 1 %}
-                            {% if prev_page == total_pages %}
-                                <a href="/" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">上一页</a>
-                            {% else %}
-                                <a href="/index{{ prev_page }}.html" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">上一页</a>
-                            {% endif %}
-                        {% else %}
-                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">上一页</span>
-                        {% endif %}
+                <!-- 翻页按钮 -->
+                <nav class="flex items-center space-x-4">
+                    {% if has_previous_page %}
+                    {% set prev_page = current_page + 1 %}
+                    {% if prev_page == total_pages %}
+                    <a href="/"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">上一页</a>
+                    {% else %}
+                    <a href="/index{{ prev_page }}.html"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">上一页</a>
+                    {% endif %}
+                    {% else %}
+                    <span
+                        class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">上一页</span>
+                    {% endif %}
 
-                        {% if has_next_page %}
-                            {% set next_page = current_page - 1 %}
-                            <a href="/index{{ next_page }}.html" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">下一页</a>
-                        {% else %}
-                            <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">下一页</span>
-                        {% endif %}
-                    </nav>
-                </div>
-                {% endif %}
+                    {% if has_next_page %}
+                    {% set next_page = current_page - 1 %}
+                    <a href="/index{{ next_page }}.html"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">下一页</a>
+                    {% else %}
+                    <span
+                        class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">下一页</span>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
             {% else %}
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">暂无文章</h3>
-                    <p class="mt-2 text-gray-500">还没有发布任何文章</p>
-                </div>
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">暂无文章</h3>
+                <p class="mt-2 text-gray-500">还没有发布任何文章</p>
+            </div>
             {% endif %}
         </div>
 
@@ -134,73 +155,75 @@
 <!-- 底部 6 个导航块：来自 home.md 的 front matter，缺省回退到默认卡片 -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
     {% if home_navs %}
-        {% for item in home_navs %}
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="card-body">
-                <div class="text-4xl mb-4">{{ item.emoji | default(value=item.icon) | default(value='🔗') }}</div>
-                <h3 class="text-lg font-semibold mb-2">{{ item.title | default(value='未命名') }}</h3>
-                {% if item.description %}
-                <p class="text-gray-600 mb-4">{{ item.description }}</p>
-                {% endif %}
-                {% if item.url %}
-                <a href="{{ item.url }}" class="btn-primary"
-                   {% if item.new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}>
-                   {{ item.cta | default(value='前往') }}
-                </a>
-                {% endif %}
-            </div>
+    {% for item in home_navs %}
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">{{ item.emoji | default(value=item.icon) | default(value='🔗') }}</div>
+            <h3 class="text-lg font-semibold mb-2">{{ item.title | default(value='未命名') }}</h3>
+            {% if item.description %}
+            <p class="text-gray-600 mb-4">{{ item.description }}</p>
+            {% endif %}
+            {% if item.url %}
+            <a href="{{ item.url }}" class="btn-primary" {% if item.new_tab %}target="_blank" rel="noopener noreferrer"
+                {% endif %}>
+                {{ item.cta | default(value='前往') }}
+            </a>
+            {% endif %}
         </div>
-        {% endfor %}
+    </div>
+    {% endfor %}
     {% else %}
-        <!-- 默认导航卡片（与 index.html 一致） -->
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300 bg-gradient-to-r from-blue-50 to-purple-50">
-            <div class="card-body">
-                <div class="text-4xl mb-4">🚀</div>
-                <h3 class="text-lg font-semibold mb-2">欢迎使用 RustPress</h3>
-                <p class="text-gray-600 mb-4">这是一个功能完整的静态博客系统</p>
-                <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener noreferrer" class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full hover:bg-blue-200">模板修改测试</a>
-            </div>
+    <!-- 默认导航卡片（与 index.html 一致） -->
+    <div
+        class="card text-center hover:shadow-lg transition-shadow duration-300 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div class="card-body">
+            <div class="text-4xl mb-4">🚀</div>
+            <h3 class="text-lg font-semibold mb-2">欢迎使用 RustPress</h3>
+            <p class="text-gray-600 mb-4">这是一个功能完整的静态博客系统</p>
+            <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener noreferrer"
+                class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full hover:bg-blue-200">模板修改测试</a>
         </div>
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="card-body">
-                <div class="text-4xl mb-4">📂</div>
-                <h3 class="text-lg font-semibold mb-2">浏览分类</h3>
-                <p class="text-gray-600 mb-4">按主题分类查看文章</p>
-                <a href="/categories.html" class="btn-primary">查看分类</a>
-            </div>
+    </div>
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">📂</div>
+            <h3 class="text-lg font-semibold mb-2">浏览分类</h3>
+            <p class="text-gray-600 mb-4">按主题分类查看文章</p>
+            <a href="/categories.html" class="btn-primary">查看分类</a>
         </div>
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="card-body">
-                <div class="text-4xl mb-4">🏷️</div>
-                <h3 class="text-lg font-semibold mb-2">标签云</h3>
-                <p class="text-gray-600 mb-4">通过标签快速找到相关内容</p>
-                <a href="/tags.html" class="btn-primary">查看标签</a>
-            </div>
+    </div>
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">🏷️</div>
+            <h3 class="text-lg font-semibold mb-2">标签云</h3>
+            <p class="text-gray-600 mb-4">通过标签快速找到相关内容</p>
+            <a href="/tags.html" class="btn-primary">查看标签</a>
         </div>
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="card-body">
-                <div class="text-4xl mb-4">📚</div>
-                <h3 class="text-lg font-semibold mb-2">文章归档</h3>
-                <p class="text-gray-600 mb-4">按时间顺序浏览所有文章</p>
-                <a href="/archives.html" class="btn-primary">查看归档</a>
-            </div>
+    </div>
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">📚</div>
+            <h3 class="text-lg font-semibold mb-2">文章归档</h3>
+            <p class="text-gray-600 mb-4">按时间顺序浏览所有文章</p>
+            <a href="/archives.html" class="btn-primary">查看归档</a>
         </div>
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="card-body">
-                <div class="text-4xl mb-4">🤝</div>
-                <h3 class="text-lg font-semibold mb-2">申请友链</h3>
-                <p class="text-gray-600 mb-4">提交你的站点，加入友链列表</p>
-                <a href="/friends.html" class="btn-primary">前往友链</a>
-            </div>
+    </div>
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">🤝</div>
+            <h3 class="text-lg font-semibold mb-2">申请友链</h3>
+            <p class="text-gray-600 mb-4">提交你的站点，加入友链列表</p>
+            <a href="/friends.html" class="btn-primary">前往友链</a>
         </div>
-        <div class="card text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="card-body">
-                <div class="text-4xl mb-4">📬</div>
-                <h3 class="text-lg font-semibold mb-2">连接作者</h3>
-                <p class="text-gray-600 mb-4">查看关于页面，联系作者沟通</p>
-                <a href="/about.html" class="btn-primary">关于作者</a>
-            </div>
+    </div>
+    <div class="card text-center hover:shadow-lg transition-shadow duration-300">
+        <div class="card-body">
+            <div class="text-4xl mb-4">📬</div>
+            <h3 class="text-lg font-semibold mb-2">连接作者</h3>
+            <p class="text-gray-600 mb-4">查看关于页面，联系作者沟通</p>
+            <a href="/about.html" class="btn-primary">关于作者</a>
         </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

@@ -168,41 +168,9 @@
                     </div>
                 </div>
 
-                {% if site.features and site.features.comments and site.comments and site.comments.enabled and
-                (page.comments | default(value=true)) %}
-                <!-- 评论区域（Giscus，懒加载） -->
-                <div id="comments" class="mt-12">
-                    <h4 class="text-lg font-semibold mb-4 text-gray-900">评论</h4>
-                    <div id="giscus-container"></div>
-                </div>
-                <script>
-                    (function () {
-                        var loadGiscus = function () {
-                            var s = document.createElement('script');
-                            s.src = 'https://giscus.app/client.js';
-                            s.setAttribute('data-repo', '{{ site.comments.repo | safe }}');
-                            s.setAttribute('data-repo-id', '{{ site.comments.repo_id | safe }}');
-                            s.setAttribute('data-category', '{{ site.comments.category | safe }}');
-                            s.setAttribute('data-category-id', '{{ site.comments.category_id | safe }}');
-                            s.setAttribute('data-mapping', '{{ site.comments.mapping | default(value="pathname") | safe }}');
-                            s.setAttribute('data-strict', '{{ site.comments.strict | default(value="1") | safe }}');
-                            s.setAttribute('data-reactions-enabled', '1');
-                            s.setAttribute('data-emit-metadata', '0');
-                            s.setAttribute('data-input-position', 'top');
-                            s.setAttribute('data-loading', 'lazy');
-                            s.setAttribute('data-theme', '{{ site.comments.theme | default(value="light") | safe }}');
-                            s.setAttribute('data-lang', '{{ site.comments.lang | default(value="zh-CN") | safe }}');
-                            s.setAttribute('crossorigin', 'anonymous');
-                            s.async = true;
-                            (document.getElementById('giscus-container') || document.body).appendChild(s);
-                        };
-                        if ('requestIdleCallback' in window) {
-                            requestIdleCallback(loadGiscus);
-                        } else {
-                            window.addEventListener('load', function () { setTimeout(loadGiscus, 1200); });
-                        }
-                    })();
-                </script>
+                <!-- 评论区域（由插件注入） -->
+                {% if comment_system_script %}
+                {{ comment_system_script | safe }}
                 {% endif %}
 
                 <!-- 返回顶部 -->
