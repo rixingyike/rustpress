@@ -154,10 +154,10 @@
     function getCookie(name) {
         var nameEQ = name + "=";
         var ca = document.cookie.split(';');
-        for(var i=0;i < ca.length;i++) {
+        for (var i = 0; i < ca.length; i++) {
             var c = ca[i];
-            while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
         }
         return null;
     }
@@ -257,26 +257,36 @@
     function rpCheckLogin() {
         if (!RP_CLIENT_ID) return;
 
+        // Check for token in URL (from Worker redirect)
+        var urlParams = new URLSearchParams(window.location.search);
+        var tokenFromUrl = urlParams.get('gh_token') || urlParams.get('access_token');
+        if (tokenFromUrl) {
+            document.cookie = "gh_token=" + tokenFromUrl + "; path=/; max-age=2592000"; // 30 days
+            // Clean URL
+            var newUrl = window.location.pathname + window.location.hash;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+
         var token = getCookie('gh_token');
         if (token) {
             // Verify token by fetching user
             fetch('https://api.github.com/user', {
                 headers: { 'Authorization': 'token ' + token }
             })
-            .then(r => {
-                if (r.ok) return r.json();
-                throw new Error('Invalid token');
-            })
-            .then(data => {
-                document.getElementById('rp-comment-form').style.display = 'block';
-                document.getElementById('rp-login-section').style.display = 'none';
-                document.getElementById('rp-user-avatar').src = data.avatar_url;
-                document.getElementById('rp-user-name').textContent = data.name || data.login;
-            })
-            .catch(e => {
-                document.cookie = 'gh_token=; path=/; max-age=0'; // Clear invalid token
-                rpShowLoginButton();
-            });
+                .then(r => {
+                    if (r.ok) return r.json();
+                    throw new Error('Invalid token');
+                })
+                .then(data => {
+                    document.getElementById('rp-comment-form').style.display = 'block';
+                    document.getElementById('rp-login-section').style.display = 'none';
+                    document.getElementById('rp-user-avatar').src = data.avatar_url;
+                    document.getElementById('rp-user-name').textContent = data.name || data.login;
+                })
+                .catch(e => {
+                    document.cookie = 'gh_token=; path=/; max-age=0'; // Clear invalid token
+                    rpShowLoginButton();
+                });
         } else {
             rpShowLoginButton();
         }
@@ -285,15 +295,34 @@
     function rpShowLoginButton() {
         document.getElementById('rp-comment-form').style.display = 'none';
         document.getElementById('rp-login-section').style.display = 'block';
-        
-        // Use local callback page
-        var redirectUri = window.location.origin + '/callback.html';
-        
+
+        // Use Worker as redirect target
+        // The Worker will redirect back to this page (state)
+        // Note: You must updating GitHub App Callback URL to your Worker URL
+        // e.g. https://oauth.yishulun.workers.dev/callback
+
+        // We assume user configured the worker. 
+        // If not, we fallback to direct GitHub flow (which fails on static).
+        // For now we assume the user will configure the GitHub App callback 
+        // to point to the WORKER.
+        // The redirect_uri param here MUST MATCH the one registered in GitHub App.
+        // If user set GitHub App Callback = https://oauth.yishulun.workers.dev/callback
+        // Then we must use that here.
+        // But we don't know the worker URL here!
+
+        // Wait, if we use a Worker, we should link to the Worker's /login endpoint? 
+        // Or simply link to GitHub with redirect_uri = Worker URL?
+
+        // If we link to standard GitHub Authorize, we need to pass redirect_uri.
+        // If we don't pass redirect_uri, GitHub uses the default registered one.
+        // THIS IS THE KEY. We don't need to hardcode the worker URL if it's the default!
+
         var loginUrl = 'https://github.com/login/oauth/authorize?client_id=' +
-            RP_CLIENT_ID + '&redirect_uri=' +
-            encodeURIComponent(redirectUri) +
-            '&state=' + encodeURIComponent(window.location.pathname) +
+            RP_CLIENT_ID +
+            // '&redirect_uri=' + ... // Omit redirect_uri to use GitHub App default (The Worker)
+            '&state=' + encodeURIComponent(window.location.pathname) + // Worker uses this to redirect back
             '&scope=public_repo';
+
         document.getElementById('rp-login-btn').href = loginUrl;
     }
 
@@ -325,34 +354,34 @@
         function doPostLink(issueNumber) {
             fetch('https://api.github.com/repos/' + RP_REPO + '/issues/' + issueNumber + '/comments', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Authorization': 'token ' + token,
                     'Content-Type': 'application/json',
                     'Accept': 'application/vnd.github.v3+json'
                 },
                 body: JSON.stringify({ body: body })
             })
-            .then(r => r.json())
-            .then(data => {
-                if (data.id) {
-                    input.value = '';
-                    submitStatus.textContent = '✓ 评论已发表';
-                    submitStatus.style.color = '#16a34a';
-                    setTimeout(function () {
-                        rpLoadCommentsByIssue(issueNumber);
-                    }, 1000);
-                } else {
-                    throw new Error(data.message || 'Failed');
-                }
-            })
-            .catch(err => {
-                submitStatus.textContent = '发送失败: ' + err.message;
-                submitStatus.style.color = '#ef4444';
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-            });
+                .then(r => r.json())
+                .then(data => {
+                    if (data.id) {
+                        input.value = '';
+                        submitStatus.textContent = '✓ 评论已发表';
+                        submitStatus.style.color = '#16a34a';
+                        setTimeout(function () {
+                            rpLoadCommentsByIssue(issueNumber);
+                        }, 1000);
+                    } else {
+                        throw new Error(data.message || 'Failed');
+                    }
+                })
+                .catch(err => {
+                    submitStatus.textContent = '发送失败: ' + err.message;
+                    submitStatus.style.color = '#ef4444';
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                });
         }
 
         // If issue doesn't exist, create it first
@@ -360,30 +389,30 @@
             var title = (document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : document.title);
             fetch('https://api.github.com/repos/' + RP_REPO + '/issues', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Authorization': 'token ' + token,
                     'Content-Type': 'application/json',
                     'Accept': 'application/vnd.github.v3+json'
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     title: title + ' | ' + window.location.pathname,
-                    body: 'Comment thread for ' + window.location.pathname + '\n\n' + window.location.href 
+                    body: 'Comment thread for ' + window.location.pathname + '\n\n' + window.location.href
                 })
             })
-            .then(r => r.json())
-            .then(data => {
-                if (data.number) {
-                    rpCurrentIssueNumber = data.number;
-                    doPostLink(rpCurrentIssueNumber);
-                } else {
-                    throw new Error('无法创建 Issue: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(err => {
-                submitStatus.textContent = '初始化评论区失败: ' + err.message;
-                submitStatus.style.color = '#ef4444';
-                submitBtn.disabled = false;
-            });
+                .then(r => r.json())
+                .then(data => {
+                    if (data.number) {
+                        rpCurrentIssueNumber = data.number;
+                        doPostLink(rpCurrentIssueNumber);
+                    } else {
+                        throw new Error('无法创建 Issue: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(err => {
+                    submitStatus.textContent = '初始化评论区失败: ' + err.message;
+                    submitStatus.style.color = '#ef4444';
+                    submitBtn.disabled = false;
+                });
         } else {
             doPostLink(rpCurrentIssueNumber);
         }
