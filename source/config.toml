@@ -96,7 +96,6 @@ theme = "preferred_color_scheme"
 lang = "zh-CN"
 strict = "1"    # 严格 origin 验证
 github_client_id = "0cdfd84658051b0f7de6"
-github_client_secret = "796a97b69953b0130a73f1fd5d50761fdb41e66f"
 
 # 导航菜单
 [[menu.main]]
