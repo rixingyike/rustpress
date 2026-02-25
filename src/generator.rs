@@ -1262,6 +1262,10 @@ impl Generator {
                 affected_pages.insert(n);
             }
         }
+        // 如果 index.html 不存在，也需要补充生成
+        if !output_dir.join("index.html").exists() {
+            affected_pages.insert(std::cmp::max(1, total_pages));
+        }
         if !affected_pages.is_empty() {
             self.generate_index_pages_for(
                 &posts,

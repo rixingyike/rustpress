@@ -186,6 +186,41 @@
     {{ comment_system_script | safe }}
     {% endif %}
 
+    <!-- 支持开发 -->
+    {% if site.author.paypal_qrcode or site.author.paypal_link %}
+    <div class="bg-indigo-50 rounded-2xl p-8 mb-10 border border-indigo-100 flex flex-col items-center text-center">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">支持项目开发</h3>
+        <p class="text-gray-600 mb-6 max-w-md">如果您觉得这个项目对您有所帮助，欢迎通过以下方式支持作者继续改进和维护。</p>
+
+        <div class="flex flex-col sm:flex-row items-center gap-8">
+            {% if site.author.paypal_qrcode %}
+            <div class="flex flex-col items-center">
+                <div class="bg-white p-3 rounded-xl shadow-sm mb-3 border border-indigo-100">
+                    <img src="{{ site.author.paypal_qrcode }}" alt="支付二维码" class="w-32 h-32 object-contain">
+                </div>
+                <span class="text-sm font-medium text-gray-700">扫码支付 9.9</span>
+            </div>
+            {% endif %}
+
+            {% if site.author.paypal_link %}
+            <div class="flex flex-col items-center">
+                <a href="{{ site.author.paypal_link }}" target="_blank" rel="noopener" style="display:inline-block;
+                          background:#0070ba;
+                          color:white;
+                          padding:12px 20px;
+                          border-radius:6px;
+                          font-size:16px;
+                          text-decoration:none;
+                          font-weight:bold;">
+                    PayPal 支付 9.9
+                </a>
+                <span class="text-sm font-medium text-gray-700 mt-3 italic">点击链接支付</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- 返回顶部 -->
     <div class="text-center mt-8 mb-12">
         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="btn-secondary inline-flex items-center">

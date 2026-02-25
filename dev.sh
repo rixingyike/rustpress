@@ -1,2 +1,2 @@
 #!/bin/bash
-cargo run -- dev --hotreload
+rm -rf public && cargo run -- dev --hotreload

@@ -41,7 +41,7 @@ export default {
         const url = new URL(request.url);
 
         // 路由：/callback (GitHub 授权后回调此接口)
-        if (url.pathname === "/callback") {
+        if (url.pathname === "/callback" || (url.pathname === "/" && url.searchParams.has("code"))) {
             const code = url.searchParams.get("code");
             const state = url.searchParams.get("state") || "/"; // 原始页面路径
 

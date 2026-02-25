@@ -1,8 +1,11 @@
-## [Unreleased] - 2026-02-19
-
-
+## [Unreleased]
 
 ---
+
+## [0.1.27] - 2026-02-25
+
+- fix(dev): `index.html` missing during incremental hotreload when `public` directory is partially cleaned
+- chore: update `dev.sh` to fully delete `public` instead of only its contents
 
 ## [0.1.23] - 2026-02-19
 
