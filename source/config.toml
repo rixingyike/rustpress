@@ -19,7 +19,7 @@ avatar = "/static/images/avatar.png"
 location = "北京, 中国"
 website = "https://yishulun.com"
 email = "9830131@qq.com"
-paypal_qrcode = "/static/images/project_support_qrcode.png"
+paypal_qrcode = "/assets/paypal_qrcode.png"
 paypal_link = "https://www.paypal.com/paypalme/jinshimanong/9.9"
 
 # 社交链接

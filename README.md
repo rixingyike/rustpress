@@ -2,6 +2,11 @@
 
 一个用 Rust 构建的无后端静态博客程序，支持增量编译与倒分页。每次构建只重建受影响的页面（首页及相关标签/分类/年份页），无论文章是 1 篇还是几千篇，构建速度都保持稳定。内置 Tera 模板、纯前端搜索（search.json + JS）、RSS 与 Sitemap；并可通过 `source/build.toml` 的 `compile_mode` 在本地与 CI 中按需切换增量或全量构建。
 
+compile_mode：
+incremental
+full
+
+
 ## 特性
 
 - 🚀 **快速**：使用Rust语言编写，编译速度快，生成网站高效
