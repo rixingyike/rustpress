@@ -1,103 +1,91 @@
-compile_mode = "incremental"
-last_build_time = "2026-02-25 14:35:46"
+compile_mode = "full"
+last_build_time = "2026-03-08 22:02:14"
 md_dir = "source"
 output_dir = "public"
 
 [[sidebar.hot_categories]]
-count = 11
-name = "技术"
+count = 38
+name = "blog"
+
+[[sidebar.hot_categories]]
+count = 18
+name = "docs"
 
 [[sidebar.hot_categories]]
 count = 6
-name = "编程语言"
-
-[[sidebar.hot_categories]]
-count = 4
-name = "web"
-
-[[sidebar.hot_categories]]
-count = 3
-name = "tutorial"
-
-[[sidebar.hot_categories]]
-count = 3
-name = "数据与安全"
+name = "posts"
 
 [[sidebar.hot_categories]]
 count = 2
-name = "design"
-
-[[sidebar.hot_categories]]
-count = 2
-name = "技术架构"
-
-[[sidebar.hot_categories]]
-count = 1
-name = "区块链技术"
+name = "projects"
 
 [[sidebar.hot_posts]]
-categories = ["技术"]
+categories = ["projects"]
+date_ymd = "2026-02-19"
+slug = "enyan"
+title = "恩言 - 大字有声圣经"
+
+[[sidebar.hot_posts]]
+categories = ["projects"]
+date_ymd = "2026-02-19"
+slug = "rustpress"
+title = "RustPress - 纯静态博客引擎"
+
+[[sidebar.hot_posts]]
+categories = ["blog", "2026"]
+date_ymd = "2026-01-03"
+slug = "2"
+title = "手机和相机的区别是什么？"
+
+[[sidebar.hot_posts]]
+categories = ["blog", "2025"]
+date_ymd = "2025-12-25"
+slug = "93"
+title = "墨问终端脚本发布独立版 2.1，支持多图片上传"
+
+[[sidebar.hot_posts]]
+categories = ["blog", "技术"]
 date_ymd = "2025-11-04"
 slug = "rust-tag-test"
 title = "Rust 标签功能测试"
 
 [[sidebar.hot_posts]]
-categories = ["web"]
+categories = ["blog", "技术"]
+date_ymd = "2025-11-04"
+slug = "11"
+title = "增量编译测试文章"
+
+[[sidebar.hot_posts]]
+categories = ["blog", "测试", "子类"]
+date_ymd = "2025-11-04"
+slug = "13"
+title = "增量验证:只重建受影响集合"
+
+[[sidebar.hot_posts]]
+categories = ["blog", "web"]
 date_ymd = "2025-03-03"
 slug = "4"
 title = "现代CSS技术"
 
 [[sidebar.hot_posts]]
-categories = ["web"]
-date_ymd = "2025-02-02"
-slug = "3"
-title = "前端框架对比"
+categories = ["docs", "claude"]
+date_ymd = "2025-02-19"
+slug = "3.Claude提示实用编写技巧"
+title = "3.Claude提示实用编写技巧"
 
 [[sidebar.hot_posts]]
-categories = ["web"]
-date_ymd = "2025-02-01"
-slug = "2"
-title = "WebAssembly 应用场景"
-
-[[sidebar.hot_posts]]
-categories = ["区块链技术", "基础理论", "核心概念"]
-date_ymd = "2024-11-25"
-slug = "blockchain-fundamentals"
-title = "区块链技术基础与应用"
-
-[[sidebar.hot_posts]]
-categories = ["编程语言", "移动开发", "跨平台开发"]
-date_ymd = "2024-10-18"
-slug = "mobile-app-development"
-title = "移动应用开发技术选型指南"
-
-[[sidebar.hot_posts]]
-categories = ["数据与安全", "网络安全", "基础防护"]
-date_ymd = "2024-09-03"
-slug = "cybersecurity-basics"
-title = "网络安全基础知识"
-
-[[sidebar.hot_posts]]
-categories = ["数据与安全", "数据库技术", "性能优化"]
-date_ymd = "2024-08-14"
-slug = "database-optimization"
-title = "数据库性能优化实战"
-
-[[sidebar.hot_posts]]
-categories = ["技术架构", "微服务架构", "服务设计"]
-date_ymd = "2024-07-22"
-slug = "golang-microservices"
-title = "Go语言微服务架构实践"
-
-[[sidebar.hot_posts]]
-categories = ["编程语言", "前端开发", "JavaScript框架"]
-date_ymd = "2024-06-08"
-slug = "vue3-composition-api"
-title = "Vue 3 Composition API深入解析"
+categories = ["docs", "claude"]
+date_ymd = "2025-02-19"
+slug = "4.Claude的具体提示实例"
+title = "4.Claude的具体提示实例"
 
 [[sidebar.hot_tags]]
 count = 1
 name = "AI"
+
+[[sidebar.hot_tags]]
+count = 6
+name = "AS3 Expert"
 
 [[sidebar.hot_tags]]
 count = 1
@@ -109,7 +97,7 @@ name = "Angular"
 
 [[sidebar.hot_tags]]
 count = 1
-name = "CSS"
+name = "ChatGPT"
 
 [[sidebar.hot_tags]]
 count = 1
@@ -149,6 +137,10 @@ name = "Hooks"
 
 [[sidebar.hot_tags]]
 count = 1
+name = "IndieHacker"
+
+[[sidebar.hot_tags]]
+count = 1
 name = "JavaScript"
 
 [[sidebar.hot_tags]]
@@ -166,11 +158,3 @@ name = "PostgreSQL"
 [[sidebar.hot_tags]]
 count = 1
 name = "Promise"
-
-[[sidebar.hot_tags]]
-count = 1
-name = "Python"
-
-[[sidebar.hot_tags]]
-count = 3
-name = "React"

@@ -737,20 +737,25 @@ impl TemplateEngine {
     /// 渲染文章页面
     pub fn render_post(&self, post: &Post, all_posts: &[Post]) -> Result<String> {
         let mut context = self.create_base_context();
-        // 仅在文章详情页内容末尾追加广告小字
+        // 仅在非文档/书籍/项目类文章详情页内容末尾追加广告小字
         let mut page = post.data.clone();
-        if let Some(content_str) = page.get("content").and_then(|v| v.as_str()) {
-            let promo_html: &str = r#"<p class="italic text-gray-500">该文由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener">rustpress</a> 编译。</p>"#;
-            let already_has = content_str.contains("https://github.com/rixingyike/rustpress")
-                || content_str.contains("该文由 rustpress 编译");
-            if !already_has {
-                let mut new_content =
-                    String::with_capacity(content_str.len() + promo_html.len() + 2);
-                new_content.push_str(content_str.trim_end());
-                new_content.push_str("\n");
-                new_content.push_str(promo_html);
-                if let Some(obj) = page.as_object_mut() {
-                    obj.insert("content".to_string(), Value::String(new_content));
+        let layout_str = page.get("layout").and_then(|v| v.as_str());
+        let skip_promo = matches!(layout_str, Some("doc") | Some("doc-item") | Some("docs") | Some("projects"));
+
+        if !skip_promo {
+            if let Some(content_str) = page.get("content").and_then(|v| v.as_str()) {
+                let promo_html: &str = r#"<p class="italic text-gray-500">该文由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener">rustpress</a> 编译。</p>"#;
+                let already_has = content_str.contains("https://github.com/rixingyike/rustpress")
+                    || content_str.contains("该文由 rustpress 编译");
+                if !already_has {
+                    let mut new_content =
+                        String::with_capacity(content_str.len() + promo_html.len() + 2);
+                    new_content.push_str(content_str.trim_end());
+                    new_content.push_str("\n");
+                    new_content.push_str(promo_html);
+                    if let Some(obj) = page.as_object_mut() {
+                        obj.insert("content".to_string(), Value::String(new_content));
+                    }
                 }
             }
         }
@@ -764,26 +769,180 @@ impl TemplateEngine {
         plugins::run_post_render_hooks(&self.config, &mut context)?;
 
         // 根据 layout 字段选择模板
-        // 内置特殊布局（about/friends/home）由各自专用 render 函数处理，这里仅路由自定义布局
-        let builtin_layouts = ["about", "friends", "home"];
         let binding = "post.html".to_string();
-        let layout_str = page
+        let original_layout = page
             .get("layout")
-            .and_then(|v| v.as_str())
-            .filter(|layout| !builtin_layouts.contains(layout));
+            .and_then(|v| v.as_str());
+        let mut target_layout = original_layout;
 
-        if let Some("projects") = layout_str {
-            let projects = self.get_project_posts(all_posts);
-            context.insert("projects", &projects);
+        // 处理特殊布局的数据注入
+        if let Some(layout) = original_layout {
+            match layout {
+                "projects" => {
+                    let projects = self.get_project_posts(all_posts);
+                    context.insert("projects", &projects);
+                }
+                "docs" => {
+                    let docs = self.get_doc_books(all_posts);
+                    context.insert("docs", &docs);
+                }
+                "doc" => {
+                    // 为 doc 布局注入侧边栏：获取同书的文章
+                    let current_cats = post.categories();
+                    if current_cats.first().map(|c| c == "docs").unwrap_or(false) && current_cats.len() >= 2 {
+                        let book_id = &current_cats[1];
+                        let mut all_book_posts: Vec<&Post> = all_posts.iter()
+                            .filter(|p| {
+                                let cats = p.categories();
+                                cats.len() >= 2 && cats[0] == "docs" && cats[1] == *book_id
+                            })
+                            .collect();
+                        
+                        // 寻找书籍首页 (README.md -> index) 以获取书籍名称
+                        let index_post = all_book_posts.iter().find(|p| p.slug() == Some("index"));
+                        let book_display_name = index_post.and_then(|p| p.title()).unwrap_or(book_id).to_string();
+                        
+                        // 排序逻辑：自然数字排序 > weight > 日期
+                        all_book_posts.sort_by(|a, b| {
+                            let na = Self::natural_sort_key(a.title().unwrap_or(""));
+                            let nb = Self::natural_sort_key(b.title().unwrap_or(""));
+                            if na != nb {
+                                na.cmp(&nb)
+                            } else {
+                                let wa = a.data.get("weight").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
+                                let wb = b.data.get("weight").and_then(|v| v.as_i64()).unwrap_or(i64::MAX);
+                                if wa != wb {
+                                    wa.cmp(&wb)
+                                } else {
+                                    let da = a.date().unwrap_or("");
+                                    let db = b.date().unwrap_or("");
+                                    da.cmp(db)
+                                }
+                            }
+                        });
+
+                        // 准备侧边栏数据并注入层级信息
+                        let sidebar_pages: Vec<Value> = all_book_posts.iter()
+                            .filter(|p| p.slug() != Some("index"))
+                            .map(|p| {
+                                let mut data = p.data.clone();
+                                let title = p.title().unwrap_or("");
+                                let sort_key = Self::natural_sort_key(title);
+                                // 层级深度：数字部分的数量减 1。例如 "1.1." 为级 1
+                                let level = if sort_key.first() == Some(&i64::MAX) { 0 } else { sort_key.len().saturating_sub(1) };
+                                if let Some(obj) = data.as_object_mut() {
+                                    obj.insert("level".to_string(), Value::Number(level.into()));
+                                }
+                                data
+                            })
+                            .collect();
+
+                        // 如果当前渲染的是书籍首页，自动生成目录内容
+                        if post.slug() == Some("index") {
+                            let mut toc_html = String::from(r#"
+<div class="book-toc mt-4">
+  <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
+    <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+    章节目录
+  </h2>
+  <div class="space-y-1">
+"#);
+                            
+                            for p_val in &sidebar_pages {
+                                let title = p_val.get("title").and_then(|v| v.as_str()).unwrap_or("无标题");
+                                let url = p_val.get("url").and_then(|v| v.as_str()).unwrap_or("#");
+                                let desc = p_val.get("description").and_then(|v| v.as_str()).unwrap_or("");
+                                let level = p_val.get("level").and_then(|v| v.as_u64()).unwrap_or(0);
+                                let indent = level * 12; // 缩进像素，由 16 缩小为 12
+                                
+                                toc_html.push_str(&format!(r#"
+    <a href="{}" class="group block p-2 bg-gray-50 rounded-lg border border-transparent hover:border-primary-100 hover:bg-white hover:shadow-sm transition-all" style="margin-left: {}px">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <h3 class="font-bold text-gray-800 group-hover:text-primary-700 transition-colors text-sm">{}</h3>
+          <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{}</p>
+        </div>
+        <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-400 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </a>
+"#, url, indent, title, desc));
+                            }
+                            
+                            toc_html.push_str(r#"
+  </div>
+</div>
+"#);
+                            
+                            if let Some(content) = post.content() {
+                                context.insert("page_content", &format!("{}{}", content, toc_html));
+                            }
+                        } else {
+                            // 书籍章节默认切换到 doc-item 模板，并注入正文以避免 Tera 默认对 page.content 的二次转义行为
+                            target_layout = Some("doc-item");
+                            if let Some(content) = post.content() {
+                                context.insert("page_content", content);
+                            }
+                        }
+
+                        context.insert("book_pages", &sidebar_pages);
+                        context.insert("book_name", &book_display_name);
+                    }
+                }
+                "about" | "friends" => {
+                    // 注入正文内容供模板中的 page_content 使用
+                    if let Some(content) = post.content() {
+                        context.insert("page_content", content);
+                    }
+                    if layout == "friends" {
+                        // 注入友链列表供 friends.html 使用
+                        if let Some(friends) = post.data.get("friends") {
+                            context.insert("friends", friends);
+                        }
+                    }
+                    if layout == "about" {
+                        // 注入统计数据供 about.html 统计模块使用
+                        let posts_json: Vec<Value> = all_posts.iter().map(|p| p.data.clone()).collect();
+                        context.insert("posts", &posts_json);
+                        
+                        let all_tags = crate::post::PostParser::collect_tags(all_posts);
+                        context.insert("all_tags", &all_tags);
+                        
+                        let all_categories = crate::post::PostParser::generate_hierarchical_categories(all_posts);
+                        context.insert("all_categories", &all_categories);
+                    }
+                }
+                _ => {}
+            }
         }
 
-        let template_name = layout_str
+        let template_name = target_layout
             .map(|layout| format!("{}.html", layout))
             .unwrap_or(binding);
 
         self.tera
             .render(&template_name, &context)
             .map_err(Error::Template)
+    }
+
+    /// 从文章列表中提取文档书籍（即 docs/ 下子目录且 layout 为 doc 的 README.md）
+    fn get_doc_books(&self, posts: &[Post]) -> Vec<serde_json::Value> {
+        let mut books: Vec<serde_json::Value> = Vec::new();
+        for post in posts {
+            let cats = post.categories();
+            // 条件：在 docs 目录下，且是第二层级的 README.md (slug 为 index)，且 layout 为 doc
+            if cats.first().map(|c| c == "docs").unwrap_or(false)
+                && cats.len() == 2
+                && post.slug() == Some("index")
+                && post.data.get("layout").and_then(|v| v.as_str()) == Some("doc")
+            {
+                books.push(post.data.clone());
+            }
+        }
+        books
     }
 
     /// 从文章列表中提取项目类型文章
@@ -1339,5 +1498,32 @@ impl TemplateEngine {
         self.tera
             .render("category_with_sidebar.html", &context)
             .map_err(Error::Template)
+    }
+
+    /// 提取标题起始处的自然数字排序序列 (e.g. "1.10 xxx" -> [1, 10])
+    fn natural_sort_key(s: &str) -> Vec<i64> {
+        let mut parts = Vec::new();
+        let mut current_num = String::new();
+        for c in s.chars() {
+            if c.is_ascii_digit() {
+                current_num.push(c);
+            } else if c == '.' {
+                if !current_num.is_empty() {
+                    parts.push(current_num.parse::<i64>().unwrap_or(0));
+                    current_num.clear();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        if !current_num.is_empty() {
+            parts.push(current_num.parse::<i64>().unwrap_or(0));
+        }
+        if parts.is_empty() {
+            parts.push(i64::MAX);
+        }
+        parts
     }
 }

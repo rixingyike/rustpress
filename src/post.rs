@@ -151,8 +151,68 @@ impl PostParser {
             std::fs::create_dir_all(content_dir)?;
         }
 
+        // 预扫描：查找所有 docs 下 README.md 标记为 draft 的目录，以及显式标记为 layout: doc 的书籍目录
+        let mut draft_dirs = std::collections::HashSet::new();
+        let mut book_dirs = std::collections::HashMap::new(); // 存储目录 -> 封面路径的映射
+        for entry in WalkDir::new(content_dir).into_iter().filter_map(|e| e.ok()) {
+            let path = entry.path();
+            if path.file_name().map_or(false, |n| n == "README.md") {
+                if let Ok(content) = std::fs::read_to_string(path) {
+                    if let Ok(Some(post_data)) = Self::parse_post(&content, path, content_dir) {
+                        let is_draft = post_data.get("draft").and_then(|v| v.as_bool()).unwrap_or(false);
+                        if is_draft {
+                            if let Some(parent) = path.parent() {
+                                draft_dirs.insert(parent.to_path_buf());
+                            }
+                        }
+
+                        // 识别书籍目录：在 docs/ 下且 README.md 的 layout 为 doc
+                        let cats = Self::extract_categories_from_path(path, content_dir);
+                        if cats.len() == 2 && cats[0] == "docs" {
+                            if let Some("doc") = post_data.get("layout").and_then(|v| v.as_str()) {
+                                if let Some(parent) = path.parent() {
+                                    let mut cover_path = post_data.get("cover").and_then(|v| v.as_str()).map(|s| s.to_string());
+                                    
+                                    // 1. 如果手动设置了封面且是相对路径，转换为站点绝对路径
+                                    if let Some(cp) = cover_path.as_mut() {
+                                        if !cp.starts_with('/') && !cp.starts_with("http") {
+                                            if let Ok(rel_dir) = parent.strip_prefix(content_dir) {
+                                                *cp = format!("/{}", rel_dir.join(&cp).to_string_lossy());
+                                            }
+                                        }
+                                    }
+
+                                    // 2. 自动探测同级目录或 assets/ 下的 cover.jpg 或 cover.png
+                                    if cover_path.is_none() {
+                                        let candidates = [
+                                            parent.join("cover.jpg"), parent.join("cover.png"),
+                                            parent.join("assets").join("cover.jpg"), parent.join("assets").join("cover.png")
+                                        ];
+                                        for cand in candidates {
+                                            if cand.exists() {
+                                                if let Ok(rel) = cand.strip_prefix(content_dir) {
+                                                    cover_path = Some(format!("/{}", rel.to_string_lossy()));
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    book_dirs.insert(parent.to_path_buf(), cover_path);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         for entry in WalkDir::new(content_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().extension().map_or(false, |ext| ext == "md") {
+                // 如果文件在被禁用的 draft 目录下，则跳过
+                if draft_dirs.iter().any(|d| entry.path().starts_with(d)) {
+                    continue;
+                }
+
                 // 跳过隐藏的 Markdown 文件（文件名以点开头）
                 let hidden = entry.file_name().to_string_lossy().starts_with('.');
                 if hidden {
@@ -160,18 +220,40 @@ impl PostParser {
                 }
                 let content = std::fs::read_to_string(entry.path())
                     .map_err(|e| Error::Other(format!("无法读取文件 {:?}: {}", entry.path(), e)))?;
+                    if let Ok(Some(mut post)) = Self::parse_post(&content, entry.path(), content_dir) {
+                        // 检查 draft 字段，如果是 true 则跳过
+                        let is_draft = post
+                            .get("draft")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+                        if is_draft {
+                            continue;
+                        }
 
-                if let Some(post_data) = Self::parse_post(&content, entry.path(), content_dir)? {
-                    // 检查 draft 字段，如果是 true 则跳过
-                    let is_draft = post_data
-                        .get("draft")
-                        .and_then(|v| v.as_bool())
-                        .unwrap_or(false);
+                        // 处理布局与封面数据逻辑
+                        let cats = Post::from_value(post.clone()).categories();
+                        if let Some(obj) = post.as_object_mut() {
+                            // 1. 自动应用分支逻辑（仅在未设置布局时）
+                            if !obj.contains_key("layout") {
+                                if cats.first().map(|c| c == "projects").unwrap_or(false) {
+                                    obj.insert("layout".to_string(), Value::String("project".to_string()));
+                                } else if book_dirs.iter().any(|(d, _)| entry.path().starts_with(d)) {
+                                    obj.insert("layout".to_string(), Value::String("doc".to_string()));
+                                }
+                            }
 
-                    if !is_draft {
-                        posts.push(Post::from_value(post_data));
+                            // 2. 注入探测到的书籍封面（仅限 README.md）
+                            if entry.path().file_name().map_or(false, |n| n == "README.md") {
+                                if let Some((_, cover_opt)) = book_dirs.iter().find(|(d, _)| entry.path().starts_with(d)) {
+                                    if let Some(cp) = cover_opt {
+                                        // 始终使用 pre-scan 阶段处理过的标准化路径（绝对路径）
+                                        obj.insert("cover".to_string(), Value::String(cp.clone()));
+                                    }
+                                }
+                            }
+                        }
+                        posts.push(Post::from_value(post));
                     }
-                }
             }
         }
 
@@ -219,14 +301,17 @@ impl PostParser {
             })?;
             serde_json::to_value(metadata)?
         } else {
-            // 针对 YAML 做鲁棒性处理：修复缺少空格的键值对 (e.g. "key:value" -> "key: value")
-            // 匹配行首(可能有缩进)的 key，冒号后紧跟非空白字符的情况
+            // 针对 YAML 做鲁棒性处理：
+            // 1. 修复中文冒号为英文冒号
+            let mut fixed_front_matter = front_matter.replace('：', ":");
+            
+            // 2. 修复缺少空格的键值对 (e.g. "key:value" -> "key: value")
             let re = Regex::new(r"(?m)^([ \t]*[a-zA-Z0-9_-]+):([^\s].*)$").unwrap();
-            let fixed_front_matter = re.replace_all(front_matter, "${1}: ${2}");
+            fixed_front_matter = re.replace_all(&fixed_front_matter, "${1}: ${2}").to_string();
 
             let metadata: serde_yaml::Value =
                 serde_yaml::from_str(&fixed_front_matter).map_err(|e| {
-                    // 如果解析失败，打印原始内容以便调试，虽然我们已经尝试修复了
+                    // 如果解析失败，打印原始内容以便调试
                     Error::Markdown(format!("解析YAML front matter失败 {:?}: {}", path, e))
                 })?;
             serde_json::to_value(metadata)?
@@ -241,6 +326,10 @@ impl PostParser {
             .and_then(|s| s.to_str())
             .unwrap_or("")
             .to_string();
+
+        if slug == "README" {
+            slug = "index".to_string();
+        }
 
         if let Value::Object(ref obj) = metadata_json {
             if let Some(Value::String(s)) = obj.get("slug") {
@@ -428,6 +517,7 @@ impl PostParser {
         options.insert(Options::ENABLE_FOOTNOTES);
         options.insert(Options::ENABLE_STRIKETHROUGH);
         options.insert(Options::ENABLE_TASKLISTS);
+        options.insert(Options::ENABLE_HEADING_ATTRIBUTES);
 
         let parser = Parser::new_ext(markdown, options);
         let mut html = String::new();

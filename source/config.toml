@@ -19,8 +19,7 @@ avatar = "/static/images/avatar.png"
 location = "北京, 中国"
 website = "https://yishulun.com"
 email = "9830131@qq.com"
-paypal_qrcode = "/assets/paypal_qrcode.png"
-paypal_link = "https://www.paypal.com/paypalme/jinshimanong/9.9"
+donate_qrcode = "/assets/donate_qrcode.png"
 
 # 社交链接
 [social]
@@ -121,19 +120,24 @@ url = "/tags.html"
 weight = 4
 
 [[menu.main]]
+name = "文档"
+url = "/docs.html"
+weight = 5
+
+[[menu.main]]
 name = "友链"
 url = "/friends.html"
-weight = 5
+weight = 6
 
 [[menu.main]]
 name = "项目"
 url = "/projects.html"
-weight = 6
+weight = 7
 
 [[menu.main]]
 name = "关于"
 url = "/about.html"
-weight = 6
+weight = 8
 
 [taxonomies]
 category = "categories"

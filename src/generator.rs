@@ -453,6 +453,11 @@ impl Generator {
                 (total_posts + posts_per_page - 1) / posts_per_page
             };
 
+            // 检查是否已经存在手动定义的 index 文章（如 README.md 映射而来）
+            let has_manual_index = category_posts.iter().any(|p| {
+                p.categories() == category_path && p.slug() == Some("index")
+            });
+
             // 逐页渲染并输出（倒分页）：最大页（最新）输出为 index.html，其余为 indexN.html
             for page in 1..=total_pages {
                 let html = self.template_engine.render_category_page(
@@ -462,6 +467,10 @@ impl Generator {
                     posts_per_page,
                 )?;
                 let file_name = if page == total_pages {
+                    if has_manual_index {
+                        // 如果有手动定义的 index 文章，跳过自动生成的 index.html 以免覆盖
+                        continue;
+                    }
                     "index.html".to_string()
                 } else {
                     format!("index{}.html", page)
@@ -527,6 +536,11 @@ impl Generator {
                 (total_posts + posts_per_page - 1) / posts_per_page
             };
 
+            // 检查是否已经存在手动定义的 index 文章
+            let has_manual_index = category_posts.iter().any(|p| {
+                p.categories() == *category_path && p.slug() == Some("index")
+            });
+
             for page in 1..=total_pages {
                 let html = self.template_engine.render_category_page(
                     &category_posts,
@@ -535,6 +549,9 @@ impl Generator {
                     posts_per_page,
                 )?;
                 let file_name = if page == total_pages {
+                    if has_manual_index {
+                        continue;
+                    }
                     "index.html".to_string()
                 } else {
                     format!("index{}.html", page)
