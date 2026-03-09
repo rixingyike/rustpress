@@ -1,5 +1,17 @@
 ## [Unreleased] - 2026-03-09
 
+- feat: fix project icons,补全缺失静态资源,优化 init 初始化逻辑和目录结构
+
+---
+
+## [Unreleased] - 2026-03-09
+
+- feat: fix project icons,补全缺失静态资源,优化 init 初始化逻辑和目录结构
+
+---
+
+## [Unreleased] - 2026-03-09
+
 
 
 ---
