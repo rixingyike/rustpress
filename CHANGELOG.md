@@ -1,18 +1,12 @@
-## [Unreleased] - 2026-03-09
+## [0.1.29] - 2026-03-09
 
-- feat: fix project icons,补全缺失静态资源,优化 init 初始化逻辑和目录结构
-
----
-
-## [Unreleased] - 2026-03-09
-
-- feat: fix project icons,补全缺失静态资源,优化 init 初始化逻辑和目录结构
-
----
-
-## [Unreleased] - 2026-03-09
-
-
+- feat: 支持项目图标使用 Emoji 渲染（智能区分图片路径与 Emoji）
+- feat: 补全缺失的静态资源（赞助二维码、公益活动图片）到主题目录
+- feat: 优化 `init` 命令初始化逻辑：
+    - 废弃 `posts` 目录，引导使用 `blog`
+    - `blog` 默认按年份子目录组织，示例文章按数字递增
+    - `docs` 增加带有章节编号（如 1.1, 1.2.1）的缩进示例
+- fix: 修正 `test_blog` 下 `build.sh` 和 `dev.sh` 的工作目录跳转逻辑，支持从根目录启动
 
 ---
 
