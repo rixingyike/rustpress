@@ -19,6 +19,9 @@ fn main() -> Result<()> {
 
     match &cli.command {
         Commands::New { name, force } => new_project(name, *force),
+        Commands::Init => {
+            rustpress::utils::init_source_dir(&cli.md_dir, &cli.config)
+        }
         Commands::Build {
             output_dir,
             incremental,

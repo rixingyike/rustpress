@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ book_name | default(value="Docs") }} - {{ site.name }}{% endblock %}
+
+{% block ad1 %}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row min-h-screen -mx-4 sm:-mx-6 lg:-mx-8">
+    <!-- 侧边栏导航 -->
+    <aside
+        class="w-full md:w-64 bg-white border-r border-gray-200 overflow-y-auto sticky top-16 h-[calc(100vh-4rem)] z-30"
+        x-data="{ sidebarOpen: true }" :class="{ 'w-10': !sidebarOpen, 'w-64': sidebarOpen }">
+        <div class="p-4 flex flex-col h-full">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold text-gray-800 truncate" x-show="sidebarOpen">{{ book_name }}</h2>
+                <button @click="sidebarOpen = !sidebarOpen" class="p-1 hover:bg-gray-100 rounded">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path x-show="sidebarOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        <path x-show="!sidebarOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="flex-1 space-y-1" x-show="sidebarOpen">
+                {% if book_pages %}
+                {% for p in book_pages %}
+                {% set is_active = (p.url == page.url) %}
+                {% set level = p.level | default(value=0) %}
+                <a href="{{ p.url }}"
+                    class="block px-3 py-2 text-sm rounded-md transition-colors {% if is_active %}bg-primary-50 text-primary-700 font-medium{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %}"
+                    style="padding-left: {{ level * 1.0 + 0.75 }}rem">
+                    {{ p.title | default(value=p.slug) }}
+                </a>
+                {% endfor %}
+                {% endif %}
+            </nav>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 min-w-0 bg-white">
+        <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <article class="prose prose-slate max-w-none">
+                <header class="mb-4 border-b border-gray-200 pb-4">
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">{{ page.title }}</h1>
+                    {% if page.date_ymd %}
+                    <p class="text-sm text-gray-500">更新于 {{ page.date_ymd }}</p>
+                    {% endif %}
+                </header>
+
+                <div class="article-content">
+                    {{ page_content | default(value=page.content) | safe }}
+                </div>
+
+                <!-- 底部翻页导航 -->
+                <nav class="mt-12 pt-8 border-t border-gray-200 flex justify-between gap-4">
+                    {% if book_pages %}
+                    {% for p in book_pages %}
+                    {% if p.url == page.url %}
+                    {% if loop.first %}
+                    <div class="flex-1"></div>
+                    {% else %}
+                    {% set prev_idx = loop.index0 - 1 %}
+                    {% set prev_p = book_pages[prev_idx] %}
+                    <a href="{{ prev_p.url }}" class="flex-1 group">
+                        <span class="text-xs text-gray-500 block mb-1">上一页</span>
+                        <span class="text-primary-600 font-medium group-hover:underline">← {{ prev_p.title }}</span>
+                    </a>
+                    {% endif %}
+
+                    {% if loop.last %}
+                    <div class="flex-1"></div>
+                    {% else %}
+                    {% set next_idx = loop.index0 + 1 %}
+                    {% set next_p = book_pages[next_idx] %}
+                    <a href="{{ next_p.url }}" class="flex-1 text-right group">
+                        <span class="text-xs text-gray-500 block mb-1">下一页</span>
+                        <span class="text-primary-600 font-medium group-hover:underline">{{ next_p.title }} →</span>
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                </nav>
+            </article>
+        </div>
+    </main>
+</div>
+
+<style>
+    /* 为了适应侧边栏，覆盖 base.html 的默认 max-w-7xl 限制 */
+    .max-w-7xl:has(main > .flex-col.md\:flex-row) {
+        max-width: none !important;
+    }
+</style>
+{% endblock %}

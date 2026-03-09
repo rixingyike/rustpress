@@ -13,6 +13,7 @@ use rust_embed::RustEmbed;
 // 将根目录的配置编译进二进制，作为默认模板来源
 pub const EMBEDDED_ROOT_CONFIG_TOML: &str = include_str!("../config.toml");
 pub const EMBEDDED_ROOT_BUILD_TOML: &str = include_str!("../build.toml");
+pub const EMBEDDED_DEPLOY_YML: &str = include_str!("../deploy.yml.example.yml");
 
 // 将主题静态资源打包进二进制（主题的 public 目录，包含 static 子目录）
 #[derive(RustEmbed)]
@@ -747,12 +748,24 @@ pub fn ensure_default_pages<P: AsRef<Path>>(md_dir: P) -> Result<()> {
             .map_err(|e| Error::Other(format!("无法创建源目录 {:?}: {}", md_dir, e)))?;
     }
 
+    // 获取当前日期字符串
+    let today = chrono::Local::now().format("%Y-%m-%d").to_string();
+
     // 优先从嵌入资源写出，若缺失则回退到内置字符串
     let write_if_missing = |name: &str, fallback: &str| -> Result<()> {
         let path = md_dir.join(name);
         if path.exists() {
             return Ok(());
         }
+        
+        // 自动创建父目录
+        if let Some(parent) = path.parent() {
+            if !parent.exists() {
+                std::fs::create_dir_all(parent)
+                    .map_err(|e| Error::Other(format!("无法创建目录 {:?}: {}", parent, e)))?;
+            }
+        }
+
         if let Some(file) = DefaultPages::get(name) {
             std::fs::write(&path, file.data)
                 .map_err(|e| Error::Other(format!("写入嵌入默认页失败 {:?}: {}", path, e)))?;
@@ -764,8 +777,8 @@ pub fn ensure_default_pages<P: AsRef<Path>>(md_dir: P) -> Result<()> {
         Ok(())
     };
 
-    // home.md
-    let home_fallback = r#"---
+    // --- 骨架基础页 ---
+    write_if_missing("home.md", r#"---
 title: "首页"
 layout: home
 home_navs:
@@ -780,11 +793,9 @@ home_navs:
 # 欢迎来到我的博客
 
 这里是首页的自定义内容区域。你可以在此添加简介或导航按钮（通过 front matter 的 `home_navs` 字段）。
-"#;
-    write_if_missing("home.md", home_fallback)?;
+"#)?;
 
-    // about.md
-    let about_fallback = r#"---
+    write_if_missing("about.md", r#"---
 title: "关于我"
 layout: about
 toc: true
@@ -793,11 +804,9 @@ toc: true
 # 关于我
 
 这里写你的简介、技能、经历、联系方式等内容。TOC（目录）可根据内容自动生成。
-"#;
-    write_if_missing("about.md", about_fallback)?;
+"#)?;
 
-    // friends.md
-    let friends_fallback = r#"---
+    write_if_missing("friends.md", r#"---
 title: "友链"
 layout: friends
 friends:
@@ -811,10 +820,86 @@ friends:
 
 # 友情链接
 
-欢迎在此添加你的朋友站点或推荐网站。上方的 `friends` 列表会在页面中渲染。
-"#;
-    write_if_missing("friends.md", friends_fallback)?;
+欢迎在此添加你的朋友站点或推荐网站。
+"#)?;
 
+    write_if_missing("docs.md", "---\ntitle: \"文档专栏\"\nlayout: docs\n---\n\n这里展示所有书籍和专栏。")?;
+    write_if_missing("projects.md", "---\ntitle: \"开源项目\"\nlayout: projects\n---\n\n这里展示所有的开源项目。")?;
+
+    // --- 各分类目录示例 (每样 2 个) ---
+    
+    // Blog 示例 (按年份组织，数字递增命名)
+    let current_year = chrono::Local::now().format("%Y").to_string();
+    write_if_missing(&format!("blog/{}/1.md", current_year), &format!("---\ntitle: \"欢迎来到我的博客\"\ndate: \"{}\"\ncategories: [\"生活\"]\n---\n\n这是一个按年份组织的博客示例文章。", today))?;
+    write_if_missing(&format!("blog/{}/2.md", current_year), &format!("---\ntitle: \"技术分享：如何使用 Rust\"\ndate: \"{}\"\ncategories: [\"技术\"]\n---\n\n这是一篇按数字递增命名的技术博客示例。", today))?;
+
+    // Projects 示例
+    write_if_missing("projects/my-first-project.md", "---\ntitle: \"我的第一个项目\"\nlayout: project\ndescription: \"这是一个使用 Rust 编写的开源项目\"\nicon: \"🦀\"\nversion: \"0.1.0\"\ntags: [\"Rust\", \"Open Source\"]\n---\n\n项目详细介绍内容。")?;
+    write_if_missing("projects/rustpress.md", "---\ntitle: \"RustPress\"\nlayout: project\ndescription: \"静态网站生成器\"\nicon: \"🚀\"\nversion: \"0.1.28\"\n---\n\n这是 RustPress 项目本身的示例展示。")?;
+
+    // Docs (书籍) 示例 - 增加章节嵌套和缩进体现
+    write_if_missing("docs/guide/README.md", "---\ntitle: \"用户指南\"\nlayout: doc\n---\n\n欢迎阅读本专栏手册。")?;
+    write_if_missing("docs/guide/1.安装与配置.md", "---\ntitle: \"1. 安装与配置\"\n---\n\n这是专栏的第一个章节。")?;
+    write_if_missing("docs/guide/1.1.快速开始.md", "---\ntitle: \"1.1. 快速开始\"\n---\n\n这是二级章节示例。")?;
+    write_if_missing("docs/guide/1.2.配置文件说明.md", "---\ntitle: \"1.2. 配置文件说明\"\n---\n\n详细介绍 config.toml 内容。")?;
+    write_if_missing("docs/guide/1.2.1.站点信息配置.md", "---\ntitle: \"1.2.1. 站点信息配置\"\n---\n\n这是三级章节展示缩进。")?;
+
+    write_if_missing("docs/novel/README.md", "---\ntitle: \"科幻小说集\"\nlayout: doc\n---\n\n这是另一个文档专栏的示例。")?;
+    write_if_missing("docs/novel/1.第一章：启程.md", "---\ntitle: \"1. 第一章：启程\"\n---\n\n小说开篇内容...")?;
+    write_if_missing("docs/novel/2.第二章：星辰.md", "---\ntitle: \"2. 第二章：星辰\"\n---\n\n茫茫宇宙中...")?;
+
+    Ok(())
+}
+
+/// 初始化博客源目录骨架
+pub fn init_source_dir<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
+    let md_dir = md_dir.as_ref();
+    
+    // 1. 创建标准子目录
+    let dirs = ["blog", "docs", "projects", "assets"];
+    for dir in dirs {
+        let path = md_dir.join(dir);
+        if !path.exists() {
+            std::fs::create_dir_all(&path)
+                .map_err(|e| Error::Other(format!("无法创建子目录 {:?}: {}", path, e)))?;
+        }
+    }
+
+    // 2. 调用标准初始化流程（补全配置、模板、静态资源和基础页面）
+    ensure_initial_setup(md_dir, config_filename)?;
+
+    // 3. 生成 GitHub Action Workflow
+    // 识别项目根目录（md_dir 的父目录，若无则为当前目录）
+    let (root_dir, md_rel_name) = if let Some(parent) = md_dir.parent() {
+        if parent.as_os_str().is_empty() {
+             (Path::new("."), md_dir.file_name().and_then(|n| n.to_str()).unwrap_or("source"))
+        } else {
+             (parent, md_dir.file_name().and_then(|n| n.to_str()).unwrap_or("source"))
+        }
+    } else {
+        (Path::new("."), ".")
+    };
+
+    let workflow_dir = root_dir.join(".github/workflows");
+    if !workflow_dir.exists() {
+        std::fs::create_dir_all(&workflow_dir)
+            .map_err(|e| Error::Other(format!("无法创建目录 {:?}: {}", workflow_dir, e)))?;
+    }
+    
+    let deploy_yml_path = workflow_dir.join("deploy.yml");
+    if !deploy_yml_path.exists() {
+        // 定制化 deploy.yml：替换默认的 -m source 为实际的目录名
+        let deploy_content = EMBEDDED_DEPLOY_YML.replace(
+            "rustpress -m source build -o public",
+            &format!("rustpress -m {} build -o public", md_rel_name)
+        );
+        
+        std::fs::write(&deploy_yml_path, deploy_content)
+            .map_err(|e| Error::Other(format!("无法写入部署脚本 {:?}: {}", deploy_yml_path, e)))?;
+        println!("已生成 GitHub Action 部署脚本: {}", deploy_yml_path.display());
+    }
+
+    println!("✅ 博客项目初始化完成（包含骨架、示例内容及 GitHub Action）");
     Ok(())
 }
 

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+<!-- 单个标签页面模板 -->
+{% block title %}{{ tag_name }} - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+        <!-- 主要内容区域（移除侧边栏，内容全宽） -->
+        <main class="w-full">
+            <!-- 页面头部 -->
+            <header class="mb-8">
+                <!-- 面包屑导航 -->
+                <nav class="mb-6 text-sm text-gray-600">
+                    <a href="/" class="hover:text-primary-600">首页</a>
+                    <span class="mx-2">›</span>
+                    <a href="/tags.html" class="hover:text-primary-600">标签</a>
+                    <span class="mx-2">›</span>
+                    <span class="text-gray-900">{{ tag_name }}</span>
+                </nav>
+                
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">{{ tag_name }}</h1>
+                </div>
+                <p class="text-lg text-gray-600">共 {{ posts | length }} 篇相关文章</p>
+            </header>
+            
+            <!-- 文章列表 -->
+            <div class="space-y-6">
+                {% if posts and posts | length > 0 %}
+                    {% for post in posts %}
+                    <article class="card hover:shadow-lg transition-shadow duration-300">
+                        <div class="card-body">
+                            <h2 class="text-xl sm:text-2xl font-semibold mb-3">
+                                {% if post.categories and post.categories | length > 0 %}
+                                <a href="/{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
+                                   class="text-gray-900 hover:text-primary-600 transition-colors">
+                                    {{ post.title | default(value=post.slug) }}
+                                </a>
+                                {% else %}
+                                <a href="/{{ post.slug }}.html" 
+                                   class="text-gray-900 hover:text-primary-600 transition-colors">
+                                    {{ post.title | default(value=post.slug) }}
+                                </a>
+                                {% endif %}
+                            </h2>
+                            
+                            {% if post.description %}
+                            <p class="text-gray-600 mb-4">{{ post.description | default(value="") }}</p>
+                            {% endif %}
+                            
+                            <div class="flex flex-wrap items-center text-sm text-gray-500 gap-4">
+                                {% if post.date_ymd %}
+                                <time datetime="{{ post.date_ymd }}" class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    {{ post.date_ymd }}
+                                </time>
+                                {% endif %}
+                                
+                                {% if post.reading_time %}
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ post.reading_time }} 分钟阅读
+                                </span>
+                                {% endif %}
+                                
+                                {% if post.categories %}
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                                    </svg>
+                                    {{ post.categories | join(sep=' › ') }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">标签 "{{ tag_name }}" 暂无文章</h3>
+                        <p class="mt-2 text-gray-500">这个标签下还没有发布任何文章</p>
+                        <a href="/tags.html" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回标签页</a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- 分页导航（居中，仅显示上一页/下一页；去掉数字页码与总结果数） -->
+            {% if paginator %}
+            <div class="mt-12">
+                <p class="text-sm text-gray-700 text-center">
+                    第 <span class="font-medium">{{ paginator.start_index }}</span> 到 <span class="font-medium">{{ paginator.end_index }}</span> 条
+                </p>
+                <nav class="mt-4 flex justify-center gap-3" aria-label="Pagination">
+                    {% if paginator.previous %}
+                    <a href="{{ paginator.previous }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        上一页
+                    </a>
+                    {% else %}
+                    <span class="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-300 bg-gray-100 cursor-not-allowed">
+                        上一页
+                    </span>
+                    {% endif %}
+
+                    {% if paginator.next %}
+                    <a href="{{ paginator.next }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        下一页
+                    </a>
+                    {% else %}
+                    <span class="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-300 bg-gray-100 cursor-not-allowed">
+                        下一页
+                    </span>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+        </main>
+</div>
+{% endblock %}
+
+{# 单标签列表页不显示底部广告位 1 #}
+{% block ad1 %}{% endblock %}

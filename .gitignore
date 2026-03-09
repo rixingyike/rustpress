@@ -28,3 +28,5 @@ public
 # Added by cargo
 
 /target
+/test_blog/public
+/test_blog/source

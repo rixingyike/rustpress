@@ -21,7 +21,7 @@ pub struct Cli {
 /// 可用的命令
 #[derive(Subcommand)]
 pub enum Commands {
-    /// 创建新的博客项目
+    /// 创建新的博客项目（包含 content/templates/static 等完整项目结构）
     New {
         /// 项目名称
         name: String,
@@ -29,6 +29,9 @@ pub enum Commands {
         #[arg(short, long, default_value_t = false)]
         force: bool,
     },
+
+    /// 初始化博客项目（自动识别根目录，生成骨架、示例文章及 GitHub Action 部署脚本，支持对现有目录查漏补缺）
+    Init,
 
     /// 生产环境构建（快速，只处理 Markdown）
     Build {

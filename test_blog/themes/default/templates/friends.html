@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+<!-- 友情链接页面模板 -->
+{% block title %}友情链接 - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 页面标题 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">友情链接</h1>
+    </header>
+
+    <!-- 友链列表 -->
+    {% if friends %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {% for friend in friends %}
+        <div class="card hover:shadow-md transition-shadow">
+            <div class="card-body">
+                <div class="flex items-start">
+                    {% if friend.avatar %}
+                    <img src="{{ friend.avatar }}" alt="{{ friend.name }}" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    {% endif %}
+                    <div class="min-w-0">
+                        <a href="{{ friend.url }}" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            {{ friend.name }}
+                        </a>
+                        {% if friend.domain %}
+                        <div class="text-xs text-gray-500 mt-0.5">{{ friend.domain }}</div>
+                        {% endif %}
+                        {% if friend.description %}
+                        <p class="text-gray-600 text-sm mt-2">{{ friend.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <p class="text-gray-500 text-lg">暂无友情链接</p>
+    </div>
+    {% endif %}
+
+    <!-- 申请说明（来自 friends.md 的正文） -->
+    {% if page_content %}
+    <div class="prose prose-lg max-w-none">
+        {{ page_content | safe }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<!-- 隐藏广告位1 -->
+{% block ad1 %}
+{% endblock %}
