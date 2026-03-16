@@ -58,23 +58,8 @@ pub enum Commands {
     /// 构建主题 CSS
     BuildCss,
 
-    /// 在本地预览博客
+    /// 开发模式：构建并启动具备热重载功能的本地预览服务器
     Serve {
-        /// 服务器端口
-        #[arg(short, long, default_value_t = 1111)]
-        port: u16,
-
-        /// 指定输出目录
-        #[arg(short, long, default_value = "public")]
-        output_dir: String,
-
-        /// 启动前执行增量编译
-        #[arg(long, default_value_t = false)]
-        incremental: bool,
-    },
-
-    /// 开发模式：构建并启动本地预览服务器
-    Dev {
         /// 服务器端口
         #[arg(short, long, default_value_t = 1111)]
         port: u16,
@@ -88,7 +73,7 @@ pub enum Commands {
         incremental: bool,
 
         /// 开启 hotreload（监听模板文件变化并自动重建）
-        #[arg(long, default_value_t = false)]
+        #[arg(long, default_value_t = true)]
         hotreload: bool,
     },
 

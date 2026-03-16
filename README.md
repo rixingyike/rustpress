@@ -6,6 +6,9 @@ compile_mode：
 incremental
 full
 
+cd "/Users/liyi/Library/Application\ Support/app.pushpen.writer/"
+cargo run --manifest-path "/Users/liyi/work/rustpress/Cargo.toml" -- -m "source" serve --output-dir "public"
+
 
 ## 特性
 

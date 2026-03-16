@@ -43,6 +43,7 @@ pub struct RuntimePaths {
 #[derive(Debug, Default, Clone)]
 pub struct RuntimePathsBuilder {
     md_dir: Option<std::path::PathBuf>,
+    root_dir: Option<std::path::PathBuf>,
     theme_name: Option<String>,
 }
 
@@ -58,6 +59,10 @@ impl RuntimePathsBuilder {
         self.theme_name = Some(name.into());
         self
     }
+    pub fn root_dir<P: AsRef<std::path::Path>>(mut self, root_dir: P) -> Self {
+        self.root_dir = Some(root_dir.as_ref().to_path_buf());
+        self
+    }
     pub fn build(self) -> RuntimePaths {
         let theme = self.theme_name.unwrap_or_else(|| "default".to_string());
         // build.toml 路径：优先 md_dir，其次项目根
@@ -67,14 +72,19 @@ impl RuntimePathsBuilder {
             .unwrap_or_else(|| std::path::PathBuf::from("."));
         let build_toml_path = resolve_build_toml_path_read(&md_dir_for_resolve);
 
-        // 优先使用项目根目录 themes/<theme>
-        let theme_dir_in_root = std::path::PathBuf::from("themes").join(&theme);
-        // 兼容历史：若根目录不存在主题目录，可回退到 md_dir 下 themes/<theme>
-        let theme_dir_in_md = self
-            .md_dir
-            .unwrap_or_else(|| std::path::PathBuf::from("."))
-            .join("themes")
-            .join(&theme);
+        // 确定基础目录：优先使用 root_dir，否则使用 md_dir 的父目录，最后回退到当前目录
+        let base_dir = if let Some(root) = self.root_dir {
+            root
+        } else if let Some(md) = &self.md_dir {
+            md.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| std::path::PathBuf::from("."))
+        } else {
+            std::path::PathBuf::from(".")
+        };
+
+        // 优先使用项目根目录下的 themes/<theme>
+        let theme_dir_in_root = base_dir.join("themes").join(&theme);
+        // 兼容历史：若根目录不存在主题目录，可回退到 md_dir 下的 themes/<theme>
+        let theme_dir_in_md = md_dir_for_resolve.join("themes").join(&theme);
 
         // 选择存在的主题目录
         let (theme_dir, theme_templates_dir, theme_static_dir) = if theme_dir_in_root.exists() {
@@ -630,11 +640,11 @@ pub fn write_embedded_theme_static<P: AsRef<Path>>(output_dir: P) -> Result<()> 
 }
 
 /// 将打包在二进制中的主题模板写出到项目根目录的 `themes/default/templates`（仅在缺失时写入）
-pub fn write_embedded_theme_templates_to_root() -> Result<()> {
+pub fn write_embedded_theme_templates_to_root(root: &Path) -> Result<()> {
     use std::fs;
-    let base = std::path::Path::new("themes/default/templates");
+    let base = root.join("themes/default/templates");
     if !base.exists() {
-        fs::create_dir_all(base)
+        fs::create_dir_all(&base)
             .map_err(|e| Error::Other(format!("无法创建模板目录 {:?}: {}", base, e)))?;
     }
 
@@ -647,8 +657,25 @@ pub fn write_embedded_theme_templates_to_root() -> Result<()> {
                 fs::create_dir_all(parent)
                     .map_err(|e| Error::Other(format!("无法创建父目录 {:?}: {}", parent, e)))?;
             }
-            // 仅在文件不存在时写入，避免覆盖用户修改
-            if !dst.exists() {
+            
+            // 策略：如果文件不存在则写入；如果文件已存在但包含旧的逻辑，则强制覆盖以自愈
+            let mut should_write = !dst.exists();
+            if !should_write {
+                if let Ok(existing_content) = fs::read_to_string(&dst) {
+                    let outdated_patterns = [
+                        "is starting_with",
+                        "| starting_with",
+                        "| contains(pat=",
+                        "{% set is_img ="
+                    ];
+                    if outdated_patterns.iter().any(|p| existing_content.contains(p)) {
+                        println!("[DEBUG] 检测到陈旧模板语法或重写逻辑，准备自愈覆盖: {:?}", dst);
+                        should_write = true;
+                    }
+                }
+            }
+
+            if should_write {
                 fs::write(&dst, &bytes)
                     .map_err(|e| Error::Other(format!("无法写入嵌入模板文件 {:?}: {}", dst, e)))?;
             }
@@ -658,11 +685,11 @@ pub fn write_embedded_theme_templates_to_root() -> Result<()> {
 }
 
 /// 将打包在二进制中的主题静态资源写出到项目根目录的 `themes/default/public`（仅在缺失时写入缺失文件）
-pub fn write_embedded_theme_static_to_root() -> Result<()> {
+pub fn write_embedded_theme_static_to_root(root: &Path) -> Result<()> {
     use std::fs;
-    let base = std::path::Path::new("themes/default/public");
+    let base = root.join("themes/default/public");
     if !base.exists() {
-        fs::create_dir_all(base)
+        fs::create_dir_all(&base)
             .map_err(|e| Error::Other(format!("无法创建主题静态目录 {:?}: {}", base, e)))?;
     }
 
@@ -741,6 +768,7 @@ pub fn ensure_root_config_and_build<P: AsRef<Path>>(
 
 /// 在 `md_dir` 目录下保障首页、关于、友链三类页面存在，缺失则补全示例文件（YAML front matter）
 pub fn ensure_default_pages<P: AsRef<Path>>(md_dir: P) -> Result<()> {
+    println!("[DEBUG] 正在同步补全示例页面到 {:?}", md_dir.as_ref());
     use std::fs;
     let md_dir = md_dir.as_ref();
     if !md_dir.exists() {
@@ -865,10 +893,13 @@ pub fn init_source_dir<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Resu
         }
     }
 
-    // 2. 调用标准初始化流程（补全配置、模板、静态资源和基础页面）
+    // 2. 调用标准初始化流程（补全配置、模板、静态资源）
     ensure_initial_setup(md_dir, config_filename)?;
+    
+    // 3. 显式补全示例页面 (只在 init 时执行，防止 serve 时重生已删除的示例)
+    ensure_default_pages(md_dir)?;
 
-    // 3. 生成 GitHub Action Workflow
+    // 4. 生成 GitHub Action Workflow
     // 识别项目根目录（md_dir 的父目录，若无则为当前目录）
     let (root_dir, md_rel_name) = if let Some(parent) = md_dir.parent() {
         if parent.as_os_str().is_empty() {
@@ -899,7 +930,16 @@ pub fn init_source_dir<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Resu
         println!("已生成 GitHub Action 部署脚本: {}", deploy_yml_path.display());
     }
 
-    println!("✅ 博客项目初始化完成（包含骨架、示例内容及 GitHub Action）");
+    // 4. 生成 .gitignore
+    let gitignore_path = root_dir.join(".gitignore");
+    if !gitignore_path.exists() {
+        let gitignore_content = "node_modules\n.DS_Store\n.pushpen/\npublic\n";
+        std::fs::write(&gitignore_path, gitignore_content)
+            .map_err(|e| Error::Other(format!("无法写入 .gitignore: {}", e)))?;
+        println!("已生成 .gitignore 文件: {}", gitignore_path.display());
+    }
+
+    println!("✅ 博客项目初始化完成（包含骨架、示例内容、GitHub Action 及 .gitignore）");
     Ok(())
 }
 
@@ -961,16 +1001,19 @@ pub fn ensure_source_config_and_build<P: AsRef<Path>>(
     Ok(())
 }
 
-/// 启动时初始化：在源目录补全 config.toml、build.toml 与 home/about/friends；在项目根写出主题资源
+/// 启动时初始化：在源目录补全 config.toml 与 build.toml；在项目根写出主题资源
+/// 注意：此函数已不再生成示例页面（home/about 等），以防止 serve 时重生已删除文件。
 pub fn ensure_initial_setup<P: AsRef<Path>>(md_dir: P, config_filename: &str) -> Result<()> {
-    // 0) 优先在项目根保障配置与构建文件（若缺失，写出内嵌默认）
-    ensure_root_config_and_build(md_dir.as_ref(), config_filename)?;
-    // 1) 在源目录保障配置与构建文件（若缺失，写出内嵌默认或从根复制）
-    ensure_source_config_and_build(md_dir.as_ref(), config_filename)?;
-    // 2) 写出嵌入的主题模板与静态资源到根 themes（缺失时生成，不覆盖已有）
-    write_embedded_theme_templates_to_root()?;
-    write_embedded_theme_static_to_root()?;
-    // 3) 在源目录补全首页、关于、友链示例页
-    ensure_default_pages(md_dir)?;
+    let md_path = md_dir.as_ref();
+    let root_path = md_path.parent().unwrap_or(Path::new("."));
+    
+    println!("[DEBUG] 进入 ensure_initial_setup，md_dir: {:?}, root: {:?}", md_path, root_path);
+    // 1) 优先在项目根保障配置与构建文件（若缺失，写出内嵌默认）
+    ensure_root_config_and_build(md_path, config_filename)?;
+    // 2) 在源目录保障配置与构建文件（若缺失，写出内嵌默认或从根复制）
+    ensure_source_config_and_build(md_path, config_filename)?;
+    // 3) 写出嵌入的主题模板与静态资源到根 themes（缺失或过时时生成/更新）
+    write_embedded_theme_templates_to_root(root_path)?;
+    write_embedded_theme_static_to_root(root_path)?;
     Ok(())
 }

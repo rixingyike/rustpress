@@ -43,6 +43,27 @@ impl TemplateEngine {
             }
         }
     }
+    /// 预处理图标字段，注入 icon_url 和 is_img
+    fn process_icon_value(icon: &serde_json::Value) -> (bool, String) {
+        if let Some(s) = icon.as_str() {
+            let s_trimmed = s.trim();
+            let s_lower = s_trimmed.to_lowercase();
+            let is_img = s_trimmed.starts_with('/') || s_trimmed.starts_with("http") || 
+                         s_lower.ends_with(".png") || s_lower.ends_with(".jpg") || 
+                         s_lower.ends_with(".jpeg") || s_lower.ends_with(".svg") || 
+                         s_lower.ends_with(".webp") || s_lower.ends_with(".ico");
+            
+            let mut icon_url = s_trimmed.to_string();
+            if is_img && !s_trimmed.starts_with('/') && !s_trimmed.starts_with("http") {
+                icon_url = format!("/assets/{}", s_trimmed);
+            }
+            println!("[DEBUG] process_icon_value: s='{}', is_img={}, icon_url='{}'", s_trimmed, is_img, icon_url);
+            (is_img, icon_url)
+        } else {
+            (false, String::new())
+        }
+    }
+
     /// 创建新的模板引擎
     pub fn new<P: AsRef<std::path::Path>>(config: Config, content_dir: P) -> Result<Self> {
         // 模板加载策略：磁盘优先（themes/{theme}/templates），若不存在则回退到嵌入模板
@@ -521,24 +542,15 @@ impl TemplateEngine {
         context.insert("has_next_page", &false);
 
         // 读取并解析 home.md，注入页面内容与 frontmatter（home_navs）
-        let home_path = std::path::Path::new("source/home.md");
-        if home_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(home_path) {
-                if let Ok(Some(home_data)) = crate::post::PostParser::parse_file_content(
-                    &content,
-                    home_path,
-                    std::path::Path::new("source"),
-                ) {
-                    // 注入完整的 page 数据，供模板访问 frontmatter
+        let possible_home_paths = [self.content_dir.join("home.md"), self.content_dir.join("source/home.md"), std::path::PathBuf::from("source/home.md")];
+        let mut home_path_obj = None;
+        for p in &possible_home_paths { if p.exists() { home_path_obj = Some(p.clone()); break; } }
+        if let Some(path) = home_path_obj {
+            if let Ok(content) = std::fs::read_to_string(&path) {
+                if let Ok(Some(home_data)) = crate::post::PostParser::parse_file_content(&content, &path, &self.content_dir) {
                     context.insert("page", &home_data);
-                    // 注入 page_content
-                    if let Some(page_content) = home_data.get("content") {
-                        context.insert("page_content", page_content);
-                    }
-                    // 注入 home_navs（如果存在）
-                    if let Some(navs) = home_data.get("home_navs") {
-                        context.insert("home_navs", navs);
-                    }
+                    if let Some(page_content) = home_data.get("content") { context.insert("page_content", page_content); }
+                    if let Some(navs) = home_data.get("home_navs") { context.insert("home_navs", navs); }
                 }
             }
         }
@@ -707,24 +719,15 @@ impl TemplateEngine {
         context.insert("has_next_page", &(page > 1));
 
         // 读取并解析 home.md，注入页面内容与 frontmatter（home_navs）
-        let home_path = std::path::Path::new("source/home.md");
-        if home_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(home_path) {
-                if let Ok(Some(home_data)) = crate::post::PostParser::parse_file_content(
-                    &content,
-                    home_path,
-                    std::path::Path::new("source"),
-                ) {
-                    // 注入完整的 page 数据，供模板访问 frontmatter
+        let possible_home_paths = [self.content_dir.join("home.md"), self.content_dir.join("source/home.md"), std::path::PathBuf::from("source/home.md")];
+        let mut home_path_obj = None;
+        for p in &possible_home_paths { if p.exists() { home_path_obj = Some(p.clone()); break; } }
+        if let Some(path) = home_path_obj {
+            if let Ok(content) = std::fs::read_to_string(&path) {
+                if let Ok(Some(home_data)) = crate::post::PostParser::parse_file_content(&content, &path, &self.content_dir) {
                     context.insert("page", &home_data);
-                    // 注入 page_content
-                    if let Some(page_content) = home_data.get("content") {
-                        context.insert("page_content", page_content);
-                    }
-                    // 注入 home_navs（如果存在）
-                    if let Some(navs) = home_data.get("home_navs") {
-                        context.insert("home_navs", navs);
-                    }
+                    if let Some(page_content) = home_data.get("content") { context.insert("page_content", page_content); }
+                    if let Some(navs) = home_data.get("home_navs") { context.insert("home_navs", navs); }
                 }
             }
         }
@@ -739,26 +742,14 @@ impl TemplateEngine {
         let mut context = self.create_base_context();
         // 仅在非文档/书籍/项目类文章详情页内容末尾追加广告小字
         let mut page = post.data.clone();
-        let layout_str = page.get("layout").and_then(|v| v.as_str());
-        let skip_promo = matches!(layout_str, Some("doc") | Some("doc-item") | Some("docs") | Some("projects"));
-
-        if !skip_promo {
-            if let Some(content_str) = page.get("content").and_then(|v| v.as_str()) {
-                let promo_html: &str = r#"<p class="italic text-gray-500">该文由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener">rustpress</a> 编译。</p>"#;
-                let already_has = content_str.contains("https://github.com/rixingyike/rustpress")
-                    || content_str.contains("该文由 rustpress 编译");
-                if !already_has {
-                    let mut new_content =
-                        String::with_capacity(content_str.len() + promo_html.len() + 2);
-                    new_content.push_str(content_str.trim_end());
-                    new_content.push_str("\n");
-                    new_content.push_str(promo_html);
-                    if let Some(obj) = page.as_object_mut() {
-                        obj.insert("content".to_string(), Value::String(new_content));
-                    }
-                }
+        if let Some(icon) = page.get("icon") {
+            let (is_img, icon_url) = Self::process_icon_value(icon);
+            if let Some(obj) = page.as_object_mut() {
+                obj.insert("icon_url".to_string(), Value::String(icon_url));
+                obj.insert("is_img".to_string(), Value::Bool(is_img));
             }
         }
+        if let Some(is_img) = page.get("is_img") { println!("[DEBUG] render_post injection: is_img={:?}", is_img); }
         context.insert("page", &page);
 
         // 计算相关文章
@@ -962,7 +953,10 @@ impl TemplateEngine {
                         project.insert("description".to_string(), desc.clone());
                     }
                     if let Some(icon) = post.data.get("icon") {
+                        let (is_img, icon_url) = Self::process_icon_value(icon);
                         project.insert("icon".to_string(), icon.clone());
+                        project.insert("icon_url".to_string(), serde_json::Value::String(icon_url));
+                        project.insert("is_img".to_string(), serde_json::Value::Bool(is_img));
                     }
                     if let Some(tags) = post.data.get("tags") {
                         project.insert("tags".to_string(), tags.clone());
@@ -1223,17 +1217,30 @@ impl TemplateEngine {
         context.insert("all_categories", all_categories);
 
         // 读取并解析 about.md，注入页面内容与 frontmatter
-        let about_path = std::path::Path::new("source/about.md");
-        if about_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(about_path) {
+        let possible_about_paths = [
+            self.content_dir.join("about.md"),
+            self.content_dir.join("source/about.md"),
+            std::path::PathBuf::from("source/about.md"),
+        ];
+
+        let mut about_path = None;
+        for path in &possible_about_paths {
+            if path.exists() {
+                about_path = Some(path.clone());
+                break;
+            }
+        }
+
+        if let Some(path) = about_path {
+            if let Ok(content) = std::fs::read_to_string(&path) {
                 if let Ok(Some(about_data)) = crate::post::PostParser::parse_file_content(
                     &content,
-                    about_path,
-                    std::path::Path::new("source"),
+                    &path,
+                    &self.content_dir,
                 ) {
-                    // 注入完整的 page 数据，供模板访问 frontmatter（如 toc）
+                    // 注入完整的 page 数据
                     context.insert("page", &about_data);
-                    // 单独注入 page_content 以保持现有模板兼容
+                    // 单独注入 page_content
                     if let Some(page_content) = about_data.get("content") {
                         context.insert("page_content", page_content);
                     }
@@ -1266,7 +1273,10 @@ impl TemplateEngine {
                         project.insert("description".to_string(), desc.clone());
                     }
                     if let Some(icon) = post.data.get("icon") {
+                        let (is_img, icon_url) = Self::process_icon_value(icon);
                         project.insert("icon".to_string(), icon.clone());
+                        project.insert("icon_url".to_string(), serde_json::Value::String(icon_url));
+                        project.insert("is_img".to_string(), serde_json::Value::Bool(is_img));
                     }
                     if let Some(tags) = post.data.get("tags") {
                         project.insert("tags".to_string(), tags.clone());
@@ -1296,17 +1306,30 @@ impl TemplateEngine {
     pub fn render_friends(&self) -> Result<String> {
         let mut context = self.create_base_context();
 
-        // 读取friends.md文件
-        let friends_path = std::path::Path::new("source/friends.md");
-        if friends_path.exists() {
-            let content = std::fs::read_to_string(friends_path)
-                .map_err(|e| Error::Other(format!("读取friends.md失败: {}", e)))?;
+        // 尝试从多个可能的位置读取friends.md文件
+        let possible_paths = [
+            self.content_dir.join("friends.md"),
+            self.content_dir.join("source/friends.md"),
+            std::path::PathBuf::from("source/friends.md"),
+        ];
 
-            // 解析friends.md文件（通过公开包装方法）
+        let mut friends_path = None;
+        for path in &possible_paths {
+            if path.exists() {
+                friends_path = Some(path.clone());
+                break;
+            }
+        }
+
+        if let Some(path) = friends_path {
+            let content = std::fs::read_to_string(&path)
+                .map_err(|e| Error::Other(format!("读取friends.md失败 {:?}: {}", path, e)))?;
+
+            // 解析friends.md文件
             if let Ok(Some(friends_data)) = crate::post::PostParser::parse_file_content(
                 &content,
-                friends_path,
-                std::path::Path::new("source"),
+                &path,
+                &self.content_dir,
             ) {
                 if let Some(friends_list) = friends_data.get("friends") {
                     context.insert("friends", friends_list);
@@ -1316,6 +1339,9 @@ impl TemplateEngine {
                 if let Some(page_content) = friends_data.get("content") {
                     context.insert("page_content", page_content);
                 }
+                
+                // 注入完整的 page 数据
+                context.insert("page", &friends_data);
             }
         }
 

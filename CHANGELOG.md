@@ -1,3 +1,15 @@
+## [Unreleased] - 2026-03-16
+
+- docs: finalize CHANGELOG.md for v0.1.29
+
+---
+
+## [Unreleased] - 2026-03-16
+
+- docs: finalize CHANGELOG.md for v0.1.29
+
+---
+
 ## [0.1.29] - 2026-03-09
 
 - feat: 支持项目图标使用 Emoji 渲染（智能区分图片路径与 Emoji）

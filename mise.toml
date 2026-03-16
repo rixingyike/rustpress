@@ -4,7 +4,7 @@ node = "22"
 
 [tasks.dev]
 description = "启动开发模式（包含热重载和 CSS 构建）"
-run = "rm -rf public && cargo run -- dev --hotreload"
+run = "rm -rf public && cargo run -- serve"
 
 [tasks.release]
 description = "执行生产环境构建"

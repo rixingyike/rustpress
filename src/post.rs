@@ -672,4 +672,42 @@ impl PostParser {
     ) -> Result<Option<Value>> {
         Self::parse_post(content, path, md_dir)
     }
+
+    /// 传入一个 md 绝对/相对路径，以及可选的文件内容（用于提取 slug），返回 url 路径信息（不包括域名），作为 id
+    pub fn get_url_from_path<P: AsRef<Path>>(source_path: P, content_dir: P, content: Option<&str>) -> String {
+        let path = source_path.as_ref();
+        let md_dir = content_dir.as_ref();
+
+        // 尝试解析内容（优先使用传入的内容，否则从磁盘读取）以获取最准确的 slug
+        let content_to_use = match content {
+            Some(c) => Some(c.to_string()),
+            None => std::fs::read_to_string(path).ok(),
+        };
+
+        if let Some(c) = content_to_use {
+            if let Ok(Some(post_val)) = Self::parse_post(&c, path, md_dir) {
+                if let Some(url) = post_val.get("url").and_then(|v| v.as_str()) {
+                    return url.to_string();
+                }
+            }
+        }
+
+        // 降级方案：手动计算
+        let mut slug = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_string();
+
+        if slug == "README" {
+            slug = "index".to_string();
+        }
+
+        let categories = Self::extract_categories_from_path(path, md_dir);
+        if categories.is_empty() {
+            format!("/{}.html", slug)
+        } else {
+            format!("/{}/{}.html", categories.join("/"), slug)
+        }
+    }
 }

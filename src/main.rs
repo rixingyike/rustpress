@@ -43,18 +43,22 @@ fn main() -> Result<()> {
         Commands::Serve {
             port,
             output_dir,
-            incremental,
-        } => serve_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental),
-        Commands::Dev {
-            port,
-            output_dir,
-            incremental,
+            incremental: _,
             hotreload,
         } => {
             if *hotreload {
-                dev_site_hotreload(*port, &cli.md_dir, output_dir, &cli.config, *incremental)
+                dev_site_hotreload(*port, &cli.md_dir, output_dir, &cli.config, false)
             } else {
-                dev_site(*port, &cli.md_dir, output_dir, &cli.config, *incremental)
+                // 即使不显式开启 hotreload，当前 serve 也默认调用同步预览（单次构建后 serve）
+                println!("以静态模式启动预览服务器...");
+                // 此处复用之前的同步预览逻辑
+                let config_path = rustpress::utils::resolve_config_toml_path_read(
+                    std::path::Path::new(&cli.md_dir),
+                    &cli.config,
+                );
+                let config = Config::from_file(&config_path)?;
+                build_site(&cli.md_dir, output_dir, &cli.config, false)?;
+                DevServer::serve_sync(*port, output_dir, Some(&config))
             }
         }
         Commands::BuildSidebar => build_sidebar(&cli.md_dir, &cli.config),
@@ -226,143 +230,34 @@ fn build_dev_site(
     Ok(())
 }
 
-/// 在本地预览博客
-fn serve_site(
-    port: u16,
-    md_dir: &str,
-    output_dir: &str,
-    config_file: &str,
-    incremental: bool,
-) -> Result<()> {
-    // 首先构建网站
-    build_site(md_dir, output_dir, config_file, incremental)?;
-
-    // 加载配置并启动服务器
-    let config_path =
-        rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
-    let config = Config::from_file(&config_path)?;
-    DevServer::serve_sync(port, output_dir, Some(&config))
-}
-
-/// 开发模式：构建并启动本地预览服务器
-fn dev_site(
-    port: u16,
-    md_dir: &str,
-    output_dir: &str,
-    config_file: &str,
-    incremental: bool,
-) -> Result<()> {
-    println!("开发模式启动中...");
-
-    // 先进行开发环境构建
-    build_dev_site(md_dir, output_dir, config_file, incremental)?;
-
-    // 加载配置并启动服务器
-    let config_path =
-        rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
-    let config = Config::from_file(&config_path)?;
-    DevServer::serve_sync(port, output_dir, Some(&config))
-}
-
-/// 开发模式（hotreload）：构建并启动服务器，同时监听模板变化自动重建
+/// 开发模式（hotreload）：构建并启动服务器，同时监听模板与内容变化自动重建
 fn dev_site_hotreload(
     port: u16,
     md_dir: &str,
     output_dir: &str,
     config_file: &str,
-    incremental: bool,
+    _incremental: bool,
 ) -> Result<()> {
-    use notify::{EventKind, RecursiveMode, Watcher};
-    use std::sync::mpsc;
-    use std::time::Duration;
-
     println!("开发模式（hotreload）启动中...");
 
-    // 首次进行开发环境构建
-    build_dev_site(md_dir, output_dir, config_file, incremental)?;
+    // 先进行一轮全量构建确保基础环境就绪
+    build_dev_site(md_dir, output_dir, config_file, false)?;
 
-    // 加载配置
-    let config_path =
-        rustpress::utils::resolve_config_toml_path_read(std::path::Path::new(md_dir), config_file);
-    let config = Config::from_file(&config_path)?;
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .map_err(|e| rustpress::error::Error::Server(format!("无法创建异步运行时: {}", e)))?;
 
-    // 启动服务器到独立线程，主线程负责监听与重建
-    let out_dir_owned = output_dir.to_string();
-    let server_port = port;
-    let config_for_server = config.clone();
-    let server_thread = std::thread::spawn(move || {
-        let _ = DevServer::serve_sync(server_port, out_dir_owned, Some(&config_for_server));
-    });
-
-    // 使用已加载的配置获取主题模板目录（优先项目根 themes/<theme>/templates）
-    let runtime_paths = rustpress::utils::RuntimePathsBuilder::new()
-        .md_dir(std::path::Path::new(md_dir))
-        .theme_name(config.theme_name())
-        .build();
-    let templates_dir = runtime_paths.theme_templates_dir;
-
-    println!("Hotreload 监听目录: {}", templates_dir.display());
-    println!("修改模板后将自动重新编译，浏览器刷新即可预览。");
-
-    // 建立文件监听
-    let (tx, rx) = mpsc::channel();
-    let mut watcher = notify::recommended_watcher(
-        move |res: std::result::Result<notify::Event, notify::Error>| {
-            match res {
-                Ok(event) => {
-                    // 关心增删改与重命名事件
-                    if matches!(
-                        event.kind,
-                        EventKind::Modify(_)
-                            | EventKind::Create(_)
-                            | EventKind::Remove(_)
-                            | EventKind::Any
-                    ) {
-                        let _ = tx.send(());
-                    }
-                }
-                Err(e) => {
-                    eprintln!("文件监听错误: {}", e);
-                }
-            }
-        },
-    )
-    .map_err(|e| rustpress::error::Error::Other(format!("初始化文件监听失败: {}", e)))?;
-
-    watcher
-        .watch(&templates_dir, RecursiveMode::Recursive)
-        .map_err(|e| {
-            rustpress::error::Error::Other(format!(
-                "监听目录失败 {}: {}",
-                templates_dir.display(),
-                e
-            ))
-        })?;
-
-    // 简单防抖：事件频繁触发时合并处理
-    let mut last_rebuild = std::time::Instant::now();
-    loop {
-        if rx.recv().is_err() {
-            break;
-        }
-
-        // 防抖阈值 150ms
-        if last_rebuild.elapsed() < Duration::from_millis(150) {
-            continue;
-        }
-        last_rebuild = std::time::Instant::now();
-
-        println!("检测到模板变更，正在重新编译...");
-        if let Err(e) = build_site(md_dir, output_dir, config_file, false) {
-            eprintln!("重新编译失败: {}", e);
-        } else {
-            println!("编译完成，刷新浏览器查看最新效果。");
-        }
-    }
-
-    // 正常情况下不会到达此处，按 Ctrl+C 退出进程；确保子线程回收
-    let _ = server_thread.join();
-    Ok(())
+    rt.block_on(async {
+        DevServer::serve_live(
+            port,
+            Path::new(md_dir),
+            Path::new(output_dir),
+            config_file,
+            true, // 自动打开浏览器
+            std::future::pending(),
+        ).await
+    })
 }
 
 /// 重新生成首页侧边栏数据到 build.toml（热门文章/标签/分类）

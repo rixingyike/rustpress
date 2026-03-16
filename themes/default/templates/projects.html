@@ -23,17 +23,15 @@
             <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white">
                 <div class="flex items-center space-x-4">
                     {% if project.icon %}
-                    {% set is_img = project.icon | contains(pat=".") or project.icon | starting_with(pat="/") or
-                    project.icon | starting_with(pat="http") %}
-                    {% if is_img %}
-                    <img src="{{ project.icon }}" alt="{{ project.title }}"
-                        class="w-16 h-16 rounded-xl shadow-lg bg-white/10 p-1 object-cover">
-                    {% else %}
-                    <div
-                        class="w-16 h-16 rounded-xl shadow-lg bg-white/20 flex items-center justify-center text-3xl font-bold">
-                        {{ project.icon }}
-                    </div>
-                    {% endif %}
+                        {% if project.is_img %}
+                        <img src="{{ project.icon_url | default(value=project.icon) }}" alt="{{ project.title }}"
+                            class="w-16 h-16 rounded-xl shadow-lg bg-white/10 p-1 object-cover">
+                        {% else %}
+                        <div
+                            class="w-16 h-16 rounded-xl shadow-lg bg-white/20 flex items-center justify-center text-3xl font-bold">
+                            {{ project.icon }}
+                        </div>
+                        {% endif %}
                     {% else %}
                     <div
                         class="w-16 h-16 rounded-xl shadow-lg bg-white/20 flex items-center justify-center text-2xl font-bold">

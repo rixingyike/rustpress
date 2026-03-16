@@ -1348,6 +1348,9 @@ impl Generator {
             self.generate_sitemap(&posts, output_dir)?;
         }
 
+        // --- 增量重构核心增强：清理不再存在的文章页面 ---
+        self.clean_stale_outputs(output_dir, &posts)?;
+
         // 更细致的集合日志
         if !changed_tags.is_empty() {
             let mut tags_list: Vec<&String> = changed_tags.iter().collect();
@@ -1384,6 +1387,90 @@ impl Generator {
             println!("受影响年份 {} 个：{}", years_list.len(), joined);
         }
         println!("增量构建完成！已更新文章与受影响派生页。");
+        Ok(())
+    }
+
+    /// 清理输出目录中的陈旧 HTML 文件（不再属于当前文章集合的文章页面）
+    fn clean_stale_outputs<P: AsRef<Path>>(&self, output_dir: P, posts: &[Post]) -> Result<()> {
+        let output_dir = output_dir.as_ref();
+
+        // 1. 收集所有当前活跃文章的预期相对路径
+        let mut active_article_paths = std::collections::HashSet::new();
+        for post in posts {
+            if let Some(slug) = post.slug() {
+                let cats = post.categories();
+                let rel_path = if cats.is_empty() {
+                    format!("{}.html", slug)
+                } else {
+                    format!("{}/{}.html", cats.join("/"), slug)
+                };
+                active_article_paths.insert(rel_path);
+            }
+        }
+
+        // 2. 定义系统级保留页面关键词与完全匹配项
+        let system_pages = [
+            "index.html",
+            "tags.html",
+            "categories.html",
+            "archives.html",
+            "about.html",
+            "friends.html",
+            "search.html",
+            "404.html",
+            "robots.txt",
+            "sitemap.xml",
+            "search.json",
+            "rss.xml",
+            "atom.xml",
+        ];
+
+        // 3. 递归扫描输出目录
+        for entry in walkdir::WalkDir::new(output_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            if !entry.file_type().is_file() {
+                continue;
+            }
+
+            let path = entry.path();
+            let file_name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+
+            // 仅对 .html 文件执行文章清除比对
+            if !file_name.ends_with(".html") {
+                continue;
+            }
+
+            // 获取相对于 output_dir 的路径字符串
+            let rel_path_os = path.strip_prefix(output_dir).unwrap_or(path);
+            let rel_path = rel_path_os.to_string_lossy().to_string();
+            // 调试日志
+            println!("正在检查文件: {}, 相对路径: {}", file_name, rel_path);
+
+            // 系统级保留页直接跳过
+            if system_pages.contains(&rel_path.as_str()) {
+                continue;
+            }
+
+            // 分页页面 (如 index2.html, index3.html) 及主题内置分页模式保留
+            if file_name.starts_with("index") {
+                continue;
+            }
+
+            // 检查目录结构中的特殊模式（如 tags/xxx/index.html 或 categories/xxx/index.html）
+            // 这些由 generate_tag_pages 等生成，虽包含 index 但不在根目录，一并保留
+            if file_name == "index.html" {
+                continue;
+            }
+
+            // 如果不在活跃文章列表中，则是源文件已删除的陈旧残留，执行物理回收
+            if !active_article_paths.contains(&rel_path) {
+                println!("检测到过时内容，正在清理残留 HTML: {}", rel_path);
+                let _ = std::fs::remove_file(path);
+            }
+        }
+
         Ok(())
     }
 }

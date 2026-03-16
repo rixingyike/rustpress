@@ -49,26 +49,41 @@
             <article x-data="{ copiedLink: false, copiedCode: {} }">
                 <!-- 分类面包屑 -->
                 {% if page.categories and page.categories | length > 0 %}
-                <nav class="mb-6 text-sm text-gray-600">
-                    <a href="/" class="hover:text-primary-600">首页</a>
+                <nav class="mb-8 text-sm flex items-center text-gray-400">
+                    <a href="/" class="hover:text-primary-600 transition-colors">首页</a>
                     {% for category in page.categories %}
-                    <span class="mx-2">›</span>
+                    <span class="mx-2 text-gray-300">/</span>
                     <a href="/{{ page.categories | slice(end=loop.index) | join(sep='/') }}/"
-                        class="hover:text-primary-600">{{ category }}</a>
+                        class="hover:text-primary-600 transition-colors">{{ category }}</a>
                     {% endfor %}
                 </nav>
                 {% endif %}
 
-                <!-- 文章头部 -->
-                <header class="mb-8 pb-8 border-b border-gray-200">
-                    <h1 class="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-6 leading-tight">
-                        {{ page.title | default(value=page.slug) }}
-                    </h1>
-
-                    <div class="article-meta mb-6">
+                <!-- 文章主要内容 (包含 Markdown 中的 # Title) -->
+                <div class="article-content prose prose-lg max-w-none" x-init="$nextTick(() => {
+                        // 为代码块添加复制按钮
+                        document.querySelectorAll('pre code').forEach((codeBlock, index) => {
+                            const pre = codeBlock.parentElement;
+                            if (!pre.querySelector('.copy-code-btn')) {
+                                const button = document.createElement('button');
+                                button.className = 'copy-code-btn';
+                                button.textContent = '复制';
+                                button.setAttribute('x-data', `{ copied: false }`);
+                                button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
+                                button.setAttribute(':class', `{ 'bg-green-600': copied }`);
+                                button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
+                                
+                                pre.style.position = 'relative';
+                                pre.appendChild(button);
+                            }
+                        });
+                    })">
+                    
+                    <!-- 在内容前插入元数据（紧跟在 Markdown H1 之后或之前，视渲染效果而定，在此处统一放在内容的最上方） -->
+                    <div class="article-meta flex flex-wrap items-center gap-4 mb-10 text-gray-500 text-sm border-b border-gray-100 pb-6">
                         {% if page.date_ymd %}
-                        <span class="inline-flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
@@ -76,71 +91,60 @@
                             {{ page.date_ymd }}
                         </span>
                         {% endif %}
+                        
                         {% if page.reading_time %}
-                        <span class="inline-flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            预计阅读时间：{{ page.reading_time }} 分钟
+                            {{ page.reading_time }} min read
                         </span>
+                        {% endif %}
+
+                        {% if page.tags %}
+                        <div class="flex flex-wrap gap-2">
+                            {% for tag in page.tags %}
+                            <a href="/tags/{{ tag }}/"
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-all">
+                                # {{ tag }}
+                            </a>
+                            {% endfor %}
+                        </div>
                         {% endif %}
                     </div>
 
-                    <!-- 标签 -->
-                    {% if page.tags %}
-                    <div class="flex flex-wrap gap-2">
-                        {% for tag in page.tags %}
-                        <a href="/tags/{{ tag }}/"
-                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
-                                </path>
-                            </svg>
-                            {{ tag }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </header>
-
-                <!-- 文章内容 -->
-                <div class="article-content prose prose-lg max-w-none" x-init="$nextTick(() => {
-             // 为代码块添加复制按钮
-             document.querySelectorAll('pre code').forEach((codeBlock, index) => {
-                 const pre = codeBlock.parentElement;
-                 if (!pre.querySelector('.copy-code-btn')) {
-                     const button = document.createElement('button');
-                     button.className = 'copy-code-btn';
-                     button.textContent = '复制';
-                     button.setAttribute('x-data', `{ copied: false }`);
-                     button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
-                     button.setAttribute(':class', `{ 'bg-green-600': copied }`);
-                     button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
-                     
-                     pre.style.position = 'relative';
-                     pre.appendChild(button);
-                 }
-             });
-         })">
                     {{ page.content | safe }}
                 </div>
 
-                <!-- 版权信息 -->
-                <div class="mt-10 bg-gray-50 rounded-lg border border-gray-200 p-4"
-                    x-data="{domain: '{{ site.domain }}', link: '{{ site.domain }}' + window.location.pathname}">
-                    <h4 class="text-lg font-semibold mb-3 text-gray-900">版权所有</h4>
-                    <p class="text-sm text-gray-700">
-                        本文链接：
-                        <a :href="link" class="text-primary-600 hover:underline" x-text="decodeURI(link)"
-                            target="_blank" rel="noopener"></a>
-                    </p>
-                    <p class="text-sm text-gray-700 mt-2">
-                        许可证：署名-非商业性 4.0 国际 (CC-BY-NC-4.0)
-                        <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener"
-                            class="text-primary-600 hover:underline">查看许可说明</a>
-                    </p>
+                <!-- 版权与广告区 -->
+                <div class="mt-16 pt-8 border-t border-gray-100">
+                    <div class="bg-gray-50/50 rounded-2xl p-6 md:p-8"
+                        x-data="{domain: '{{ site.domain }}', link: '{{ site.domain }}' + window.location.pathname}">
+                        <div class="flex flex-col md:flex-row justify-between gap-6">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">版权声明</h4>
+                                <div class="space-y-3">
+                                    <p class="text-sm text-gray-600 flex items-start">
+                                        <span class="font-medium text-gray-900 mr-2">本文链接：</span>
+                                        <a :href="link" class="text-primary-600 hover:text-primary-700 break-all underline decoration-primary-200 underline-offset-4" x-text="decodeURI(link)"
+                                            target="_blank" rel="noopener"></a>
+                                    </p>
+                                    <p class="text-sm text-gray-600">
+                                        <span class="font-medium text-gray-900 mr-2">许可协议：</span>
+                                        署名-非商业性 4.0 国际 (CC-BY-NC-4.0)
+                                        <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener"
+                                            class="ml-1 text-primary-600 hover:text-primary-700">查看详情</a>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="md:text-right flex flex-col justify-end">
+                                <p class="text-xs text-gray-400 italic">
+                                    该文由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener" class="hover:text-primary-500 underline decoration-gray-200 underline-offset-2">RustPress</a> 自动编译生成
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 分享功能 -->
