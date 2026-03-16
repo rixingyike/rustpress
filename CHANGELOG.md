@@ -1,5 +1,12 @@
 ## [Unreleased] - 2026-03-16
 
+- chore: pre-release auto commit 2026-03-16T10:35:05+08:00
+- docs: finalize CHANGELOG.md for v0.1.29
+
+---
+
+## [Unreleased] - 2026-03-16
+
 - docs: finalize CHANGELOG.md for v0.1.29
 
 ---
