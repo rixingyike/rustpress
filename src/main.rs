@@ -44,9 +44,9 @@ fn main() -> Result<()> {
             port,
             output_dir,
             incremental: _,
-            hotreload,
+            no_hotreload,
         } => {
-            if *hotreload {
+            if !*no_hotreload {
                 dev_site_hotreload(*port, &cli.md_dir, output_dir, &cli.config, false)
             } else {
                 // 即使不显式开启 hotreload，当前 serve 也默认调用同步预览（单次构建后 serve）
@@ -85,19 +85,11 @@ fn new_project(name: &str, force: bool) -> Result<()> {
     std::fs::create_dir_all(project_path.join("static"))?;
     std::fs::create_dir_all(project_path.join("public"))?;
 
-    // 创建配置文件
-    let config_content = r#"[site]
-name = "我的博客"
-description = "使用RustPress创建的博客"
-author = "作者"
-base_url = "https://example.com"
-
-[taxonomies]
-category = "categories"
-tag = "tags"
-"#;
-
-    std::fs::write(project_path.join("config.toml"), config_content)?;
+    // 创建配置文件 (直接复用编译嵌入的规范配置模板)
+    std::fs::write(
+        project_path.join("config.toml"),
+        rustpress::utils::EMBEDDED_ROOT_CONFIG_TOML,
+    )?;
 
     // 创建示例文章
     let example_post = r#"---
@@ -240,7 +232,7 @@ fn dev_site_hotreload(
 ) -> Result<()> {
     println!("开发模式（hotreload）启动中...");
 
-    // 先进行一轮全量构建确保基础环境就绪
+    // 先全量构建生成聚合页（归档/分类/标签/RSS等），同时初始化静态资源与 CSS
     build_dev_site(md_dir, output_dir, config_file, false)?;
 
     let rt = tokio::runtime::Builder::new_multi_thread()

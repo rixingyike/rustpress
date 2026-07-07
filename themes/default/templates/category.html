@@ -6,9 +6,31 @@
 {% block content %}
 <div class="max-w-4xl mx-auto">
     <!-- 页面头部 -->
-    <header class="text-center mb-12">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{{ category_name }}</h1>
-        <p class="text-lg text-gray-600">该分类下的所有文章 ({{ posts | length }})</p>
+    <header class="mb-8">
+        <!-- 面包屑导航 -->
+        {% if breadcrumbs %}
+        <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5">
+            <a href="/categories/" class="hover:text-primary-600">分类</a>
+            {% for crumb in breadcrumbs %}
+            <span class="text-gray-300">/</span>
+            {% if loop.last %}
+            <span class="text-gray-500">{{ crumb.name }}</span>
+            {% else %}
+            <a href="{{ crumb.url }}" class="hover:text-primary-600">{{ crumb.name }}</a>
+            {% endif %}
+            {% endfor %}
+        </nav>
+        {% endif %}
+
+        <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">{{ category_name }}</h1>
+        </div>
+        <p class="text-lg text-gray-600">共 {{ paginator.total_posts | default(value=posts | length) }} 条相关内容</p>
     </header>
     
     <!-- 文章列表 -->
@@ -18,10 +40,11 @@
             <article class="card hover:shadow-lg transition-shadow duration-300">
                 <!-- 分类面包屑 -->
                 {% if post.categories and post.categories | length > 0 %}
-                <nav class="px-6 pt-4 text-sm text-gray-600">
-                    <a href="/" class="hover:text-primary-600">首页</a>
+                <nav class="px-6 pt-4 text-xs text-gray-400 flex items-center space-x-1.5">
                     {% for category in post.categories %}
-                        <span class="mx-2">›</span>
+                        {% if not loop.first %}
+                        <span class="text-gray-300">/</span>
+                        {% endif %}
                         <a href="/{{ post.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
                     {% endfor %}
                 </nav>
@@ -56,7 +79,7 @@
             {% endfor %}
         {% else %}
             <div class="text-center py-12">
-                <p class="text-lg text-gray-600">该分类下暂无文章。</p>
+                <p class="text-lg text-gray-600">该分类下暂无内容。</p>
                 <a href="/" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回首页</a>
             </div>
         {% endif %}

@@ -1,7 +1,8 @@
 [site]
-name = "一树仑"
+name = "一树仑·金石碼农"
 description = "一花一世界，一树一菩提。"
-author = "jsmn"
+logo = "/static/images/avatar.png"
+author = "金石碼农"
 base_url = "http://localhost:1111"
 # 在RSS中公开显示的域名
 domain = "https://yishulun.com"
@@ -9,12 +10,13 @@ icp_license = "京ICP备14007000号-8"
 start_year = 2002
 
 [theme]
-name = "default"
+name = "light"
 
 # 作者信息
 [author]
-name = "LIYI"
-bio = "读书使人进步"
+name = "金石碼农"
+maxim = "势利纷华，不近者为洁，近之而不染者尤洁；智械机巧，不知者为高，知之而不用者尤高。"
+bio = "大学计算机讲师，腾讯云最具价值专家（TVP），📚《小程序从0到1》《微信小游戏开发》作者，微信学堂讲师，极客时间荣誉讲师。公众号同名。"
 avatar = "/static/images/avatar.png"
 location = "北京, 中国"
 website = "https://yishulun.com"
@@ -24,11 +26,11 @@ donate_qrcode = "/assets/donate_qrcode.png"
 # 社交链接
 [social]
 github = "https://github.com/rixingyike"
-twitter = "https://x.com/coderliyi"
+twitter = "https://x.com/jinshimanong"
 youtube = "https://youtube.com/@yishulun"
 email = "9830131@qq.com"
 zhihu = "https://zhihu.com/people/liyi2005"
-wechat = "/static/images/qrcode.jpg"
+wechat = "/static/images/qrcode.png"
 weibo = "https://weibo.com/ixiaochengxu"
 bilibili = "https://space.bilibili.com/262757998"
 rss = "/rss.xml"
@@ -106,32 +108,32 @@ weight = 1
 
 [[menu.main]]
 name = "归档"
-url = "/archives.html"
+url = "/archives/"
 weight = 2
 
 [[menu.main]]
 name = "分类"
-url = "/categories.html"
+url = "/categories/"
 weight = 3
 
 [[menu.main]]
 name = "标签"
-url = "/tags.html"
+url = "/tags/"
 weight = 4
 
 [[menu.main]]
 name = "文档"
-url = "/docs.html"
+url = "/columns/"
 weight = 5
 
 [[menu.main]]
 name = "友链"
-url = "/friends.html"
+url = "/friends/"
 weight = 6
 
 [[menu.main]]
 name = "项目"
-url = "/projects.html"
+url = "/projects/"
 weight = 7
 
 [[menu.main]]
@@ -142,4 +144,3 @@ weight = 8
 [taxonomies]
 category = "categories"
 tag = "tags"
-

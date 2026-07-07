@@ -14,17 +14,14 @@
     {% if posts %}
     <!-- 文章列表 -->
     <div class="space-y-8">
-        {% set months = posts | map(attribute="year_month") | unique | sort | reverse %}
-        {% for ym in months %}
+        {% if month %}
+            <!-- 某个月份的文章列表 -->
             <div class="mb-8">
-                {% set ym_date = ym ~ "-01" %}
-                {% set month_num = ym_date | date(format="%m") %}
                 <h2 class="text-2xl font-semibold text-gray-900 mb-6 pb-2 border-b border-gray-200">
-                    {{ month_num }}月
+                    {{ month }}月
                 </h2>
                 <div class="space-y-6">
                 {% for post in posts | sort(attribute="date_ymd") | reverse %}
-                    {% if post.year_month == ym %}
                     <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                         <div class="flex flex-col">
                     <!-- 文章标题 -->
@@ -115,16 +112,29 @@
                     </div>
                         </div>
                     </article>
-                    {% endif %}
                 {% endfor %}
                 </div>
             </div>
-        {% endfor %}
+        {% else %}
+            <!-- 月份列表导航 -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {% set months = posts | map(attribute="year_month") | unique | sort | reverse %}
+                {% for ym in months %}
+                    {% set ym_date = ym ~ "-01" %}
+                    {% set month_num = ym_date | date(format="%m") %}
+                    <a href="/archives/{{ year }}/{{ month_num }}/" class="block p-6 text-center bg-white rounded-lg border border-gray-200 hover:border-primary-500 hover:shadow-md transition-all">
+                        <span class="text-2xl font-bold text-primary-600 block mb-1">{{ month_num }}月</span>
+                        {% set month_posts_count = posts | filter(attribute="year_month", value=ym) | length %}
+                        <span class="text-sm text-gray-500">{{ month_posts_count }} 篇文章</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
     
     <!-- 导航 -->
     <div class="mt-12 text-center">
-        <a href="/archives.html" 
+        <a href="/archives/" 
            class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -140,7 +150,7 @@
         <h3 class="mt-4 text-lg font-medium text-gray-900">{{ year }} 年暂无文章</h3>
         <p class="mt-2 text-gray-500">这一年还没有发布任何文章</p>
         <div class="mt-6">
-            <a href="/archives.html" 
+            <a href="/archives/" 
                class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>

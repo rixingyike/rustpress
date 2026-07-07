@@ -5,14 +5,27 @@
 use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::plugins;
-use axum::Router;
+use axum::{
+    Router,
+    extract::Multipart,
+    response::Json,
+    routing::post,
+};
+use serde_json::json;
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio;
 use tokio::sync::mpsc;
 use tower_http::services::{ServeDir, ServeFile};
 use notify::{Watcher, RecursiveMode};
+
+/// 应用状态
+struct AppState {
+    md_dir: Option<PathBuf>,
+}
 
 /// 开发服务器
 pub struct DevServer;
@@ -23,10 +36,12 @@ impl DevServer {
         port: u16,
         output_dir: P,
         config: Option<&Config>,
+        md_dir: Option<PathBuf>,
         shutdown: impl std::future::Future<Output = ()> + Send + 'static,
     ) -> Result<()> {
         let output_dir = output_dir.as_ref().to_path_buf();
         let addr = SocketAddr::from(([127, 0, 0, 1], port));
+        let state = Arc::new(AppState { md_dir });
 
         // 静态文件服务
         let static_service = ServeDir::new(&output_dir)
@@ -38,6 +53,18 @@ impl DevServer {
         } else {
             Router::new()
         };
+
+        // Pushpen tweet 发表 API
+        app = app.route(
+            "/api/tweets",
+            post({
+                let state = Arc::clone(&state);
+                move |multipart: Multipart| {
+                    let state = Arc::clone(&state);
+                    async move { handle_post_tweet(multipart, state).await }
+                }
+            }),
+        );
 
         // 静态文件路由放在最后作为 fallback
         app = app
@@ -84,9 +111,14 @@ impl DevServer {
         
         let mut watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
             if let Ok(event) = res {
-                if event.kind.is_modify() || event.kind.is_create() || event.kind.is_remove() {
-                    let _ = tx_clone.blocking_send(());
+                if !(event.kind.is_modify() || event.kind.is_create() || event.kind.is_remove()) {
+                    return;
                 }
+                // 过滤 build.toml 变更（增量编译自身写入会触发循环）
+                if event.paths.iter().any(|p| p.file_name().and_then(|n| n.to_str()) == Some("build.toml")) {
+                    return;
+                }
+                let _ = tx_clone.blocking_send(());
             }
         }).map_err(|e| Error::Server(format!("无法初始化监听器: {}", e)))?;
 
@@ -111,9 +143,7 @@ impl DevServer {
         if open_browser {
             let url = format!("http://localhost:{}", port);
             println!("正在自动为您打开预览网页: {}", url);
-            // 这里使用 tokio::spawn 异步执行，不阻塞 server 启动
             tokio::spawn(async move {
-                // 等待一小会儿确保 server 已就绪
                 tokio::time::sleep(Duration::from_millis(300)).await;
                 #[cfg(target_os = "macos")]
                 let _ = std::process::Command::new("open").arg(&url).status();
@@ -125,10 +155,9 @@ impl DevServer {
         }
         
         tokio::select! {
-            res = Self::serve(port, &output_dir, Some(&config), shutdown) => res,
+            res = Self::serve(port, &output_dir, Some(&config), Some(md_dir.clone()), shutdown) => res,
             _ = async {
                 while let Some(_) = rx.recv().await {
-                    // 防抖 200ms
                     tokio::time::sleep(Duration::from_millis(200)).await;
                     while let Ok(_) = rx.try_recv() {}
                     
@@ -138,6 +167,7 @@ impl DevServer {
                             if let Err(e) = generator_inc.build_incremental(&md_dir, &output_dir) {
                                 eprintln!("自动重构失败: {}", e);
                             } else {
+                                let _ = crate::utils::log_build_info(&md_dir);
                                 println!("自动重构完成！");
                             }
                         }
@@ -161,11 +191,11 @@ impl DevServer {
             .build()
             .map_err(|e| Error::Server(format!("无法创建异步运行时: {}", e)))?;
 
-        rt.block_on(Self::serve(port, output_dir, config_owned.as_ref(), std::future::pending()))
+        rt.block_on(Self::serve(port, output_dir, config_owned.as_ref(), None, std::future::pending()))
     }
 }
 
-/// 中间件：强制禁用浏览器缓存（仅用于预览开发服务）
+/// 中间件：强制禁用浏览器缓存
 async fn set_no_cache_headers(
     req: axum::extract::Request,
     next: axum::middleware::Next,
@@ -182,4 +212,93 @@ async fn set_no_cache_headers(
     headers.insert(header::EXPIRES, HeaderValue::from_static("0"));
     
     response
+}
+
+/// 处理发表 tweet
+async fn handle_post_tweet(
+    mut multipart: Multipart,
+    state: Arc<AppState>,
+) -> Json<serde_json::Value> {
+    let md_dir = match &state.md_dir {
+        Some(d) => d.clone(),
+        None => {
+            return Json(json!({"ok": false, "error": "未配置源目录"}));
+        }
+    };
+
+    let mut text = String::new();
+    let mut images: Vec<(String, Vec<u8>)> = Vec::new();
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or("").to_string();
+        if name == "text" {
+            text = field.text().await.unwrap_or_default();
+        } else if name == "images" {
+            let filename = field
+                .file_name()
+                .unwrap_or("image.jpg")
+                .to_string();
+            let data = field.bytes().await.unwrap_or_default().to_vec();
+            if !data.is_empty() {
+                images.push((filename, data));
+            }
+        }
+    }
+
+    if text.trim().is_empty() && images.is_empty() {
+        return Json(json!({"ok": false, "error": "内容和图片不能同时为空"}));
+    }
+
+    // 生成时间戳
+    let now = chrono::Local::now();
+    let date_str = now.format("%Y-%m-%d %H:%M:%S").to_string();
+    let year = now.format("%Y").to_string();
+    let month = now.format("%m").to_string();
+    let ts = now.format("%Y%m%d%H%M%S").to_string();
+
+    // 目标路径: source/tweets/YYYY/MM/
+    let tweets_dir = md_dir.join("tweets").join(&year).join(&month);
+    if let Err(e) = std::fs::create_dir_all(&tweets_dir) {
+        return Json(json!({"ok": false, "error": format!("创建目录失败: {}", e)}));
+    }
+
+    // 保存图片到 tweets/YYYY/MM/assets/
+    let mut image_urls: Vec<String> = Vec::new();
+    let assets_dir = tweets_dir.join("assets");
+    if !images.is_empty() {
+        if let Err(e) = std::fs::create_dir_all(&assets_dir) {
+            return Json(json!({"ok": false, "error": format!("创建 assets 目录失败: {}", e)}));
+        }
+        for (i, (filename, data)) in images.iter().enumerate() {
+            let ext = Path::new(filename)
+                .extension()
+                .and_then(|e| e.to_str())
+                .unwrap_or("jpg");
+            let save_name = format!("{}_{}.{}", ts, i, ext);
+            let save_path = assets_dir.join(&save_name);
+            if let Err(e) = std::fs::write(&save_path, data) {
+                return Json(json!({"ok": false, "error": format!("保存图片失败: {}", e)}));
+            }
+            image_urls.push(format!("/tweets/{}/{}/assets/{}", year, month, save_name));
+        }
+    }
+
+    // 生成 Markdown 文件
+    let slug = format!("{}.md", &ts);
+    let mut front = format!("---\ndate: {}\nlayout: tweet\n", date_str);
+    if !image_urls.is_empty() {
+        front.push_str("images:\n");
+        for url in &image_urls {
+            front.push_str(&format!("  - \"{}\"\n", url));
+        }
+    }
+    front.push_str("---\n\n");
+    front.push_str(&text);
+
+    let md_path = tweets_dir.join(&slug);
+    if let Err(e) = std::fs::write(&md_path, &front) {
+        return Json(json!({"ok": false, "error": format!("保存推文失败: {}", e)}));
+    }
+
+    Json(json!({"ok": true, "slug": slug, "image_count": image_urls.len()}))
 }

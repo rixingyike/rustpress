@@ -24,7 +24,7 @@ static COMMENTS_PLUGIN: PluginDescriptor = PluginDescriptor {
 
 // ---- on_post_render 钩子 ----
 
-fn comments_on_post_render(config: &Config, context: &mut Context) -> Result<()> {
+pub fn comments_on_post_render(config: &Config, context: &mut Context) -> Result<()> {
     // 检查全局开关
     let comments_enabled = config
         .data
@@ -80,7 +80,7 @@ fn comments_on_post_render(config: &Config, context: &mut Context) -> Result<()>
 
 // ---- API 路由工厂 ----
 
-fn comments_api_routes(config: &Config) -> Option<(&'static str, axum::Router)> {
+pub fn comments_api_routes(config: &Config) -> Option<(&'static str, axum::Router)> {
     let comments = config.data.get("comments")?;
     let enabled = comments.get("enabled")?.as_bool()?;
     if !enabled {
@@ -89,7 +89,10 @@ fn comments_api_routes(config: &Config) -> Option<(&'static str, axum::Router)> 
 
     let repo = comments.get("repo")?.as_str()?.to_string();
     let client_id = comments.get("github_client_id")?.as_str()?.to_string();
-    let client_secret = comments.get("github_client_secret")?.as_str()?.to_string();
+    let client_secret = std::env::var("GITHUB_CLIENT_SECRET")
+        .ok()
+        .filter(|s| !s.is_empty())
+        .or_else(|| comments.get("github_client_secret")?.as_str().map(|s| s.to_string()));
     let site_url = config
         .data
         .get("site")
@@ -98,7 +101,7 @@ fn comments_api_routes(config: &Config) -> Option<(&'static str, axum::Router)> 
         .unwrap_or("http://localhost:1111")
         .to_string();
 
-    if repo.is_empty() || client_id.is_empty() || client_secret.is_empty() {
+    if repo.is_empty() || client_id.is_empty() {
         return None;
     }
 

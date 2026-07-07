@@ -25,17 +25,25 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Lunr.js 搜索库 -->
     <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+    <!-- 防止浏览器 bfcache 缓存显示旧页面 -->
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
 </head>
 
 <body class="bg-gray-50 text-gray-900 font-sans"
-    x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.split('/').pop() || 'index.html' }">
+    x-data="{ mobileMenuOpen: false, searchOpen: false, currentPath: window.location.pathname.replace(/\/$/, '').split('/').pop() || 'index.html' }">
     <!-- 顶部导航栏 -->
     <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo 和站点名称 -->
                 <div class="flex items-center space-x-3">
-                    <img src="/static/images/logo.png" alt="{{ site.name }} Logo" class="h-8 w-8 rounded-full">
+                    <img src="{{ site.logo | default(value='/static/images/logo.png') }}" alt="{{ site.name }} Logo" class="h-8 w-8 rounded-full">
                     <a href="/" class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
                         {{ site.name }}
                     </a>
@@ -46,7 +54,7 @@
                     <form action="/search.html" method="get" class="relative w-full">
                         <input type="text" name="q"
                             class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-                            placeholder="搜索文章..." id="search-input">
+                            placeholder="搜索内容..." id="search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,11 +82,11 @@
                     {% else %}
                     <a href="/" class="nav-link"
                         :class="{ 'nav-link-active': currentPath === '' || currentPath === 'index.html' }">首页</a>
-                    <a href="/archives.html" class="nav-link"
+                    <a href="/archives/" class="nav-link"
                         :class="{ 'nav-link-active': currentPath.includes('archives') }">归档</a>
-                    <a href="/categories.html" class="nav-link"
+                    <a href="/categories/" class="nav-link"
                         :class="{ 'nav-link-active': currentPath.includes('categories') }">分类</a>
-                    <a href="/tags.html" class="nav-link"
+                    <a href="/tags/" class="nav-link"
                         :class="{ 'nav-link-active': currentPath.includes('tags') }">标签</a>
                     <a href="/about.html" class="nav-link"
                         :class="{ 'nav-link-active': currentPath.includes('about') }">关于</a>
@@ -114,7 +122,7 @@
                     <form action="/search.html" method="get" class="relative">
                         <input type="text" name="q"
                             class="form-input w-full pl-10 pr-12 py-2 text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-                            placeholder="搜索文章..." id="mobile-search-input">
+                            placeholder="搜索内容..." id="mobile-search-input">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -140,17 +148,17 @@
                 {% else %}
                 <a href="/" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath === '' || currentPath === 'index.html', 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !(currentPath === '' || currentPath === 'index.html') }">首页</a>
-                <a href="/archives.html" class="block px-3 py-2 text-base font-medium rounded-md"
+                <a href="/archives/" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('archives'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('archives') }">归档</a>
-                <a href="/categories.html" class="block px-3 py-2 text-base font-medium rounded-md"
+                <a href="/categories/" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('categories'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('categories') }">分类</a>
-                <a href="/tags.html" class="block px-3 py-2 text-base font-medium rounded-md"
+                <a href="/tags/" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('tags'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('tags') }">标签</a>
                 <a href="/about.html" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('about'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('about') }">关于</a>
-                <a href="/friends.html" class="block px-3 py-2 text-base font-medium rounded-md"
+                <a href="/friends/" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('friends'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('friends') }">友链</a>
-                <a href="/projects.html" class="block px-3 py-2 text-base font-medium rounded-md"
+                <a href="/projects/" class="block px-3 py-2 text-base font-medium rounded-md"
                     :class="{ 'text-primary-600 bg-primary-50': currentPath.includes('projects'), 'text-gray-700 hover:text-gray-900 hover:bg-gray-50': !currentPath.includes('projects') }">项目</a>
                 {% endif %}
             </div>
@@ -158,7 +166,7 @@
     </nav>
 
     <!-- 主要内容区域 -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto px-4 sm:px-6 lg:px-8" data-content-wrap style="max-width:64rem">
         <main class="min-h-screen py-8">
             {% block content %}{% endblock %}
         </main>
@@ -167,7 +175,7 @@
     <!-- 广告位1：底部广告（版权区上方） -->
     {% block ad1 %}
     {% if site.ads and site.ads.ad1_image and site.ads.ad1_link %}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <a href="{{ site.ads.ad1_link }}" target="_blank" rel="noopener" class="block">
             <div
                 class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
@@ -204,6 +212,14 @@
     </div>
     {% endif %}
     {% endblock %}
+
+    <!-- 返回顶部 -->
+    <div class="text-center mb-8">
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="inline-flex items-center px-4 py-2 text-sm border border-gray-300 hover:bg-gray-50 cursor-pointer">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+            返回顶部
+        </button>
+    </div>
 
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-16">
@@ -255,6 +271,35 @@
 
     <!-- 搜索功能脚本 -->
     <script src="/static/js/search.js"></script>
+    <script>
+        (function() {
+            function checkRedirect(val) {
+                var q = val.trim();
+                if (q === '分类' || q === '分类=') {
+                    window.location.href = '/categories/';
+                    return true;
+                } else if (q === '标签' || q === '标签=') {
+                    window.location.href = '/tags/';
+                    return true;
+                } else if (q === '归档' || q === '归档=') {
+                    window.location.href = '/archives/';
+                    return true;
+                }
+                return false;
+            }
+            document.addEventListener('input', function(e) {
+                if (e.target && (e.target.id === 'search-input' || e.target.id === 'mobile-search-input' || e.target.id === 'search-query' || e.target.id === 'search-modal-input')) {
+                    checkRedirect(e.target.value);
+                }
+            });
+            document.addEventListener('submit', function(e) {
+                var input = e.target.querySelector('input[name="q"]') || e.target.querySelector('input[type="text"]');
+                if (input && checkRedirect(input.value)) {
+                    e.preventDefault();
+                }
+            });
+        })();
+    </script>
 
     {% if site.features and site.features.analytics and site.analytics and site.analytics.google_id %}
     <!-- Google Analytics 懒加载 -->
@@ -302,6 +347,133 @@
         })();
     </script>
     {% endif %}
+
+    <!-- 收藏按钮：桌面端提示快捷键，移动端调用 navigator.share -->
+    <script>
+    function rpBookmark() {
+        if (navigator.share && window.innerWidth <= 768) {
+            navigator.share({
+                title: document.title,
+                url: window.location.href
+            }).catch(function() {});
+        } else {
+            var isMac = navigator.platform && navigator.platform.indexOf('Mac') !== -1;
+            var hint = isMac ? '\u2318+D' : 'Ctrl+D';
+            if (window.showToast) {
+                window.showToast('\u6309\u4E0B ' + hint + ' \u5373\u53EF\u6536\u85CF\u672C\u9875');
+            } else {
+                alert('\u6309\u4E0B ' + hint + ' \u5373\u53EF\u6536\u85CF\u672C\u9875');
+            }
+        }
+    }
+    </script>
+
+    <script>
+    var RP_REPO = '{{ site.comments.repo | default(value="") | safe }}';
+
+    function rpBatchLoadListingCounts() {
+        if (!RP_REPO) return;
+        var articles = document.querySelectorAll('article');
+        if (!articles.length) return;
+
+        fetch('https://api.github.com/search/issues?q=' + encodeURIComponent('repo:' + RP_REPO + ' is:issue') + '&per_page=100&sort=created&order=desc', {
+            headers: {
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.items || !data.items.length) return;
+                var issues = {};
+                data.items.forEach(function (issue) {
+                    var m = issue.body && issue.body.match(/Comment thread for (\S+)/);
+                    if (m) {
+                        var pathKey = m[1];
+                        if (issues[pathKey] && issues[pathKey].number > issue.number) {
+                            return;
+                        }
+                        issues[pathKey] = issue;
+                    }
+                });
+
+                articles.forEach(function (article) {
+                    var link = article.querySelector('h2 a') || article.querySelector('div.flex a');
+                    if (!link) return;
+                    var href = link.getAttribute('href');
+                    if (!href) return;
+                    var issue = issues[href];
+                    if (!issue) return;
+
+                    var spans = article.querySelectorAll('button span.font-medium');
+                    if (spans.length >= 2) {
+                        spans[0].textContent = issue.comments || 0;
+                        spans[1].textContent = (issue.reactions && issue.reactions['+1']) || 0;
+                    }
+                });
+            })
+            .catch(function () {});
+    }
+
+    setTimeout(function () {
+        if (RP_REPO) rpBatchLoadListingCounts();
+    }, 500);
+    </script>
+
+    <!-- 全局极简直角 Toast 提示 -->
+    <script>
+        window.showToast = function(message) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.position = 'fixed';
+                container.style.top = '24px';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%)';
+                container.style.zIndex = '99999';
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.gap = '12px';
+                container.style.pointerEvents = 'none';
+                document.body.appendChild(container);
+            }
+            
+            const toast = document.createElement('div');
+            toast.style.backgroundColor = '#1f2937';
+            toast.style.color = '#ffffff';
+            toast.style.padding = '12px 24px';
+            toast.style.fontSize = '14px';
+            toast.style.fontWeight = '500';
+            toast.style.minWidth = '280px';
+            toast.style.textAlign = 'center';
+            toast.style.boxSizing = 'border-box';
+            
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            toast.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+            toast.style.pointerEvents = 'auto';
+            
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 10);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-8px)';
+                setTimeout(() => {
+                    toast.remove();
+                    if (container.children.length === 0) {
+                        container.remove();
+                    }
+                }, 300);
+            }, 3000);
+        };
+    </script>
 </body>
 
 </html>

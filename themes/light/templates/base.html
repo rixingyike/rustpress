@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<!-- 基础布局模板 -->
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site.name }}{% endblock %}</title>
+
+    {% block head_meta %}
+    <meta name="description" content="{{ site.description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ site.name }}">
+    <meta property="og:title" content="{{ site.name }}">
+    <meta property="og:description" content="{{ site.description }}">
+    {% if site.domain %}
+    <link rel="canonical" href="{{ site.domain }}{{ page.url | default(value='/') }}">
+    <meta property="og:url" content="{{ site.domain }}{{ page.url | default(value='/') }}">
+    {% endif %}
+    {% endblock %}
+
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>[x-cloak]{display:none!important}</style>
+    <!-- jQuery 本地库 -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lunr.js 本地搜索库 -->
+    <script src="/static/js/lunr.min.js"></script>
+    <!-- 防止浏览器 bfcache 缓存显示旧页面 -->
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+</head>
+
+<body class="bg-air-bg text-moss-ink font-sans">
+    <!-- 简约顶部栏：仅 Logo + 搜索框 -->
+    <nav class="bg-flat-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <img src="{{ site.logo | default(value='/static/images/logo.png') | safe }}" alt="{{ site.name }} Logo" class="h-7 w-7 object-cover rounded-full transition-transform group-hover:scale-110">
+                    <span class="text-lg font-bold text-moss-ink">{{ site.name }}</span>
+                </a>
+
+                <div class="flex-1 max-w-lg mx-4 lg:mx-8">
+                    <div class="relative" id="search-widget">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-mist-green pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text"
+                            class="w-full pl-9 pr-4 py-2 text-sm bg-air-bg border border-sage-line/20 focus:border-cyber-mint focus:ring-1 focus:ring-cyber-mint outline-none transition-colors"
+                            placeholder="搜索内容，或输入「作者」「项目」「专栏」「闲言」「博客」快速导航…"
+                            id="nav-search-input" autocomplete="off">
+                        <!-- 下拉面板：快捷导航 + 搜索结果 -->
+                        <div class="absolute top-full left-0 right-0 mt-1 bg-flat-white border border-sage-line/20 shadow-lg z-50 hidden"
+                            id="search-dropdown">
+                            <!-- Part 1: 导航快捷链接 -->
+                            <div id="search-shortcuts" class="hidden"></div>
+                            <!-- Part 2: 文章搜索结果 -->
+                            <div id="search-suggestions" class="hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="mx-auto px-4 sm:px-6 lg:px-8" data-content-wrap style="max-width:48rem">
+        <main class="min-h-screen py-8">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- 广告位1：底部广告（版权区上方） -->
+    {% block ad1 %}
+    {% if site.ads and site.ads.ad1_image and site.ads.ad1_link %}
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <a href="{{ site.ads.ad1_link }}" target="_blank" rel="noopener" class="block">
+            <div class="bg-flat-white overflow-hidden transition-colors">
+                <div class="flex flex-col items-center p-4 text-center">
+                    <!-- 广告图片 -->
+                    <div class="mb-3">
+                        <img src="{{ site.ads.ad1_image }}" alt="{{ site.ads.ad1_title | default(value='推荐内容') }}" class="w-48 h-60 object-cover mx-auto"
+                            onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiB2aWV3Qm94PSIwIDAgMTkyIDk2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9Ijk2IiBmaWxsPSIjREJFRkZGIi8+Cjx0ZXh0IHg9Ijk2IiB5PSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjMzc2RkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7kuLvpopjlpLTlg488L3R4dD4KPC9zdmc+'">
+                    </div>
+
+                    <!-- 广告信息 -->
+                    <div class="max-w-sm">
+                        <h2 class="text-lg sm:text-xl font-bold text-moss-ink mb-2">
+                            {{ site.ads.ad1_title | default(value='推荐内容') }}
+                        </h2>
+                        {% if site.ads.ad1_description %}
+                        <p class="text-mist-green text-sm mb-3">{{ site.ads.ad1_description }}</p>
+                        {% endif %}
+
+                        <!-- 查看详情按钮 -->
+                        <div class="inline-flex items-center px-4 py-2 bg-cyber-mint text-moss-ink font-semibold -none hover:bg-opacity-90 transition-colors text-sm">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                            </svg>
+                            查看详情
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    {% block back_to_top %}
+    <!-- 返回顶部 -->
+    <div class="text-center mb-8">
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="btn-secondary inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+            返回顶部
+        </button>
+    </div>
+    {% endblock %}
+
+    <!-- 页脚 -->
+    <footer class="bg-moss-ink mt-16 py-8 text-xs text-white/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-left space-y-2">
+                <p>
+                    &copy; {{ site.start_year | default(value=now | date(format="%Y")) }}-{{ now | date(format="%Y") }}
+                    {% if site.author and site.author is object and site.author.name %}
+                    {% if site.author.website %}
+                    <a href="{{ site.author.website }}" target="_blank" rel="noopener" class="text-white/60 hover:text-cyber-mint transition-colors">{{ site.author.name }}</a>
+                    {% else %}
+                    {{ site.author.name }}
+                    {% endif %}
+                    {% elif site.author and site.author is string %}
+                    {{ site.author }}
+                    {% else %}
+                    {{ site.name }}
+                    {% endif %}
+                </p>
+                {% if site.icp_license %}
+                <p>
+                    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" class="text-white/60 hover:text-cyber-mint transition-colors">
+                        {{ site.icp_license }}
+                    </a>
+                </p>
+                {% endif %}
+                <p>
+                    由 <a href="https://github.com/rixingyike/rustpress" target="_blank" rel="noopener" class="text-white/60 hover:text-cyber-mint hover:underline transition-colors">RustPress</a> 提供支持
+                    &nbsp;·&nbsp;
+                    <a href="/rss.xml" class="text-white/60 hover:text-cyber-mint transition-colors">RSS</a>
+                    &nbsp;·&nbsp;
+                    <a href="/sitemap.xml" class="text-white/60 hover:text-cyber-mint transition-colors">Sitemap</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 搜索结果容器 -->
+    <div class="fixed inset-x-0 top-16 z-40 hidden" id="search-results">
+        <div class="bg-flat-white border border-sage-line/20 mx-4 mt-2 max-h-96 overflow-y-auto">
+            <!-- 搜索结果将在这里显示 -->
+        </div>
+    </div>
+
+
+
+
+
+    <!-- 搜索下拉面板：快捷导航 + 搜索结果 -->
+    <script>
+    var _searchData = [];
+    async function _loadSearchIndex() {
+        try {
+            var res = await fetch('/search.json', { cache: 'no-store' });
+            if (!res.ok) return;
+            var data = await res.json();
+            var items = Array.isArray(data) ? data : (data.items || []);
+            _searchData = items.map(function(item) {
+                return {
+                    title: item.title || item.slug || '',
+                    content: item.content || item.summary || '',
+                    url: item.url || '',
+                    date: item.date || item.date_ymd || ''
+                };
+            });
+        } catch (e) {
+            console.error('加载搜索索引失败:', e);
+        }
+    }
+    _loadSearchIndex();
+
+    $(document).ready(function() {
+        var $input = $('#nav-search-input');
+        var $dropdown = $('#search-dropdown');
+        var $shortcuts = $('#search-shortcuts');
+        var $suggestions = $('#search-suggestions');
+
+        function renderDropdown(query) {
+            if (!query) {
+                $dropdown.addClass('hidden');
+                return;
+            }
+
+            var q = query.toLowerCase();
+
+            // Part 1: 导航快捷链接
+            var shortcutsHtml = '';
+            var sData = getShortcuts(query);
+            if (sData.length > 0) {
+                shortcutsHtml = '<div class="px-3 py-1.5 text-xs text-mist-green font-semibold">快速导航</div>';
+                sData.forEach(function(s) {
+                    shortcutsHtml += '<a href="' + s.url + '" class="flex items-center px-4 py-2 text-sm hover:bg-air-bg transition-colors text-moss-ink">' + s.label + '</a>';
+                });
+            }
+
+            // Part 2: 文章搜索结果
+            var resultsHtml = '';
+            if (_searchData.length > 0) {
+                var results = _searchData.filter(function(p) {
+                    var searchText = (p.title + ' ' + p.content).toLowerCase();
+                    return searchText.includes(q);
+                });
+                if (results.length > 0) {
+                    var sectionLabel = sData.length > 0 ? '文章' : '搜索结果';
+                    resultsHtml = '<div class="px-3 py-1.5 text-xs text-mist-green font-semibold">' + sectionLabel + '</div>';
+                    results.slice(0, 5).forEach(function(r) {
+                        resultsHtml += '<a href="' + r.url + '" class="flex items-center px-4 py-2 text-sm hover:bg-air-bg transition-colors text-mist-green">' +
+                            '<svg class="w-3.5 h-3.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
+                            _highlight(r.title, q) + '</a>';
+                    });
+                }
+            }
+
+            if (shortcutsHtml || resultsHtml) {
+                if (shortcutsHtml && resultsHtml) {
+                    $shortcuts.html(shortcutsHtml).removeClass('hidden');
+                    $suggestions.html(resultsHtml).removeClass('hidden');
+                } else if (shortcutsHtml) {
+                    $shortcuts.html(shortcutsHtml).removeClass('hidden');
+                    $suggestions.addClass('hidden');
+                } else {
+                    $shortcuts.addClass('hidden');
+                    $suggestions.html(resultsHtml).removeClass('hidden');
+                }
+                $dropdown.removeClass('hidden');
+            } else {
+                $dropdown.addClass('hidden');
+            }
+        }
+
+        function _highlight(text, query) {
+            if (!query || !text) return text || '';
+            var safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            var re = new RegExp('(' + safe + ')', 'gi');
+            return text.replace(re, '<mark class="bg-yellow-200 px-0.5">$1</mark>');
+        }
+
+        $input.on('input', function() {
+            renderDropdown($(this).val().trim());
+        });
+
+        var _selectedIdx = -1;
+
+        function _selectItem(idx) {
+            var items = $dropdown.find('a');
+            items.removeClass('bg-air-bg');
+            if (idx >= 0 && idx < items.length) {
+                items.eq(idx).addClass('bg-air-bg');
+                _selectedIdx = idx;
+            } else {
+                _selectedIdx = -1;
+            }
+        }
+
+        $input.on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                $dropdown.addClass('hidden');
+                $input.blur();
+                return;
+            }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                var items = $dropdown.find('a');
+                if (items.length === 0) return;
+                if (e.key === 'ArrowDown') {
+                    _selectItem(_selectedIdx < items.length - 1 ? _selectedIdx + 1 : 0);
+                } else {
+                    _selectItem(_selectedIdx > 0 ? _selectedIdx - 1 : items.length - 1);
+                }
+                return;
+            }
+            if (e.key === 'Enter') {
+                if (_selectedIdx >= 0) {
+                    var items = $dropdown.find('a');
+                    var $target = items.eq(_selectedIdx);
+                    if ($target.length && $target.attr('href')) {
+                        window.location.href = $target.attr('href');
+                        e.preventDefault();
+                    }
+                }
+                return;
+            }
+            // 输入变化时重置选中
+            _selectedIdx = -1;
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#search-widget').length) {
+                $dropdown.addClass('hidden');
+            }
+        });
+    });
+
+    function getShortcuts(query) {
+        if (!query || !query.trim()) return [];
+        var q = query.trim().toLowerCase();
+        var map = {
+            '作者': '/about.html', '关于': '/about.html',
+            '项目': '/projects/',
+            '专栏': '/columns/', '系列': '/columns/',
+            '博客': '/archives/', '归档': '/archives/', '文章': '/archives/',
+            '友链': '/friends/', '友情链接': '/friends/',
+            '分类': '/categories/', '标签': '/tags/',
+            '作品': '/works/', '出版': '/works/', '图书': '/works/', '书': '/works/', '著作': '/works/',
+            '闲言': '/tweets/', '碎语': '/tweets/',
+            '搜索': '/search.html',
+            '首页': '/',
+            'home': '/', 'about': '/about.html', 'projects': '/projects/',
+            'columns': '/columns/', 'works': '/works/', 'archives': '/archives/',
+            'friends': '/friends/', 'tags': '/tags/',
+            'categories': '/categories/'
+        };
+        var exact = [];
+        var fuzzy = [];
+        for (var key in map) {
+            if (key.indexOf(q) !== -1 || q.indexOf(key) !== -1) {
+                var entry = { label: '→ ' + key + ' (' + map[key] + ')', url: map[key] };
+                if (key === q) {
+                    exact.push(entry);
+                } else {
+                    fuzzy.push(entry);
+                }
+            }
+        }
+        var results = exact.concat(fuzzy);
+        if (results.length > 0) return results.slice(0, 5);
+        var yearMatch = q.match(/^(\d{4})$/);
+        if (yearMatch) {
+            return [{ label: '→ ' + yearMatch[1] + ' 年归档 /archives/' + yearMatch[1] + '.html', url: '/archives/' + yearMatch[1] + '.html' }];
+        }
+        return [];
+    }
+    </script>
+
+    <!-- 瀑布流（无限滚动）加载 -->
+    <script src="/static/js/infinite-scroll.js"></script>
+
+    <script>
+        (function() {
+            function checkRedirect(val) {
+                var q = val.trim();
+                if (q === '分类' || q === '分类=') {
+                    window.location.href = '/categories/';
+                    return true;
+                } else if (q === '标签' || q === '标签=') {
+                    window.location.href = '/tags/';
+                    return true;
+                } else if (q === '归档' || q === '归档=') {
+                    window.location.href = '/archives/';
+                    return true;
+                }
+                return false;
+            }
+            // 移除了 input 事件自动跳转，避免输入时直接跳页，只在 submit 时执行
+            document.addEventListener('submit', function(e) {
+                var input = e.target.querySelector('input[name="q"]') || e.target.querySelector('input[type="text"]');
+                if (input && checkRedirect(input.value)) {
+                    e.preventDefault();
+                }
+            });
+        })();
+    </script>
+
+    {% if site.features and site.features.analytics and site.analytics and site.analytics.google_id %}
+    <!-- Google Analytics 懒加载 -->
+    <script>
+        (function () {
+            var gid = "{{ site.analytics.google_id }}";
+            var loadGA = function () {
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = "https://www.googletagmanager.com/gtag/js?id=" + gid;
+                s.onload = function () {
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag() { dataLayer.push(arguments); } // eslint-disable-line
+                    gtag('js', new Date());
+                    gtag('config', gid);
+                };
+                document.head.appendChild(s);
+            };
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadGA);
+            } else {
+                window.addEventListener('load', function () { setTimeout(loadGA, 1500); });
+            }
+        })();
+    </script>
+    {% endif %}
+
+    {% if site.ads and site.ads.google and site.ads.google.client_id %}
+    <!-- Google Ads 懒加载 -->
+    <script>
+        (function () {
+            var clientId = "{{ site.ads.google.client_id }}";
+            var loadAds = function () {
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + clientId;
+                s.crossOrigin = "anonymous";
+                document.head.appendChild(s);
+            };
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadAds);
+            } else {
+                window.addEventListener('load', function () { setTimeout(loadAds, 1500); });
+            }
+        })();
+    </script>
+    {% endif %}
+
+    <!-- 收藏按钮：桌面端提示快捷键，移动端调用 navigator.share -->
+    <script>
+    function rpBookmark() {
+        if (navigator.share && window.innerWidth <= 768) {
+            navigator.share({
+                title: document.title,
+                url: window.location.href
+            }).catch(function() {});
+        } else {
+            var isMac = navigator.platform && navigator.platform.indexOf('Mac') !== -1;
+            var hint = isMac ? '\u2318+D' : 'Ctrl+D';
+            if (window.showToast) {
+                window.showToast('\u6309\u4E0B ' + hint + ' \u5373\u53EF\u6536\u85CF\u672C\u9875');
+            } else {
+                alert('\u6309\u4E0B ' + hint + ' \u5373\u53EF\u6536\u85CF\u672C\u9875');
+            }
+        }
+    }
+    </script>
+
+    <script>
+    var RP_REPO = '{{ site.comments.repo | default(value="") | safe }}';
+
+    function rpBatchLoadListingCounts() {
+        if (!RP_REPO) return;
+        var articles = document.querySelectorAll('article');
+        if (!articles.length) return;
+
+        fetch('https://api.github.com/search/issues?q=' + encodeURIComponent('repo:' + RP_REPO + ' is:issue') + '&per_page=100&sort=created&order=desc', {
+            headers: {
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.items || !data.items.length) return;
+                var issues = {};
+                data.items.forEach(function (issue) {
+                    var m = issue.body && issue.body.match(/Comment thread for (\S+)/);
+                    if (m) {
+                        var pathKey = decodeURIComponent(m[1]);
+                        if (issues[pathKey] && issues[pathKey].number > issue.number) {
+                            return;
+                        }
+                        issues[pathKey] = issue;
+                        issues[m[1]] = issue;
+                    }
+                });
+
+                articles.forEach(function (article) {
+                    var href = article.getAttribute('data-url');
+                    if (!href) {
+                        var link = article.querySelector('h2 a') || article.querySelector('a');
+                        href = link ? link.getAttribute('href') : null;
+                    }
+                    if (!href) return;
+                    
+                    var decodedHref = decodeURIComponent(href);
+                    var issue = issues[decodedHref] || issues[href];
+                    if (!issue) return;
+
+                    var spans = article.querySelectorAll('button span.font-medium');
+                    if (spans.length >= 2) {
+                        spans[0].textContent = issue.comments || 0;
+                        spans[1].textContent = (issue.reactions && issue.reactions['+1']) || 0;
+                    }
+                });
+            })
+            .catch(function () {});
+    }
+
+    setTimeout(function () {
+        if (RP_REPO) rpBatchLoadListingCounts();
+    }, 500);
+    </script>
+
+    <!-- 全局极简直角 Toast 提示 -->
+    <script>
+        window.showToast = function(message) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.position = 'fixed';
+                container.style.top = '24px';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%)';
+                container.style.zIndex = '99999';
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.gap = '12px';
+                container.style.pointerEvents = 'none';
+                document.body.appendChild(container);
+            }
+            
+            const toast = document.createElement('div');
+            // Moss Ink 经典极简深色背景，搭配 Cyber Mint 高亮绿字与微弱绿边，完全直角且无阴影
+            toast.style.backgroundColor = '#182422';
+            toast.style.color = '#00f6af';
+            toast.style.border = '1px solid rgba(0, 246, 175, 0.25)';
+            toast.style.padding = '12px 24px';
+            toast.style.fontSize = '14px';
+            toast.style.fontWeight = '500';
+            toast.style.letterSpacing = '0.05em';
+            toast.style.minWidth = '280px';
+            toast.style.textAlign = 'center';
+            toast.style.boxSizing = 'border-box';
+            
+            // 动画初状态与 transition 设定
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            toast.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+            toast.style.pointerEvents = 'auto';
+            
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            // 下一帧淡入
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // 3秒后自动淡出销毁
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-8px)';
+                setTimeout(() => {
+                    toast.remove();
+                    if (container.children.length === 0) {
+                        container.remove();
+                    }
+                }, 300);
+            }, 3000);
+        };
+    </script>
+</body>
+
+</html>

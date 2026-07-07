@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ book_name | default(value="Docs") }} - {{ site.name }}{% endblock %}
+
+{% block ad1 %}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row min-h-screen -mx-4 sm:-mx-6 lg:-mx-8">
+    <!-- 侧边栏导航 -->
+    <aside class="w md:w-64 bg-white border-r overflow-y-auto sticky top-16 h-[calc(100vh-4rem)] z-30"
+        x-data="{ sidebarOpen: true }" :class="{ 'w-10': !sidebarOpen, 'w-64': sidebarOpen }">
+        <div class="p-4 flex flex-col h">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold text-moss-ink truncate" x-show="sidebarOpen">{{ book_name }}</h2>
+                <button @click="sidebarOpen = !sidebarOpen" class="p-1 hover:bg-air-bg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path x-show="sidebarOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        <path x-show="!sidebarOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="flex-1 space-y-1 py-2 text-sm" x-show="sidebarOpen">
+                {% if book_pages %}
+                <div class="relative pl-1 border-l ml-3">
+                    {% for p in book_pages %}
+                    {% set is_active = (p.url == page.url) %}
+                    {% set level = p.level | default(value=0) %}
+                    <div class="relative flex items-center py-1" style="margin-left: {{ level * 0.75 }}rem">
+                        <!-- 分支横线 -->
+                        {% if level > 0 %}
+                        <div class="absolute -left-3 w-3 h-px bg-gray-200"></div>
+                        {% endif %}
+                        <a href="{{ p.url }}" class="group flex items-center w px-3 py-1.5 text-sm transition-all {% if is_active %}bg-primary-100 text-primary-800 font-semibold{% else %}text-mist-green hover:bg-air-bg hover:text-moss-ink{% endif %}">
+                            <!-- 图标：第一层用书/文件夹图标，第二层用文档图标 -->
+                            {% if level == 0 %}
+                            <svg class="w-4 h-4 mr-2 text-gray-400 group-hover:text-cyber-mint transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                            {% else %}
+                            <svg class="w-3.5 h-3.5 mr-2 text-gray-400 group-hover:text-cyber-mint transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            {% endif %}
+                            <span class="truncate">{{ p.title | default(value=p.slug) }}</span>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </nav>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 min-w-0 bg-white">
+        <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <article class="prose prose-slate max-w-none">
+                <header class="mb-4 pb-4">
+                    <h1 class="text-3xl font-extrabold text-moss-ink tracking-tight mb-2">{{ page.title }}</h1>
+                    {% if page.date_ymd %}
+                    <p class="text-sm text-mist-green">更新于 {{ page.date_ymd }}</p>
+                    {% endif %}
+                </header>
+
+                <div class="article-content">
+                    {{ page_content | default(value=page.content) | safe }}
+                </div>
+
+                <!-- 底部翻页导航 -->
+                <nav class="mt-12 pt-8 flex justify-between gap-4">
+                    {% if book_pages %}
+                    {% for p in book_pages %}
+                    {% if p.url == page.url %}
+                    {% if loop.first %}
+                    <div class="flex-1"></div>
+                    {% else %}
+                    {% set prev_idx = loop.index0 - 1 %}
+                    {% set prev_p = book_pages[prev_idx] %}
+                    <a href="{{ prev_p.url }}" class="flex-1 group">
+                        <span class="text-xs text-mist-green block mb-1">上一页</span>
+                        <span class="text-sage-line font-medium group-hover:underline">← {{ prev_p.title }}</span>
+                    </a>
+                    {% endif %}
+
+                    {% if loop.last %}
+                    <div class="flex-1"></div>
+                    {% else %}
+                    {% set next_idx = loop.index0 + 1 %}
+                    {% set next_p = book_pages[next_idx] %}
+                    <a href="{{ next_p.url }}" class="flex-1 text-right group">
+                        <span class="text-xs text-mist-green block mb-1">下一页</span>
+                        <span class="text-sage-line font-medium group-hover:underline">{{ next_p.title }} →</span>
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                </nav>
+            </article>
+        </div>
+    </main>
+</div>
+
+<style>
+    /* 为了适应侧边栏，覆盖 base.html 的默认 max-w-4xl 限制 */
+    .max-w-4xl:has(main > .flex-col.md\:flex-row) {
+        max-width: none !important;
+    }
+</style>
+{% endblock %}

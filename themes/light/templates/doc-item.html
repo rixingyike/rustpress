@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ book_name | default(value="Docs") }} - {{ site.name }}{% endblock %}
+
+{% block ad1 %}{% endblock %}
+
+{% block content %}
+<style>
+  [data-content-wrap]:has(.doc-item-layout) {
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #sidebar-left, #toc-sidebar {
+    position: fixed;
+    top: 4rem;
+    z-index: 40;
+    max-height: calc(100vh - 4rem);
+    width: 14rem;
+    background: transparent;
+  }
+  #sidebar-left {
+    left: max(0px, calc(50vw - 38rem));
+    overflow-y: auto;
+  }
+  #sidebar-left.collapsed {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  #toc-sidebar {
+    right: max(0px, calc(50vw - 38rem));
+    left: auto;
+    overflow-y: visible;
+  }
+  #toc-sidebar.collapsed {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .sidebar-header {
+    cursor: pointer;
+    user-select: none;
+  }
+  .sidebar-header:active {
+    opacity: 0.7;
+  }
+  .sidebar-arrow {
+    transition: transform 0.2s ease;
+  }
+  #sidebar-left:not(.collapsed) .sidebar-arrow { transform: rotate(90deg); }
+  #sidebar-left.collapsed .sidebar-arrow { transform: rotate(0deg); }
+  #toc-sidebar:not(.collapsed) .sidebar-arrow { transform: rotate(90deg); }
+  #toc-sidebar.collapsed .sidebar-arrow { transform: rotate(0deg); }
+
+  #sidebar-body, #toc-body {
+    overflow: hidden;
+  }
+  #toc-body a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .doc-item-layout article {
+    max-width: 48rem;
+    margin: 0 auto;
+  }
+
+  .article-content { word-break: break-word; }
+</style>
+
+<div class="doc-item-layout">
+  <aside id="sidebar-left" class="hidden md:block">
+    <div class="p-4">
+      <div class="sidebar-header flex items-center justify-between mb-4" id="sidebar-header">
+        <h2 class="font-bold text-moss-ink">目录</h2>
+        <svg class="sidebar-arrow w-4 h-4 text-mist-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18l6-6-6-6" />
+        </svg>
+      </div>
+      <nav id="sidebar-body" class="space-y-1 text-sm">
+        {% if book_pages %}
+        <div class="relative pl-1 border-l ml-3">
+          {% for p in book_pages %}
+          {% set is_active = (p.url == page.url) %}
+          {% set level = p.level | default(value=0) %}
+          <div class="relative flex items-center py-1" style="margin-left: {{ level * 0.75 }}rem">
+            {% if level > 0 %}
+            <div class="absolute -left-3 w-3 h-px bg-gray-200"></div>
+            {% endif %}
+            <a href="{{ p.url }}" class="group flex items-center min-w-0 px-3 py-1.5 text-sm transition-all {% if is_active %}bg-primary-100 text-primary-800 font-semibold{% else %}text-mist-green hover:bg-air-bg hover:text-moss-ink{% endif %}">
+              {% if level == 0 %}
+              <svg class="w-4 h-4 mr-2 text-gray-400 group-hover:text-cyber-mint transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              {% else %}
+              <svg class="w-3.5 h-3.5 mr-2 text-gray-400 group-hover:text-cyber-mint transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+              {% endif %}
+              <span class="truncate" title="{{ p.title | default(value=p.slug) }}">{% if p.catalog_num %}{{ p.catalog_num }}{% else %}{{ loop.index }}{% endif %}. {{ p.title | default(value=p.slug) }}</span>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </nav>
+    </div>
+  </aside>
+
+  <article class="prose prose-slate max-w-none mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <nav class="breadcrumb not-prose text-sm text-mist-green mb-4">
+      <a href="/columns/" class="hover:text-moss-ink transition-colors">专栏</a>
+      <span class="text-gray-300 mx-1">/</span>
+      <a href="/columns/{{ page.categories[1] }}/" class="hover:text-moss-ink transition-colors">{{ book_name }}</a>
+    </nav>
+
+    <header class="mb-4 pb-4 not-prose">
+      <h1 class="text-3xl font-extrabold text-moss-ink tracking-tight mb-2">{{ page.title }}</h1>
+      {% if page.date_ymd %}
+      <p class="text-sm text-mist-green">更新于 {{ page.date_ymd }}</p>
+      {% endif %}
+    </header>
+
+    <div class="article-content">
+      {{ page_content | default(value=page.content) | safe }}
+    </div>
+
+    <!-- 版权信息 -->
+    <div class="mt-8 text-xs text-mist-green not-prose">
+      <p>本文链接：<a href="{{ site.domain }}{{ page.url }}" class="text-sage-line hover:underline" target="_blank" rel="noopener">{{ site.domain }}{{ page.url }}</a></p>
+      <p class="mt-1">共享许可：<a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" class="text-sage-line hover:underline">署名-非商业性 4.0 国际 (CC-BY-NC-4.0)</a></p>
+    </div>
+
+    <!-- 分享功能 -->
+    <div class="mt-6 not-prose" style="margin-bottom: 4rem;">
+      <div class="flex flex-wrap gap-3">
+        <button onclick="shareToTwitter()" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+          <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          分享到X
+        </button>
+        <button onclick="navigator.clipboard.writeText(window.location.href).then(() => { window.showToast && window.showToast('复制成功') }).catch(() => { var ta=document.createElement('textarea'); ta.value=window.location.href; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); window.showToast && window.showToast('复制成功') })" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+          <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span>复制链接</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-top: 3rem;">
+    {% include "components/author-bio.html" %}
+    </div>
+
+    {% include "components/three-buttons.html" %}
+
+    <nav class="mt-12 pt-8 not-prose flex justify-between gap-4">
+      {% if book_pages %}
+      {% for p in book_pages %}
+      {% if p.url == page.url %}
+      {% if loop.first %}
+      <div class="flex-1"></div>
+      {% else %}
+      {% set prev_idx = loop.index0 - 1 %}
+      {% set prev_p = book_pages[prev_idx] %}
+      <a href="{{ prev_p.url }}" class="flex-1 group">
+        <span class="text-xs text-mist-green block mb-1">上一页</span>
+        <span class="text-sage-line font-medium group-hover:underline">← {{ prev_p.title }}</span>
+      </a>
+      {% endif %}
+
+      {% if loop.last %}
+      <div class="flex-1"></div>
+      {% else %}
+      {% set next_idx = loop.index0 + 1 %}
+      {% set next_p = book_pages[next_idx] %}
+      <a href="{{ next_p.url }}" class="flex-1 text-right group">
+        <span class="text-xs text-mist-green block mb-1">下一页</span>
+        <span class="text-sage-line font-medium group-hover:underline">{{ next_p.title }} →</span>
+      </a>
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+    </nav>
+
+    <!-- 标签 -->
+    {% if page.tags %}
+    <div class="flex flex-wrap gap-x-4 gap-y-2 mt-6 not-prose">
+      {% for tag in page.tags %}
+      <a href="/tags/{{ tag }}/" class="text-sm text-mist-green hover:text-cyber-mint transition-colors">#{{ tag }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 评论区域 -->
+    {% if comment_system_script %}
+    {{ comment_system_script | safe }}
+    {% endif %}
+
+  </article>
+
+  <aside id="toc-sidebar" class="hidden lg:block">
+    <div class="p-4">
+      <div class="sidebar-header flex items-center justify-between mb-4" id="toc-header">
+        <h3 class="text-sm font-semibold text-moss-ink">大纲</h3>
+        <svg class="sidebar-arrow w-4 h-4 text-mist-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18l6-6-6-6" />
+        </svg>
+      </div>
+      <nav id="toc-body" class="space-y-1 text-sm"></nav>
+      <div id="toc-empty" class="text-sm text-mist-green text-center py-4 hidden">暂无大纲</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+$(function() {
+  $('#sidebar-header').on('click', function() {
+    var $left = $('#sidebar-left');
+    $('#sidebar-body').slideToggle(200);
+    $left.toggleClass('collapsed');
+  });
+
+  var $toc = $('#toc-sidebar');
+  var $tocBody = $('#toc-body');
+  var $tocEmpty = $('#toc-empty');
+  var hasHeadings = false;
+  var $content = $('.article-content');
+
+  function updateTocEmpty() {
+    if (hasHeadings) {
+      $tocEmpty.addClass('hidden');
+    } else {
+      $tocEmpty.removeClass('hidden');
+    }
+  }
+
+  if ($content.length) {
+    var headings = $content.find('h1, h2, h3, h4, h5, h6').map(function(i, h) {
+      var id = h.id || 'heading-' + i;
+      h.id = id;
+      return { id: id, text: h.textContent.trim(), level: parseInt(h.tagName.charAt(1)), element: h };
+    }).get();
+
+    if (headings.length) {
+      hasHeadings = true;
+      $.each(headings, function(_, h) {
+        var indent = 'pl-3';
+        if (h.level >= 4) indent = 'pl-9';
+        else if (h.level === 3) indent = 'pl-6';
+        var $a = $('<a>').addClass('block py-1.5 px-3 text-sm cursor-pointer transition-colors duration-150 border-l-2 ' + indent + ' text-mist-green hover:text-moss-ink hover:bg-air-bg border-transparent')
+          .attr('data-target', h.id)
+          .attr('title', h.text)
+          .text(h.text)
+          .on('click', function(e) {
+            e.preventDefault();
+            var el = document.getElementById(h.id);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        $tocBody.append($a);
+      });
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            $tocBody.find('a').removeClass('text-sage-line bg-primary-50 border-primary-600')
+              .addClass('text-mist-green hover:text-moss-ink hover:bg-air-bg border-transparent');
+            $tocBody.find('a[data-target="' + entry.target.id + '"]')
+              .removeClass('text-mist-green hover:text-moss-ink hover:bg-air-bg border-transparent')
+              .addClass('text-sage-line bg-primary-50 border-primary-600');
+          }
+        });
+      }, { rootMargin: '-20% 0px -80% 0px' });
+
+      headings.forEach(function(h) {
+        observer.observe(h.element);
+      });
+    }
+  }
+  updateTocEmpty();
+
+  $('#toc-header').on('click', function() {
+    $('#toc-body').slideToggle(200);
+    $toc.toggleClass('collapsed');
+    updateTocEmpty();
+  });
+
+});
+function shareToTwitter() {
+  var url = encodeURIComponent(window.location.href);
+  var text = encodeURIComponent(document.title);
+  window.open('https://x.com/intent/tweet?url=' + url + '&text=' + text, '_blank');
+}
+</script>
+{% endblock %}

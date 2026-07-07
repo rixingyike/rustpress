@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - 友情链接 - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <nav class="mb-6 text-sm text-gray-500">
+        <a href="/friends/" class="hover:text-primary-700">友情链接</a>
+        <span class="mx-1">/</span>
+        <span>{{ page.title }}</span>
+    </nav>
+
+    <div class="card">
+        <div class="card-body text-center">
+            {% if page.avatar %}
+            <img src="{{ page.avatar }}" alt="{{ page.title }}" class="w-24 h-24 mx-auto rounded mb-4 object-cover">
+            {% endif %}
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
+            {% if page.domain %}
+            <p class="text-sm text-gray-500 mb-4">{{ page.domain }}</p>
+            {% endif %}
+            {% if page.description %}
+            <p class="text-gray-600 text-sm mb-6">{{ page.description }}</p>
+            {% endif %}
+            {% if page.link %}
+            <a href="{{ page.link }}" target="_blank" rel="noopener" class="inline-block px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-700">
+                访问网站
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

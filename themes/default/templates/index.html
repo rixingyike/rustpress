@@ -18,10 +18,11 @@
                 <article class="card hover:shadow-lg transition-shadow duration-300">
                     <!-- 分类面包屑 -->
                     {% if post.categories and post.categories | length > 0 %}
-                    <nav class="px-6 pt-4 text-sm text-gray-600">
-                        <a href="/" class="hover:text-primary-600">首页</a>
+                    <nav class="px-6 pt-4 text-xs text-gray-400 flex items-center space-x-1.5">
                         {% for category in post.categories %}
-                            <span class="mx-2">›</span>
+                            {% if not loop.first %}
+                            <span class="text-gray-300">/</span>
+                            {% endif %}
                             <a href="/{{ post.categories | slice(end=loop.index) | join(sep='/') }}/" class="hover:text-primary-600">{{ category }}</a>
                         {% endfor %}
                     </nav>
@@ -92,8 +93,8 @@
                 <div class="flex justify-center mt-4">
                     <nav class="flex items-center space-x-4">
                         {% if has_previous_page %}
-                            {% set prev_page = current_page + 1 %}
-                            {% if prev_page == total_pages %}
+                            {% set prev_page = current_page - 1 %}
+                            {% if prev_page == 0 %}
                                 <a href="/" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">上一页</a>
                             {% else %}
                                 <a href="/index{{ prev_page }}.html" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">上一页</a>
@@ -103,7 +104,7 @@
                         {% endif %}
 
                         {% if has_next_page %}
-                            {% set next_page = current_page - 1 %}
+                            {% set next_page = current_page + 1 %}
                             <a href="/index{{ next_page }}.html" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700">下一页</a>
                         {% else %}
                             <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">下一页</span>
@@ -116,8 +117,8 @@
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">暂无文章</h3>
-                    <p class="mt-2 text-gray-500">还没有发布任何文章</p>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">暂无内容</h3>
+                    <p class="mt-2 text-gray-500">还没有发布任何内容</p>
                 </div>
             {% endif %}
         </div>
@@ -145,8 +146,8 @@
         <div class="card-body">
             <div class="text-4xl mb-4">📂</div>
             <h3 class="text-lg font-semibold mb-2">浏览分类</h3>
-            <p class="text-gray-600 mb-4">按主题分类查看文章</p>
-            <a href="/categories.html" class="btn-primary">查看分类</a>
+            <p class="text-gray-600 mb-4">按主题分类浏览内容</p>
+            <a href="/categories/" class="btn-primary">查看分类</a>
         </div>
     </div>
     
@@ -155,7 +156,7 @@
             <div class="text-4xl mb-4">🏷️</div>
             <h3 class="text-lg font-semibold mb-2">标签云</h3>
             <p class="text-gray-600 mb-4">通过标签快速找到相关内容</p>
-            <a href="/tags.html" class="btn-primary">查看标签</a>
+            <a href="/tags/" class="btn-primary">查看标签</a>
         </div>
     </div>
     
@@ -163,8 +164,8 @@
             <div class="card-body">
             <div class="text-4xl mb-4">📚</div>
             <h3 class="text-lg font-semibold mb-2">文章归档</h3>
-            <p class="text-gray-600 mb-4">按时间顺序浏览所有文章</p>
-            <a href="/archives.html" class="btn-primary">查看归档</a>
+            <p class="text-gray-600 mb-4">按时间顺序浏览所有内容</p>
+            <a href="/archives/" class="btn-primary">查看归档</a>
         </div>
         </div>
 
@@ -174,7 +175,7 @@
                 <div class="text-4xl mb-4">🤝</div>
                 <h3 class="text-lg font-semibold mb-2">申请友链</h3>
                 <p class="text-gray-600 mb-4">提交你的站点，加入友链列表</p>
-                <a href="/friends.html" class="btn-primary">前往友链</a>
+                <a href="/friends/" class="btn-primary">前往友链</a>
             </div>
         </div>
 

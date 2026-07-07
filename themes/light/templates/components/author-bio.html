@@ -1,0 +1,171 @@
+<div x-data="{ showWechat: false }">
+  <div class="bg-flat-white mb-8">
+    <div class="relative group/bio p-6">
+      <div class="flex flex-col md:flex-row items-center md:items-start gap-8 pr-8">
+        <div class="flex-shrink-0">
+          {% if site.author.avatar %}
+          <img src="{{ site.author.avatar }}"
+               alt="{{ site.author.name | default(value=site.author) }}"            class="w-24 h-24 object-cover"
+               onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxzdmcgeD0iMzIiIHk9IjMyIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOUNBM0FGIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJtMjAgMjEtMTYtMTZtMCAxM2gxM20wLTEzTDIxIDIxIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
+          {% else %}
+          <div class="w-24 h-24 bg-moss-ink flex items-center justify-center text-cyber-mint text-3xl font-bold border border-sage-line">
+            {% set author_name = site.author.name | default(value=site.author) %}
+            {{ author_name | truncate(length=1, end="") | upper }}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="flex-1 text-center md:text-left">
+          <h3 class="text-2xl font-bold text-moss-ink mb-2">
+            {{ site.author.name | default(value=site.author) }}
+          </h3>
+
+          {% if site.author.bio %}
+          <p class="text-base text-mist-green mb-4 leading-relaxed">
+            {{ site.author.bio }}
+          </p>
+          {% endif %}
+
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 justify-center md:justify-start">
+            {% if site.author.location %}
+            <div class="flex items-center text-mist-green text-sm">
+              <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              {{ site.author.location }}
+            </div>
+            {% endif %}
+
+            {% if site.author.website %}
+            <div class="flex items-center text-sm">
+              <svg class="w-4 h-4 mr-1.5 text-mist-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9"></path>
+              </svg>
+              <a href="{{ site.author.website }}"
+                 target="_blank"
+                 rel="noopener" class="text-sage-line hover:text-cyber-mint transition-colors">
+                {{ site.author.website | replace(from="https://", to="") | replace(from="http://", to="") }}
+              </a>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if site.social %}
+          <div class="flex justify-center md:justify-start space-x-4">
+            {% if site.social.github %}
+            <a href="{{ site.social.github }}"
+               target="_blank"
+               rel="noopener" class="text-gray-400 hover:text-mist-green transition-colors"
+               title="GitHub">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+            </a>
+            {% endif %}
+
+            {% if site.social.twitter %}
+            <a href="{{ site.social.twitter }}"
+               target="_blank"
+               rel="noopener" class="text-gray-400 hover:text-blue-400 transition-colors"
+               title="Twitter">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            {% endif %}
+
+            {% if site.social.weibo %}
+            <a href="{{ site.social.weibo }}"
+               target="_blank"
+               rel="noopener" class="text-gray-400 hover:text-cyber-mint transition-colors"
+               title="微博">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M10.878 1.093a4.23 4.23 0 0 1 4.031 1.305 4.22 4.22 0 0 1 .886 4.14v.001a.612.612 0 0 1-1.166-.377 3.01 3.01 0 0 0-3.495-3.873.611.611 0 1 1-.256-1.196M3.753 9.465c.548-1.11 1.972-1.74 3.233-1.411 1.304.338 1.971 1.568 1.437 2.764-.541 1.221-2.095 1.875-3.416 1.449-1.271-.411-1.812-1.67-1.254-2.802m2.658.567c.16.066.365-.009.458-.168.088-.16.03-.34-.129-.397-.156-.062-.353.013-.446.168-.09.154-.041.333.117.397m-1.607 1.314c.413.188.963.009 1.219-.4.252-.413.12-.883-.296-1.062-.41-.172-.94.005-1.194.402-.256.4-.135.874.271 1.06"/>
+                <path d="m12.014 7.238.005.001c.919.285 1.941.974 1.939 2.188 0 2.007-2.895 4.535-7.246 4.535C3.393 13.962 0 12.352 0 9.708c0-1.385.876-2.985 2.384-4.493C4.4 3.199 6.751 2.28 7.634 3.165c.39.392.427 1.065.177 1.87-.132.405.38.182.38.182 1.63-.682 3.051-.722 3.57.02.278.397.252.951-.004 1.594-.116.293.035.34.257.407m-10.4 3.101c.172 1.738 2.46 2.936 5.109 2.674 2.647-.26 4.656-1.883 4.482-3.623-.17-1.738-2.458-2.937-5.107-2.674-2.647.263-4.656 1.883-4.484 3.623m11.681-6.484a2.06 2.06 0 0 0-1.962-.634.526.526 0 1 0 .219 1.031 1.008 1.008 0 0 1 1.17 1.296.528.528 0 0 0 1.005.325 2.06 2.06 0 0 0-.432-2.018"/>
+              </svg>
+            </a>
+            {% endif %}
+
+            {% if site.social.zhihu %}
+            <a href="{{ site.social.zhihu }}"
+               target="_blank"
+               rel="noopener" class="text-gray-400 hover:text-blue-600 transition-colors"
+               title="知乎">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64z m-90.7 477.8l-0.1 1.5c-1.5 20.4-6.3 43.9-12.9 67.6l24-18.1 71 80.7c9.2 33-3.3 63.1-3.3 63.1l-95.7-111.9v-0.1c-8.9 29-20.1 57.3-33.3 84.7-22.6 45.7-55.2 54.7-89.5 57.7-34.4 3-23.3-5.3-23.3-5.3 68-55.5 78-87.8 96.8-123.1 11.9-22.3 20.4-64.3 25.3-96.8H264.1s4.8-31.2 19.2-41.7h101.6c0.6-15.3-1.3-102.8-2-131.4h-49.4c-9.2 45-41 56.7-48.1 60.1-7 3.4-23.6 7.1-21.1 0 2.6-7.1 27-46.2 43.2-110.7 16.3-64.6 63.9-62 63.9-62-12.8 22.5-22.4 73.6-22.4 73.6h159.7c10.1 0 10.6 39 10.6 39h-90.8c-0.7 22.7-2.8 83.8-5 131.4H519s12.2 15.4 12.2 41.7H421.3z m346.5 167h-87.6l-69.5 46.6-16.4-46.6h-40.1V321.5h213.6v387.3zM408.2 611s0-0.1 0 0z"></path>
+                <path d="M624.2 705.3l56.8-38.1h45.6-0.1V364.7H596.7v302.5h14.1z"></path>
+              </svg>
+            </a>
+            {% endif %}
+
+            {% if site.social.wechat or site.author.wechat %}
+            <button @click="showWechat = !showWechat"
+               class="text-gray-400 hover:text-green-500 transition-colors focus:outline-none"
+               :class="showWechat ? 'text-green-500' : 'text-gray-400'"
+               title="微信">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 1170 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <path d="M331.428571 263.428571q0-23.428571-14.285714-37.714285t-37.714286-14.285715q-24.571429 0-43.428571 14.571429T217.142857 263.428571q0 22.285714 18.857143 36.857143t43.428571 14.571429q23.428571 0 37.714286-14t14.285714-37.428572z m424.571429 289.714286q0-16-14.571429-28.571428t-37.428571-12.571429q-15.428571 0-28.285714 12.857143T662.857143 553.142857q0 16 12.857143 28.857143t28.285714 12.857143q22.857143 0 37.428571-12.571429t14.571429-29.142857z m-134.857143-289.714286q0-23.428571-14-37.714285T569.714286 211.428571q-24.571429 0-43.428572 14.571429T507.428571 263.428571q0 22.285714 18.857143 36.857143t43.428572 14.571429q23.428571 0 37.428571-14T621.142857 263.428571z m362.857143 289.714286q0-16-14.857143-28.571428t-37.142857-12.571429q-15.428571 0-28.285714 12.857143T890.857143 553.142857q0 16 12.857143 28.857143t28.285714 12.857143q22.285714 0 37.142857-12.571429t14.857143-29.142857z m-152-226.857143q-17.714286-2.285714-40-2.285714-96.571429 0-177.714286 44T486.571429 487.142857 440 651.428571q0 44.571429 13.142857 86.857143-20 1.714286-38.857143 1.714286-14.857143 0-28.571428-0.857143t-31.428572-3.714286-25.428571-4-31.142857-6-28.571429-6l-144.571428 72.571429 41.142857-124.571429Q0 551.428571 0 387.428571q0-96.571429 55.714286-177.714285t150.857143-127.714286T414.285714 35.428571q100.571429 0 190 37.714286t149.714286 104.285714T832 326.285714z m338.285714 320.571429q0 66.857143-39.142857 127.714286T1025.142857 885.142857l31.428572 103.428572-113.714286-62.285715q-85.714286 21.142857-124.571429 21.142857-96.571429 0-177.714285-40.285714T512.857143 797.714286 466.285714 646.857143t46.571429-150.857143T640.571429 386.571429t177.714285-40.285715q92 0 173.142857 40.285715t130 109.714285T1170.285714 646.857143z" fill="currentColor"></path>
+              </svg>
+            </button>
+            {% endif %}
+
+            {% if site.social.bilibili %}
+            <a href="{{ site.social.bilibili }}"
+               target="_blank"
+               rel="noopener" class="text-gray-400 hover:text-pink-400 transition-colors"
+               title="Bilibili">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 1129 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <path d="M234.909 9.656a80.468 80.468 0 0 1 68.398 0 167.374 167.374 0 0 1 41.843 30.578l160.937 140.82h115.07l160.936-140.82a168.983 168.983 0 0 1 41.843-30.578A80.468 80.468 0 0 1 930.96 76.445a80.468 80.468 0 0 1-17.703 53.914 449.818 449.818 0 0 1-35.406 32.187 232.553 232.553 0 0 1-22.531 18.508h100.585a170.593 170.593 0 0 1 118.289 53.109 171.397 171.397 0 0 1 53.914 118.288v462.693a325.897 325.897 0 0 1-4.024 70.007 178.64 178.64 0 0 1-80.468 112.656 173.007 173.007 0 0 1-92.539 25.75h-738.7a341.186 341.186 0 0 1-72.421-4.024A177.835 177.835 0 0 1 28.91 939.065a172.202 172.202 0 0 1-27.36-92.539V388.662a360.498 360.498 0 0 1 0-66.789A177.03 177.03 0 0 1 162.487 178.64h105.414c-16.899-12.07-31.383-26.555-46.672-39.43a80.468 80.468 0 0 1-25.75-65.984 80.468 80.468 0 0 1 39.43-63.57M216.4 321.873a80.468 80.468 0 0 0-63.57 57.937 108.632 108.632 0 0 0 0 30.578v380.615a80.468 80.468 0 0 0 55.523 80.469 106.218 106.218 0 0 0 34.601 5.632h654.208a80.468 80.468 0 0 0 76.444-47.476 112.656 112.656 0 0 0 8.047-53.109v-354.06a135.187 135.187 0 0 0 0-38.625 80.468 80.468 0 0 0-52.304-54.719 129.554 129.554 0 0 0-49.89-7.242H254.22a268.764 268.764 0 0 0-37.82 0z m0 0" fill="currentColor"></path>
+                <path d="M348.369 447.404a80.468 80.468 0 0 1 55.523 18.507 80.468 80.468 0 0 1 28.164 59.547v80.468a80.468 80.468 0 0 1-16.094 51.5 80.468 80.468 0 0 1-131.968-9.656 104.609 104.609 0 0 1-10.46-54.719v-80.468a80.468 80.468 0 0 1 70.007-67.593z m416.02 0a80.468 80.468 0 0 1 86.102 75.64v80.468a94.148 94.148 0 0 1-12.07 53.11 80.468 80.468 0 0 1-132.773 0 95.757 95.757 0 0 1-12.875-57.133V519.02a80.468 80.468 0 0 1 70.007-70.812z m0 0" fill="currentColor"></path>
+              </svg>
+            </a>
+            {% endif %}
+
+            {% if site.author.email %}
+            <button @click="
+                navigator.clipboard.writeText($el.getAttribute('data-email')).then(() => {
+                    if (window.showToast) window.showToast('\u90AE\u7BB1\u5DF2\u7ECF\u62F7\u8D1D\uFF0C\u53EF\u4EE5\u524D\u5F80\u90AE\u7BB1\u5199\u4FE1\u4E86');
+                }).catch(() => {
+                    var ta = document.createElement('textarea'); ta.value = $el.getAttribute('data-email'); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); if (window.showToast) window.showToast('\u90AE\u7BB1\u5DF2\u7ECF\u62F7\u8D1D\uFF0C\u53EF\u4EE5\u524D\u5F80\u90AE\u7BB1\u5199\u4FE1\u4E86');
+                })
+            " data-email="{{ site.author.email }}" class="text-gray-400 hover:text-cyber-mint transition-colors focus:outline-none"
+               title="复制邮箱：{{ site.author.email }}">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+            </button>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% if page.url != "/about.html" %}
+      <a href="/about.html" class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 hover:text-cyber-mint transition-colors duration-300 flex items-center justify-center p-2" title="了解更多关于作者的信息">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if site.social.wechat or site.author.wechat %}
+  {% set wechat_img = site.social.wechat | default(value=site.author.wechat) %}
+  <div x-show="showWechat" x-cloak
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0 -translate-y-3"
+       x-transition:enter-end="opacity-100 translate-y-0"
+       x-transition:leave="transition ease-in duration-200"
+       x-transition:leave-start="opacity-100 translate-y-0"
+       x-transition:leave-end="opacity-0 -translate-y-3"
+       class="mb-8">
+    <div class="relative max-w-md mx-auto bg-white p-6 flex flex-col items-center justify-center text-center border border-sage-line/10">
+      <h3 class="text-sm font-bold text-moss-ink mb-3">扫一扫，添加作者微信</h3>
+      <div class="bg-gray-50 p-3">
+        <img src="{{ wechat_img }}" alt="微信二维码" class="w-48 h-48 object-contain">
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>

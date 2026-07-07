@@ -11,8 +11,8 @@ use walkdir::WalkDir;
 // 使派生的 RustEmbed trait 在作用域内，从而可调用 ::get()
 use rust_embed::RustEmbed;
 // 将根目录的配置编译进二进制，作为默认模板来源
-pub const EMBEDDED_ROOT_CONFIG_TOML: &str = include_str!("../config.toml");
-pub const EMBEDDED_ROOT_BUILD_TOML: &str = include_str!("../build.toml");
+pub const EMBEDDED_ROOT_CONFIG_TOML: &str = include_str!("../config.toml.example");
+pub const EMBEDDED_ROOT_BUILD_TOML: &str = include_str!("../source/build.toml");
 pub const EMBEDDED_DEPLOY_YML: &str = include_str!("../deploy.yml.example.yml");
 
 // 将主题静态资源打包进二进制（主题的 public 目录，包含 static 子目录）
@@ -496,6 +496,17 @@ pub fn read_build_mode<P: AsRef<std::path::Path>>(md_dir: P) -> BuildMode {
         _ => BuildMode::Incremental,
     };
     if let toml::Value::Table(tbl) = value {
+        // full_compile=true 表示全量编译，false 表示增量编译
+        if let Some(v) = tbl.get("full_compile") {
+            if let Some(b) = v.as_bool() {
+                return if b {
+                    BuildMode::Full
+                } else {
+                    BuildMode::Incremental
+                };
+            }
+        }
+        // 兼容旧字段
         if let Some(v) = tbl.get("compile_mode").or_else(|| tbl.get("build_mode")) {
             match v {
                 toml::Value::String(s) => return read_string_mode(s),
@@ -815,7 +826,7 @@ home_navs:
     url: "/about.html"
   - text: "友链"
     emoji: "🤝"
-    url: "/friends.html"
+    url: "/friends/"
 ---
 
 # 欢迎来到我的博客
@@ -1008,8 +1019,8 @@ pub fn ensure_initial_setup<P: AsRef<Path>>(md_dir: P, config_filename: &str) ->
     let root_path = md_path.parent().unwrap_or(Path::new("."));
     
     println!("[DEBUG] 进入 ensure_initial_setup，md_dir: {:?}, root: {:?}", md_path, root_path);
-    // 1) 优先在项目根保障配置与构建文件（若缺失，写出内嵌默认）
-    ensure_root_config_and_build(md_path, config_filename)?;
+    // 1) 不再在项目根保障配置与构建文件，统一使用源目录（md_dir）下的配置文件
+    // ensure_root_config_and_build(md_path, config_filename)?;
     // 2) 在源目录保障配置与构建文件（若缺失，写出内嵌默认或从根复制）
     ensure_source_config_and_build(md_path, config_filename)?;
     // 3) 写出嵌入的主题模板与静态资源到根 themes（缺失或过时时生成/更新）

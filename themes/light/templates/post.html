@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+<meta name="description" content="{{ page.description | default(value=site.description) }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ page.title }}">
+<meta property="og:description" content="{{ page.description | default(value=site.description) }}">
+<meta property="og:site_name" content="{{ site.name }}">
+{% if site.domain and page.url %}
+<link rel="canonical" href="{{ site.domain }}{{ page.url }}">
+<meta property="og:url" content="{{ site.domain }}{{ page.url }}">
+{% endif %}
+{% if page.cover %}
+<meta property="og:image" content="{{ page.cover }}">
+{% endif %}
+{% if page.date_ymd %}
+<meta property="article:published_time" content="{{ page.date_ymd }}">
+{% endif %}
+{% if page.tags %}
+{% for tag in page.tags %}
+<meta property="article:tag" content="{{ tag }}">
+{% endfor %}
+{% endif %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ page.title }}",
+  "image": [
+    {% if page.cover %}"{{ site.domain }}{{ page.cover }}"{% else %}"{{ site.domain }}/static/images/logo.png"{% endif %}
+   ],
+  {% if page.date_ymd %}"datePublished": "{{ page.date_ymd }}",{% endif %}
+  "author": [{
+      "@type": "Person",
+      "name": "{% if site.author is object %}{{ site.author.name }}{% else %}{{ site.author | default(value=site.name) }}{% endif %}",
+      "url": "{{ site.domain }}"
+    }]
+}
+</script>
+{% endblock %}
+
+<!-- 文章详情页面模板 -->
+{% block content %}
+<div class="max-w-4xl mx-auto relative">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- 主要内容 -->
+        <div class="flex-1">
+            {% if page.layout | default(value="") == "tweet" or page.layout | default(value="") == "short" or not page.title %}
+            <article>
+                <!-- 分类面包屑 -->
+                {% if page.categories and page.categories | length > 0 %}
+                <nav class="mb-4 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
+                {% set_global accum_path = "" %}
+                {% set_global show_sep = false %}
+                {% for category in page.categories %}
+                    {% set_global accum_path = accum_path ~ "/" ~ category %}
+                    {% set cat_url = accum_path ~ "/" %}
+                    {% set index_url = cat_url ~ "index.html" %}
+                    {% if page.url != cat_url and page.url != index_url %}
+                        {% if show_sep %}
+                        <span class="text-gray-300">/</span>
+                        {% endif %}
+                        {% set_global show_sep = true %}
+                        {% if category == "columns" or category == "s" %}
+                            <a href="/columns/" class="hover:text-cyber-mint">专栏</a>
+                        {% elif category == "tweets" %}
+                            <a href="/tweets/" class="hover:text-cyber-mint">闲言</a>
+                        {% elif category == "friends" %}
+                            <a href="/friends/" class="hover:text-cyber-mint">友情链接</a>
+                        {% elif category == "projects" %}
+                            <a href="/projects/" class="hover:text-cyber-mint">项目</a>
+                        {% elif category == "works" %}
+                            <a href="/works/" class="hover:text-cyber-mint">著作</a>
+                        {% else %}
+                            {% if loop.index == 2 and (page.categories[0] == "columns" or page.categories[0] == "s") %}
+                                {% if page.column_title %}
+                                    <a href="/columns/{{ category }}/" class="hover:text-cyber-mint">{{ page.column_title }}</a>
+                                {% else %}
+                                    <a href="/columns/{{ category }}/" class="hover:text-cyber-mint">专栏内容</a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ cat_url }}" class="hover:text-cyber-mint">{{ category }}</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                </nav>
+                {% endif %}
+
+                <div class="flex items-center space-x-3 mb-6">
+                    <img src="{{ site.author.avatar | default(value='/static/images/avatar.png') | safe }}" class="w-12 h-12 object-cover" alt="Avatar">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-moss-ink text-base">{{ site.author.name | default(value='作者') }}</span>
+                            <span class="text-sm text-mist-green">@{{ site.author.name | default(value='author') }}</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-0.5">{{ page.date_ymd }} {{ page.create_time_hm | default(value="08:00") }}</div>
+                    </div>
+                </div>
+                <div class="prose prose-base text-moss-ink leading-relaxed break-words mb-6">
+                    {{ page.content | safe }}
+                </div>
+                {% if page.images %}
+                <div class="grid {% if page.images | length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-2 mb-6">
+                    {% for img in page.images %}
+                    <img src="{{ img | safe }}" class="max-h-96 w object-cover" alt="Tweet Image">
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <!-- 标签 -->
+                {% if page.tags %}
+                <div class="flex flex-wrap gap-x-4 gap-y-2 mt-6">
+                    {% for tag in page.tags %}
+                    <a href="/tags/{{ tag }}/" class="text-sm text-mist-green hover:text-cyber-mint transition-colors">
+                        #{{ tag }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- 版权信息 -->
+                <div class="mt-8 text-xs text-mist-green">
+                    <p>本文链接：<a href="{{ site.domain }}{{ page.url }}" class="text-sage-line hover:underline" target="_blank" rel="noopener">{{ site.domain }}{{ page.url }}</a></p>
+                    <p class="mt-1">共享许可：<a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" class="text-sage-line hover:underline">署名-非商业性 4.0 国际 (CC-BY-NC-4.0)</a></p>
+                </div>
+
+                <!-- 分享功能 -->
+                <div class="mt-6" style="margin-bottom: 4rem;">
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="shareToTwitter()" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            分享到X
+                        </button>
+                        <button onclick="navigator.clipboard.writeText(window.location.href).then(() => { window.showToast && window.showToast('复制成功') }).catch(() => { var ta=document.createElement('textarea'); ta.value=window.location.href; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); window.showToast && window.showToast('复制成功') })" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                            <span>复制链接</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem;">
+                {% include "components/author-bio.html" %}
+                </div>
+
+                {% include "components/three-buttons.html" %}
+
+                <!-- 评论区域 -->
+                {% if comment_system_script %}
+                {{ comment_system_script | safe }}
+                {% endif %}
+
+            </article>
+            {% else %}
+            <article x-data="{ copiedLink: false, copiedCode: {} }">
+                <style>
+                    .article-content > h1:first-of-type {
+                        display: none !important;
+                    }
+                </style>
+                <!-- 分类面包屑 -->
+                {% if page.categories and page.categories | length > 0 %}
+                <nav class="mb-2 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
+                {% set_global accum_path = "" %}
+                {% set_global show_sep = false %}
+                {% for category in page.categories %}
+                    {% set_global accum_path = accum_path ~ "/" ~ category %}
+                    {% set cat_url = accum_path ~ "/" %}
+                    {% set index_url = cat_url ~ "index.html" %}
+                    {% if page.url != cat_url and page.url != index_url %}
+                        {% if show_sep %}
+                        <span class="text-gray-300">/</span>
+                        {% endif %}
+                        {% set_global show_sep = true %}
+                        {% if category == "columns" or category == "s" %}
+                            <a href="/columns/" class="hover:text-cyber-mint">专栏</a>
+                        {% elif category == "tweets" %}
+                            <a href="/tweets/" class="hover:text-cyber-mint">闲言</a>
+                        {% elif category == "friends" %}
+                            <a href="/friends/" class="hover:text-cyber-mint">友情链接</a>
+                        {% elif category == "projects" %}
+                            <a href="/projects/" class="hover:text-cyber-mint">项目</a>
+                        {% elif category == "works" %}
+                            <a href="/works/" class="hover:text-cyber-mint">著作</a>
+                        {% else %}
+                            {% if loop.index == 2 and (page.categories[0] == "columns" or page.categories[0] == "s") %}
+                                {% if page.column_title %}
+                                    <a href="/columns/{{ category }}/" class="hover:text-cyber-mint">{{ page.column_title }}</a>
+                                {% else %}
+                                    <a href="/columns/{{ category }}/" class="hover:text-cyber-mint">专栏内容</a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ cat_url }}" class="hover:text-cyber-mint">{{ category }}</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                </nav>
+                {% endif %}
+
+                <!-- 文章头部 -->
+                <header class="mb-8">
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-moss-ink mb-3 leading-tight">
+                        {{ page.title | default(value=page.slug) }}
+                    </h1>
+
+                    <div class="article-meta mb-3">
+                        {% if page.date_ymd %}
+                        <span class="inline-flex items-center text-sm text-mist-green">
+                            {{ page.date_ymd }} {{ page.create_time_hm | default(value="08:00") }}
+                        </span>
+                        {% endif %}
+                        {% if page.reading_time %}
+                        <span class="inline-flex items-center ml-4 text-sm text-mist-green">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ page.reading_time }} 分钟
+                        </span>
+                        {% endif %}
+                    </div>
+                </header>
+
+                <!-- 文章内容 -->
+                <div class="article-content prose prose-lg max-w-none" x-init="$nextTick(() => {
+             // 为代码块添加复制按钮
+             document.querySelectorAll('pre code').forEach((codeBlock, index) => {
+                 const pre = codeBlock.parentElement;
+                 if (!pre.querySelector('.copy-code-btn')) {
+                     const button = document.createElement('button');
+                     button.className = 'copy-code-btn';
+                     button.textContent = '复制';
+                     button.setAttribute('x-data', `{ copied: false }`);
+                     button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
+                     button.setAttribute(':class', `{ 'bg-green-600': copied }`);
+                     button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
+                     
+                     pre.style.position = 'relative';
+                     pre.appendChild(button);
+                 }
+             });
+         })">
+                    {{ page.content | safe }}
+                </div>
+
+                <!-- 标签 -->
+                {% if page.tags %}
+                <div class="flex flex-wrap gap-x-4 gap-y-2 mt-6">
+                    {% for tag in page.tags %}
+                    <a href="/tags/{{ tag }}/" class="text-sm text-mist-green hover:text-cyber-mint transition-colors">
+                        #{{ tag }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- 版权信息 -->
+                <div class="mt-8 text-xs text-mist-green">
+                    <p>
+                        本文链接：
+                        <a href="{{ site.domain }}{{ page.url }}" class="text-sage-line hover:underline"
+                            target="_blank" rel="noopener">{{ site.domain }}{{ page.url }}</a>
+                    </p>
+                    <p class="mt-1">
+                        共享许可：<a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" class="text-sage-line hover:underline">署名-非商业性 4.0 国际 (CC-BY-NC-4.0)</a>
+                    </p>
+                </div>
+
+                <!-- 分享功能 -->
+                <div class="mt-6" style="margin-bottom: 4rem;">
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="shareToTwitter()" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            分享到X
+                        </button>
+                        <button
+                            @click="navigator.clipboard.writeText(window.location.href).then(() => { if (window.showToast) window.showToast('复制成功') }).catch(() => { var ta = document.createElement('textarea'); ta.value = window.location.href; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); if (window.showToast) window.showToast('复制成功') })"
+                            class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <span>复制链接</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem;">
+                {% include "components/author-bio.html" %}
+                </div>
+
+                <!-- 三按钮：评论、点赞、收藏 -->
+                {% include "components/three-buttons.html" %}
+
+                <!-- 评论区域（由插件注入） -->
+                {% if comment_system_script %}
+                {{ comment_system_script | safe }}
+                {% endif %}
+
+                <!-- 返回顶部 -->
+            </article>
+            {% endif %}
+        </div>
+
+        {% if page.toc | default(value=true) and page.layout | default(value="") != "tweet" and page.layout | default(value="") != "short" and page.title %}
+        {% include "components/toc.html" %}
+        {% endif %}
+    </div>
+</div>
+
+
+
+<script>
+    function shareToTwitter() {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent(document.title);
+        window.open(`https://x.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+    }
+</script>
+{% block ad1 %}{% endblock %}
+{% endblock %}

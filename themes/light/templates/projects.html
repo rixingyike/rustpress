@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}项目 - {{ site.name }}{% endblock %}
+
+{% block head_meta %}
+<meta name="description" content="项目展示 - {{ site.name }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- 页面标题 -->
+    <div class="text-center mb-12">
+        <h1 class="text-3xl font-bold text-moss-ink mb-3">📦 项目展示</h1>
+        <p class="text-mist-green text-lg">开源作品与应用</p>
+    </div>
+
+    <!-- 项目卡片网格 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {% for project in projects %}
+        <a href="/{{ project.slug }}.html" class="group block bg-white overflow-hidden hover: hover:border-primary-300 transition-all duration-300">
+            <!-- 项目头部 -->
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white">
+                <div class="flex items-center space-x-4">
+                    {% if project.icon %}
+                        {% if project.is_img %}
+                        <img src="{{ project.icon_url | default(value=project.icon) }}" alt="{{ project.title }}" class="w-16 h-16 bg-white/10 p-1 object-cover">
+                        {% else %}
+                        <div class="w-16 h-16 bg-white/20 flex items-center justify-center text-3xl font-bold">
+                            {{ project.icon }}
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="w-16 h-16 bg-white/20 flex items-center justify-center text-2xl font-bold">
+                        {{ project.title | truncate(length=1, end="") }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h2 class="text-xl font-bold group-hover:underline">{{ project.title }}</h2>
+                        {% if project.version %}
+                        <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-white/20 ">v{{
+                            project.version }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- 项目信息 -->
+            <div class="p-6">
+                {% if project.description %}
+                <p class="text-mist-green text-sm leading-relaxed mb-4">{{ project.description }}</p>
+                {% endif %}
+                <!-- 标签 -->
+                {% if project.tags %}
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in project.tags %}
+                    <span class="px-2 py-1 text-xs font-medium bg-air-bg text-mist-green">#{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

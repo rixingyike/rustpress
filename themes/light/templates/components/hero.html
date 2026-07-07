@@ -1,0 +1,26 @@
+<!-- 精致极简座右铭 Hero 组件 -->
+{% if site.homepage.show_hero %}
+<section class="max-w-3xl mx-auto px-6 py-12 sm:py-16 text-center">
+    <div class="relative max-w-2xl mx-auto py-4">
+        <!-- 装饰性大双引号 -->
+        <span class="absolute -top-6 -left-2 text-7xl text-cyber-mint/15 font-serif select-none pointer-events-none">“</span>
+        <span class="absolute -bottom-10 -right-2 text-7xl text-cyber-mint/15 font-serif select-none pointer-events-none">”</span>
+        
+        <!-- 座右铭/个人信仰 -->
+        <p class="text-lg sm:text-xl md:text-2xl text-moss-ink/90 font-medium leading-relaxed tracking-wide italic px-8">
+            {{ site.author.maxim | default(value="势利纷华，不近者为洁，近之而不染者尤洁；智械机巧，不知者为高，知之而不用者尤高。") }}
+        </p>
+    </div>
+    
+    <!-- 了解作者优雅微动效链接 -->
+    <div class="mt-8 flex justify-center items-center">
+        <a href="/about.html" class="group inline-flex items-center text-sm font-semibold text-mist-green hover:text-cyber-mint transition-colors duration-300">
+            <span>关于作者</span>
+            <!-- 微动画箭头 -->
+            <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1.5 transition-transform duration-300 ease-out text-cyber-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+        </a>
+    </div>
+</section>
+{% endif %}

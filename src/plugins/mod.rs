@@ -29,7 +29,13 @@ pub static PLUGINS: [PluginDescriptor];
 
 /// 遍历所有插件，执行 on_post_render 钩子
 pub fn run_post_render_hooks(config: &Config, context: &mut Context) -> Result<()> {
+    // 显式调用 Comments 插件的钩子，防止 linkme 分布式切片在特定平台（如 macOS）上被 linker 优化剥离
+    comments::comments_on_post_render(config, context)?;
+
     for plugin in PLUGINS.iter() {
+        if plugin.name == "Comments" {
+            continue;
+        }
         if let Some(hook) = plugin.on_post_render {
             hook(config, context)?;
         }
@@ -40,7 +46,17 @@ pub fn run_post_render_hooks(config: &Config, context: &mut Context) -> Result<(
 /// 遍历所有插件，收集 API 路由并挂载到 Router
 pub fn collect_api_routes(config: &Config) -> Router {
     let mut router = Router::new();
+
+    // 显式挂载 Comments 插件的 API 路由，防止 linkme 链接丢失
+    if let Some((prefix, sub_router)) = comments::comments_api_routes(config) {
+        println!("插件 [Comments] API 已挂载: {}/*", prefix);
+        router = router.nest(prefix, sub_router);
+    }
+
     for plugin in PLUGINS.iter() {
+        if plugin.name == "Comments" {
+            continue;
+        }
         if let Some(factory) = plugin.api_routes {
             if let Some((prefix, sub_router)) = factory(config) {
                 println!("插件 [{}] API 已挂载: {}/*", plugin.name, prefix);

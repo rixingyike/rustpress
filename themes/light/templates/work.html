@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - 著作 - {{ site.name }}{% endblock %}
+
+{% block head_meta %}
+<meta name="description" content="{{ page.description | default(value=site.description) }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ page.title }}">
+<meta property="og:description" content="{{ page.description | default(value=site.description) }}">
+<meta property="og:site_name" content="{{ site.name }}">
+{% if page.cover %}
+<meta property="og:image" content="{{ page.cover }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 面包屑导航 -->
+    <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
+        <a href="/works/" class="hover:text-cyber-mint transition-colors">著作</a>
+    </nav>
+
+    <!-- 著作详细信息卡片 -->
+    <div class="bg-flat-white border border-sage-line/10 p-6 sm:p-8 flex flex-col md:flex-row gap-8 mb-10">
+        <!-- 封面图 -->
+        {% set cover_url = "" %}
+        {% if page.cover %}
+            {% set cover_url = page.cover %}
+        {% elif page.categories and page.categories | length >= 2 %}
+            {% set cover_url = "/works/" ~ page.categories[1] ~ "/cover.png" %}
+        {% endif %}
+
+        {% if cover_url %}
+        <div class="flex-shrink-0 flex justify-center md:block">
+            <img src="{{ cover_url }}" alt="{{ page.title }}" class="w-40 h-56 object-cover">
+        </div>
+        {% endif %}
+
+        <!-- 图书属性介绍 -->
+        <div class="flex-1 flex flex-col justify-between">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-moss-ink mb-2">{{ page.title }}</h1>
+                {% if page.subtitle %}
+                <p class="text-base text-mist-green mb-4">{{ page.subtitle }}</p>
+                {% endif %}
+                
+                <div class="text-sm text-mist-green space-y-1">
+                    {% if page.publisher %}
+                    <p><span class="text-moss-ink">出版社：</span>{{ page.publisher }}</p>
+                    {% endif %}
+                    {% if page.year %}
+                    <p><span class="text-moss-ink">出版年份：</span>{{ page.year }} 年</p>
+                    {% endif %}
+                </div>
+
+                {% if page.description %}
+                <hr class="border-sage-line/10 my-4">
+                <p class="text-mist-green leading-relaxed text-sm mb-6">{{ page.description }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 外网购买链接 -->
+            {% if page.buy_url %}
+            <div>
+                <a href="{{ page.buy_url }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center px-6 py-2.5 bg-moss-ink text-white font-medium text-sm rounded-none hover:bg-cyber-mint hover:text-moss-ink transition-all duration-300 shadow-sm cursor-pointer">
+                    购买实体书
+                    <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 详细大纲与介绍正文 -->
+    <div class="article-content prose prose-lg max-w-none">
+        {{ page.content | safe }}
+    </div>
+
+    <!-- 评论 -->
+    {% if comment_system_script %}
+    <div class="mt-8">
+        {{ comment_system_script | safe }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

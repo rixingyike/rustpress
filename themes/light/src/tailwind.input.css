@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自定义基础样式 */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-sans text-moss-ink bg-air-bg;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-moss-ink;
+  }
+  
+  /* 站点内普通链接默认颜色（不设置全局 hover 以避免覆盖按钮） */
+  a {
+    @apply text-primary-600 transition-colors;
+  }
+
+  /* 限制预格式文本宽度并在内部滚动，避免拉宽页面 */
+  pre {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0px !important;
+  }
+
+  /* 文章内容内的代码块不拉伸页面 */
+  .article-content pre {
+    max-width: 100%;
+    overflow-x: auto;
+    border-radius: 0px !important;
+  }
+
+  /* 仅内联代码允许断行，避免撑宽布局（不影响 <pre><code>） */
+  .article-content :not(pre) > code {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+/* 自定义组件样式 */
+@layer components {
+  .btn {
+    @apply inline-flex items-center px-4 py-2 border-none text-sm font-medium rounded-none shadow-none focus:outline-none transition-colors;
+  }
+  
+  .btn-primary {
+    @apply btn bg-cyber-mint text-moss-ink font-semibold hover:bg-opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-sage-line text-white hover:bg-opacity-90;
+  }
+  
+  .btn-outline {
+    @apply btn border-none text-moss-ink bg-flat-white hover:bg-air-bg;
+  }
+  
+  .card {
+    @apply bg-flat-white rounded-none shadow-none border-none overflow-hidden;
+  }
+  
+  .card-header {
+    @apply px-6 py-4 border-none bg-air-bg;
+  }
+  
+  .card-body {
+    @apply px-6 py-4;
+  }
+  
+  .card-footer {
+    @apply px-6 py-4 border-none bg-air-bg;
+  }
+  
+  /* 博客文章样式 */
+  /* 使用模板中的类名 `prose prose-lg max-w-none`，避免在 CSS 中 @apply 导致 circular dependency */
+  
+  /* 文章内容代码块自动换行，避免拉宽页面 */
+  .article-content.prose pre {
+    max-width: 100%;
+    white-space: pre-wrap; /* 允许在空白处换行 */
+    overflow-wrap: anywhere; /* 长无空格词也可换行 */
+    word-break: break-all; /* 兜底强制断词，避免超长连续字符撑宽 */
+  }
+  .article-content.prose pre code {
+    white-space: inherit;
+  }
+  
+  .article-meta {
+    @apply text-sm text-mist-green flex items-center space-x-4;
+  }
+  
+  /* 导航样式 */
+  .nav-link {
+    @apply text-mist-green hover:text-moss-ink px-3 py-2 rounded-none text-sm font-medium transition-colors;
+  }
+  
+  .nav-link-active {
+    @apply nav-link text-moss-ink bg-flat-white border-l-2 border-cyber-mint;
+  }
+  
+  /* 表单样式 */
+  .form-input {
+    @apply block w-full px-3 py-2 border-none rounded-none shadow-none bg-air-bg text-moss-ink placeholder-mist-green focus:outline-none focus:ring-1 focus:ring-cyber-mint;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-moss-ink mb-1;
+  }
+  
+  .form-error {
+    @apply text-sm text-red-600 mt-1;
+  }
+}
+
+/* 自定义工具类 */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

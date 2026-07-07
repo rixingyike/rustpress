@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}出版物 - {{ site.name }}{% endblock %}
+
+{% block head_meta %}
+<meta name="description" content="已出版的技术著作与在线课程">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <header class="text-center mb-12">
+        <h1 class="text-3xl font-bold text-moss-ink mb-4">出版物</h1>
+        <p class="text-mist-green">已出版的技术著作与在线课程</p>
+    </header>
+
+    {% if works %}
+    <div class="space-y-10">
+        {% for work in works %}
+        <div class="bg-flat-white border border-sage-line/10 p-6 flex flex-col sm:flex-row gap-6">
+            {% set cover_url = "" %}
+            {% if work.cover %}
+                {% set cover_url = work.cover %}
+            {% elif work.slug %}
+                {% set cover_url = "/works/" ~ work.slug ~ "/cover.png" %}
+            {% endif %}
+            
+            {% if cover_url %}
+            <div class="flex-shrink-0">
+                {% if work.url_path %}
+                <a href="{{ work.url_path }}">
+                    <img src="{{ cover_url }}" alt="{{ work.title }}" class="w-32 h-44 object-cover hover:opacity-85 transition-opacity">
+                </a>
+                {% else %}
+                <img src="{{ cover_url }}" alt="{{ work.title }}" class="w-32 h-44 object-cover">
+                {% endif %}
+            </div>
+            {% endif %}
+            <div class="flex-1">
+                <h2 class="text-xl font-bold text-moss-ink mb-2">
+                    {% if work.url_path %}
+                    <a href="{{ work.url_path }}" class="hover:text-cyber-mint transition-colors">{{ work.title }}</a>
+                    {% else %}
+                    {{ work.title }}
+                    {% endif %}
+                </h2>
+                {% if work.subtitle %}
+                <p class="text-sm text-mist-green mb-2">{{ work.subtitle }}</p>
+                {% endif %}
+                {% if work.publisher %}
+                <p class="text-sm text-mist-green mb-3">{{ work.publisher }} · {{ work.year | default(value="") }}</p>
+                {% endif %}
+                {% if work.description %}
+                <p class="text-mist-green leading-relaxed mb-4 text-sm">{{ work.description }}</p>
+                {% endif %}
+                
+                {% if work.url_path %}
+                <div class="flex justify-start">
+                    <a href="{{ work.url_path }}" class="inline-flex items-center text-sm font-medium text-cyber-mint hover:underline">
+                        内容简介
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if page_content %}
+    <div class="mt-12 prose prose-slate max-w-none">
+        {{ page_content | safe }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

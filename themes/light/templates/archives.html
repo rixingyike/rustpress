@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+<!-- 归档页面模板 -->
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink mb-4">文章归档</h1>
+        <p class="text-lg text-mist-green">按年份浏览所有文章</p>
+    </header>
+    
+    {% if all_years %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {# 使用后端预计算的 all_years，按年份倒序 #}
+        {% for y in all_years | sort(attribute="name") | reverse %}
+        {% set year = y.name %}
+        <div class="year-card bg-white hover: transition- duration-300 overflow-hidden">
+            <div class="p-6">
+                <div class="text-center mb-4">
+                    <h2 class="text-3xl font-bold text-sage-line mb-2">{{ year }}</h2>
+                    <div class="w-16 h-1 bg-cyber-mint mx-auto"></div>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <span class="text-mist-green text-sm">共 {{ y.count | default(value=0) }} 篇文章</span>
+                </div>
+                
+                <!-- 年份链接 -->
+                <div class="text-center">
+                    <a href="/archives/{{ year }}/" class="btn-secondary inline-flex items-center px-6 py-3 transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        查看
+                    </a>
+                </div>
+                
+                {# 月份分布不需要，移除该块 #}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- 统计信息 -->
+    <div class="mt-12 text-center">
+        <div class="inline-flex items-center px-6 py-3 bg-air-bg">
+            <svg class="w-5 h-5 mr-2 text-mist-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span class="text-moss-ink font-medium">总计 {{ posts | length }} 篇文章，跨越 {{ all_years | length }} 年</span>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-moss-ink">暂无内容</h3>
+        <p class="mt-2 text-mist-green">还没有发布任何内容</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+<!-- 搜索页面模板 -->
+{% block title %}搜索 - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 主要内容区域 -->
+    <main>
+        <!-- 搜索标题 -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink mb-4">搜索内容</h1>
+            <p class="text-lg text-mist-green">
+                在这里搜索你感兴趣的内容
+            </p>
+        </header>
+
+        <!-- 搜索框 -->
+        <div class="card mb-8">
+            <div class="card-body">
+                <div class="relative">
+                    <input type="text" 
+                           id="search-query" class="w pl-12 pr-20 py-4 text-lg border-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:outline-none transition-colors" 
+                           placeholder="输入关键词搜索内容..."
+                           autocomplete="off">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <button id="search-btn" class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                        <span class="bg-primary-600 text-white px-4 py-2 hover:bg-primary-700 transition-colors">
+                            搜索
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 热门搜索词 -->
+        <div class="card mb-8">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-moss-ink">热门搜索词</h3>
+            </div>
+            <div class="card-body">
+                <div class="flex flex-wrap gap-2">
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5  text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors cursor-pointer"
+                            data-keyword="Rust">
+                        🦀 Rust
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5  text-sm font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors cursor-pointer"
+                            data-keyword="编程">
+                        💻 编程
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5  text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer"
+                            data-keyword="技术">
+                        🔧 技术
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5  text-sm font-medium bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors cursor-pointer"
+                            data-keyword="教程">
+                        📚 教程
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5  text-sm font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors cursor-pointer"
+                            data-keyword="开发">
+                        🚀 开发
+                    </button>
+                    <button class="search-keyword inline-flex items-center px-3 py-1.5  text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors cursor-pointer"
+                            data-keyword="Web">
+                        🌐 Web
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索结果 -->
+        <div id="page-search-results" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-moss-ink">
+                    搜索结果 <span id="results-count" class="text-sage-line"></span>
+                </h2>
+                <button id="clear-search" class="text-mist-green hover:text-moss-ink text-sm">
+                    清除搜索
+                </button>
+            </div>
+            
+            <div id="page-results-container" class="space-y-6">
+                <!-- 搜索结果将在这里显示 -->
+            </div>
+            
+            <!-- 无结果提示 -->
+            <div id="no-results" class="hidden text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-moss-ink mb-2">未找到相关内容</h3>
+                <p class="text-mist-green">
+                    尝试使用不同的关键词或检查拼写
+                </p>
+            </div>
+        </div>
+
+        <!-- 默认提示 -->
+        <div id="default-content" class="text-center py-12">
+            <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-moss-ink mb-2">开始搜索</h3>
+            <p class="text-mist-green">
+                输入关键词或点击上方的热门搜索词开始搜索
+            </p>
+        </div>
+    </main>
+</div>
+
+<!-- 搜索功能脚本（无需 jQuery） -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-query');
+    const searchBtn = document.getElementById('search-btn');
+    const searchResults = document.getElementById('page-search-results');
+    const resultsContainer = document.getElementById('page-results-container');
+    const resultsCount = document.getElementById('results-count');
+    const noResults = document.getElementById('no-results');
+    const clearBtn = document.getElementById('clear-search');
+    const defaultContent = document.getElementById('default-content');
+    
+    // 搜索数据 - 动态加载 search.json
+    let searchData = [];
+    async function loadSearchIndex() {
+        try {
+            const res = await fetch('/search.json', { cache: 'no-store' });
+            if (!res.ok) return [];
+            const data = await res.json();
+            const items = Array.isArray(data) ? data : (data.items || []);
+            return items.map(item => ({
+                title: item.title || item.slug || '',
+                content: item.content || item.summary || '',
+                url: item.url || '',
+                date: item.date || item.date_ymd || '',
+                tags: item.tags || [],
+                categories: item.categories || []
+            }));
+        } catch (e) {
+            console.error('加载搜索索引失败:', e);
+            return [];
+        }
+    }
+    
+    // 执行搜索
+    function performSearch(query) {
+        if (!query || !query.trim()) {
+            clearSearch();
+            return;
+        }
+
+        const q = query.toLowerCase();
+        const results = searchData.filter(post => {
+            const searchText = (
+                (post.title || '') + ' ' +
+                (post.content || '') + ' ' +
+                (Array.isArray(post.tags) ? post.tags.join(' ') : '') + ' ' +
+                (Array.isArray(post.categories) ? post.categories.join(' ') : '')
+            ).toLowerCase();
+            return searchText.includes(q);
+        });
+
+        displayResults(results, query);
+    }
+    
+    // 显示搜索结果
+    function displayResults(results, query) {
+        defaultContent.classList.add('hidden');
+        searchResults.classList.remove('hidden');
+
+        if (results.length === 0) {
+            resultsContainer.classList.add('hidden');
+            noResults.classList.remove('hidden');
+            resultsCount.textContent = '(0 篇)';
+            return;
+        }
+
+        resultsContainer.classList.remove('hidden');
+        noResults.classList.add('hidden');
+        resultsCount.textContent = `(${results.length} 篇)`;
+
+        const html = results.map(result => {
+            const title = highlightText(result.title, query);
+            const excerpt = highlightText(result.content.substring(0, 200), query);
+            
+            return `
+                <article class="card hover: transition- duration-300">
+                    <div class="card-body">
+                        <h3 class="text-xl font-semibold mb-2">
+                            <a href="${result.url}" class="text-moss-ink hover:text-cyber-mint transition-colors">
+                                ${title}
+                            </a>
+                        </h3>
+                        <div class="text-mist-green mb-3 leading-relaxed">
+                            ${excerpt}${result.content.length > 200 ? '...' : ''}
+                        </div>
+                        <div class="flex items-center justify-between text-sm text-mist-green">
+                            <div class="flex items-center space-x-4">
+                                ${result.date ? `<span>${result.date}</span>` : ''}
+                                ${result.categories.length > 0 ? `<span>${result.categories.join(' / ')}</span>` : ''}
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${result.tags.map(tag => `
+                                    <span class="px-2 py-1 bg-primary-100 text-primary-800  text-xs">
+                                        ${tag}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+        
+        resultsContainer.innerHTML = html;
+    }
+    
+    // 高亮搜索关键词
+    function highlightText(text, query) {
+        if (!query) return text;
+        const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safe})`, 'gi');
+        return text.replace(regex, '<mark class="bg-yellow-200 px-1">$1</mark>');
+    }
+    
+    // 清除搜索
+    function clearSearch() {
+        searchInput.value = '';
+        searchResults.classList.add('hidden');
+        defaultContent.classList.remove('hidden');
+        searchInput.focus();
+    }
+    
+    // 事件监听
+    searchBtn.addEventListener('click', () => {
+        performSearch(searchInput.value);
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch(searchInput.value);
+        }
+    });
+
+    clearBtn.addEventListener('click', clearSearch);
+
+    // 热门搜索词点击
+    document.querySelectorAll('.search-keyword').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const keyword = btn.getAttribute('data-keyword') || '';
+            searchInput.value = keyword;
+            performSearch(keyword);
+        });
+    });
+    
+    // 加载索引后处理初始搜索参数
+    loadSearchIndex().then(items => {
+        searchData = items;
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+            searchInput.value = queryParam;
+            performSearch(queryParam);
+        }
+    });
+});
+</script>
+{% endblock %}
+
+<!-- 隐藏广告位1 -->
+{% block ad1 %}
+{% endblock %}

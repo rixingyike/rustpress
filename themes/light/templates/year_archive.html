@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}{% if month %}{{ year }}年{{ month }}月{% else %}{{ year }}年{% endif %} - {{ site.name }}{% endblock %}
+{% block description %}{% if month %}{{ year }}年{{ month }}月的内容{% else %}{{ year }}年的内容{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- 页面头部 -->
+    <header class="mb-8">
+        <!-- 面包屑导航 -->
+        <nav class="mb-4 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
+            <a href="/archives/" class="hover:text-cyber-mint transition-colors">归档</a>
+            <span class="text-gray-300">/</span>
+            {% if month %}
+                <a href="/archives/{{ year }}/" class="hover:text-cyber-mint transition-colors">{{ year }}年</a>
+                <span class="text-gray-300">/</span>
+                <span class="text-gray-500">{{ month }}月</span>
+            {% else %}
+                <span class="text-gray-500">{{ year }}年</span>
+            {% endif %}
+        </nav>
+
+        <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-primary-100 flex items-center justify-center mr-4">
+                <svg class="w-6 h-6 text-sage-line" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink">{% if month %}{{ year }}年{{ month }}月{% else %}{{ year }}年{% endif %}</h1>
+        </div>
+        <p class="text-lg text-mist-green">共 {{ posts | length }} 条内容</p>
+    </header>
+    
+    {% if posts %}
+    <!-- 文章列表 -->
+    <div class="space-y-8">
+        {% if month %}
+            <!-- 某个月份的文章列表 -->
+            <div class="mb-8">
+                <div class="space-y-10">
+                {% for post in posts | sort(attribute="date_ymd") | reverse %}
+                    {% if post.categories and "tweets" in post.categories %}
+                    <!-- 闲言推文样式（与首页一致） -->
+                    <article class="pb-10">
+                        {% if post.categories and post.categories | length > 0 %}
+                        <div class="breadcrumb text-[11px] text-gray-400 mb-2 select-none flex items-center space-x-1">
+                            {% set_global accum_path = "" %}
+                            {% set_global show_sep = false %}
+                            {% for cat in post.categories %}
+                                {% set_global accum_path = accum_path ~ "/" ~ cat %}
+                                {% set cat_url = accum_path ~ "/" %}
+                                {% set index_url = cat_url ~ "index.html" %}
+                                {% if post.url != cat_url and post.url != index_url %}
+                                    {% if show_sep %}
+                                    <span class="text-gray-300">/</span>
+                                    {% endif %}
+                                    {% set_global show_sep = true %}
+                                    {% if cat == "tweets" %}
+                                        <a href="/tweets/" class="hover:text-cyber-mint transition-colors">闲言</a>
+                                    {% elif cat == "friends" %}
+                                        <a href="/friends/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+                                    {% elif cat == "projects" %}
+                                        <a href="/projects/" class="hover:text-cyber-mint transition-colors">项目</a>
+                                    {% elif cat == "works" %}
+                                        <a href="/works/" class="hover:text-cyber-mint transition-colors">著作</a>
+                                    {% else %}
+                                        <a href="{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="flex items-center space-x-3 mb-3">
+                            <img src="{{ site.author.avatar | default(value='/static/images/avatar.png') | safe }}" class="w-9 h-9 object-cover" alt="Avatar">
+                            <div>
+                                <span class="font-semibold text-moss-ink text-sm">{{ site.author.name | default(value='作者') }}</span>
+                                <a href="{{ post.url | default(value='#') }}" class="block text-[12px] text-mist-green hover:text-cyber-mint mt-0.5">{{ post.date | default(value=post.date_ymd) }}</a>
+                            </div>
+                        </div>
+                        <div class="prose prose-sm text-moss-ink leading-relaxed">
+                            {{ post.content | safe }}
+                        </div>
+                        {% if post.images %}
+                        <div class="grid {% if post.images | length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-2 mt-3">
+                            {% for img in post.images %}
+                            <img src="{{ img | safe }}" class="max-h-72 w object-cover" alt="Tweet Image">
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if post.tags %}
+                        <div class="flex flex-wrap gap-2 mt-3 select-none">
+                            {% for tag in post.tags %}
+                            <a href="/tags/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <!-- 评论/点赞/收藏 交互按钮 -->
+                        <div class="flex items-center mt-2 select-none">
+                            <div class="flex items-center space-x-8 text-xs text-mist-green/80">
+                                <button class="flex items-center space-x-2 hover:text-cyber-mint hover:bg-air-bg/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                    <svg class="w-4 h-4 text-sage-line/50 group-hover:text-cyber-mint transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742h.008v.008h-.008v-.008zM12 10.742h.008v.008H12v-.008zm3.308 0h.008v.008h-.008v-.008zM21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span class="font-medium group-hover:text-moss-ink transition-colors">{{ post.comment_count | default(value=0) }}</span>
+                                </button>
+                                <button class="flex items-center space-x-2 hover:text-rose-500 hover:bg-rose-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                    <svg class="w-4 h-4 text-sage-line/50 group-hover:text-rose-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="font-medium group-hover:text-rose-600 transition-colors">{{ post.like_count | default(value=0) }}</span>
+                                </button>
+                                <button class="flex items-center space-x-2 hover:text-amber-500 hover:bg-amber-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                    <svg class="w-4 h-4 text-sage-line/50 group-hover:text-amber-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                    <span class="font-medium group-hover:text-amber-600 transition-colors">{{ post.bookmark_count | default(value=0) }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                    {% else %}
+                    <!-- 博客文章样式 -->
+                    <article class="pb-10">
+                        {% if post.categories and post.categories | length > 0 %}
+                        <div class="breadcrumb text-[11px] text-gray-400 mb-1 select-none flex items-center space-x-1">
+                            {% set_global accum_path = "" %}
+                            {% set_global show_sep = false %}
+                            {% for cat in post.categories %}
+                                {% set_global accum_path = accum_path ~ "/" ~ cat %}
+                                {% set cat_url = accum_path ~ "/" %}
+                                {% set index_url = cat_url ~ "index.html" %}
+                                {% if post.url != cat_url and post.url != index_url %}
+                                    {% if show_sep %}
+                                    <span class="text-gray-300">/</span>
+                                    {% endif %}
+                                    {% set_global show_sep = true %}
+                                    {% if cat == "columns" or cat == "s" %}
+                                        <a href="/columns/" class="hover:text-cyber-mint transition-colors">专栏</a>
+                                    {% elif cat == "tweets" %}
+                                        <a href="/tweets/" class="hover:text-cyber-mint transition-colors">闲言</a>
+                                    {% elif cat == "friends" %}
+                                        <a href="/friends/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+                                    {% elif cat == "projects" %}
+                                        <a href="/projects/" class="hover:text-cyber-mint transition-colors">项目</a>
+                                    {% elif cat == "works" %}
+                                        <a href="/works/" class="hover:text-cyber-mint transition-colors">著作</a>
+                                    {% else %}
+                                        {% if loop.index == 2 and (post.categories[0] == "columns" or post.categories[0] == "s") %}
+                                            {% if post.column_title %}
+                                                <a href="/columns/{{ cat }}/" class="hover:text-cyber-mint transition-colors">{{ post.column_title }}</a>
+                                            {% else %}
+                                                <a href="/columns/{{ cat }}/" class="hover:text-cyber-mint transition-colors">专栏内容</a>
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <h2 class="text-xl font-semibold mb-2">
+                            <a href="{{ post.url | default(value='#') }}" class="text-moss-ink hover:text-cyber-mint transition-colors">
+                                {{ post.title | default(value=post.slug) }}
+                            </a>
+                        </h2>
+                        <div class="text-[12px] text-mist-green mb-3">
+                            {% if post.date_ymd %}
+                            <span>{{ post.date_ymd }}</span>
+                            {% endif %}
+                        </div>
+                        {% if post.content %}
+                        <p class="text-mist-green leading-relaxed text-sm">
+                            {{ post.content | striptags | truncate(length=200) }}
+                        </p>
+                        {% elif post.summary %}
+                        <p class="text-mist-green leading-relaxed text-sm">
+                            {{ post.summary | striptags | truncate(length=200) }}
+                        </p>
+                        {% endif %}
+                        {% if post.tags %}
+                        <div class="flex flex-wrap gap-2 mt-3 select-none">
+                            {% for tag in post.tags %}
+                            <a href="/tags/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <!-- 评论/点赞/收藏 交互按钮 -->
+                        <div class="flex items-center mt-2 select-none">
+                            <div class="flex items-center space-x-8 text-xs text-mist-green/80">
+                                <button class="flex items-center space-x-2 hover:text-cyber-mint hover:bg-air-bg/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                    <svg class="w-4 h-4 text-sage-line/50 group-hover:text-cyber-mint transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742h.008v.008h-.008v-.008zM12 10.742h.008v.008H12v-.008zm3.308 0h.008v.008h-.008v-.008zM21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span class="font-medium group-hover:text-moss-ink transition-colors">{{ post.comment_count | default(value=0) }}</span>
+                                </button>
+                                <button class="flex items-center space-x-2 hover:text-rose-500 hover:bg-rose-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                    <svg class="w-4 h-4 text-sage-line/50 group-hover:text-rose-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="font-medium group-hover:text-rose-600 transition-colors">{{ post.like_count | default(value=0) }}</span>
+                                </button>
+                                <button class="flex items-center space-x-2 hover:text-amber-500 hover:bg-amber-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                    <svg class="w-4 h-4 text-sage-line/50 group-hover:text-amber-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                    <span class="font-medium group-hover:text-amber-600 transition-colors">{{ post.bookmark_count | default(value=0) }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <!-- 月份列表导航 -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {% set months = posts | map(attribute="year_month") | unique | sort | reverse %}
+                {% for ym in months %}
+                    {% set ym_date = ym ~ "-01" %}
+                    {% set month_num = ym_date | date(format="%m") %}
+                    <a href="/archives/{{ year }}/{{ month_num }}/" class="block p-6 text-center bg-white border border-sage-line/20 hover:border-cyber-mint transition-all">
+                        <span class="text-2xl font-bold text-moss-ink block mb-1">{{ month_num }}月</span>
+                        {% set month_posts_count = posts | filter(attribute="year_month", value=ym) | length %}
+                        <span class="text-sm text-mist-green">{{ month_posts_count }} 篇文章</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-moss-ink">{{ year }} 年暂无文章</h3>
+        <p class="mt-2 text-mist-green">这一年还没有发布任何文章</p>
+        <div class="mt-6">
+            <a href="/archives/" class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                返回归档
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}
+
+{% block back_to_top %}
+{% endblock %}

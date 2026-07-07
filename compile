@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+touch /workspace/rustpress/.rebuild-trigger
+echo "✓ 已向 macOS 主机发送编译重启信号 (.rebuild-trigger)"

@@ -1,0 +1,67 @@
+# ==========================================
+# Cloudflare URL 重写/重定向规则配置说明
+# 适用服务：Cloudflare Page Rules 或 Redirect Rules
+# ==========================================
+
+# 1. 项目详情页重定向 (301 永久重定向)
+# ------------------------------------------
+# 原始 URL: /projects/enyan.html
+# 重定向至: /projects/1/index.html
+#
+# 原始 URL: /projects/rustpress.html
+# 重定向至: /projects/2/index.html
+
+# 2. 著作详情页重定向 (301 永久重定向)
+# ------------------------------------------
+# 原始 URL: /works/1/index.html
+# 重定向至: /works/1.html
+#
+# 原始 URL: /works/2/index.html
+# 重定向至: /works/2.html
+
+# 3. 博客 & 文章年份路径重定向 (301 动态重定向)
+# ------------------------------------------
+# 原始 URL: /blog/{年份}/{分类}/{文章}.html
+# 重定向至: /{年份}/blog/{分类}/{文章}.html
+# （例如: /blog/2026/前端开发/post-1.html -> /2026/blog/前端开发/post-1.html）
+#
+# 原始 URL: /posts/{年份}/{分类}/{文章}.html
+# 重定向至: /{年份}/posts/{分类}/{文章}.html
+# （例如: /posts/2026/系统编程/post-2.html -> /2026/posts/系统编程/post-2.html）
+
+# ==========================================
+# Cloudflare Redirect Rules 表达式与重定向格式 (Expression):
+# ==========================================
+#
+# [规则一：项目页面重定向]
+# 表达式 (Expression):
+# (http.request.uri.path eq "/projects/enyan.html")
+# 目标 URL (Target URL) -> 静态重定向至:
+# concat("https://", http.host, "/projects/1/index.html")
+#
+# 表达式 (Expression):
+# (http.request.uri.path eq "/projects/rustpress.html")
+# 目标 URL (Target URL) -> 静态重定向至:
+# concat("https://", http.host, "/projects/2/index.html")
+#
+# [规则二：著作页面重定向]
+# 表达式 (Expression):
+# (http.request.uri.path eq "/works/1/index.html")
+# 目标 URL (Target URL) -> 静态重定向至:
+# concat("https://", http.host, "/works/1.html")
+#
+# 表达式 (Expression):
+# (http.request.uri.path eq "/works/2/index.html")
+# 目标 URL (Target URL) -> 静态重定向至:
+# concat("https://", http.host, "/works/2.html")
+#
+# [规则三：博客文章与年份目录结构调整动态重定向]
+# 表达式 (Expression):
+# (http.request.uri.path matches "^/blog/([0-9]{4})/(.*)$")
+# 目标 URL (Target URL) -> 动态重定向至:
+# concat("https://", http.host, "/", regex_replace(http.request.uri.path, "^/blog/([0-9]{4})/(.*)$", "${1}/blog/${2}"))
+#
+# 表达式 (Expression):
+# (http.request.uri.path matches "^/posts/([0-9]{4})/(.*)$")
+# 目标 URL (Target URL) -> 动态重定向至:
+# concat("https://", http.host, "/", regex_replace(http.request.uri.path, "^/posts/([0-9]{4})/(.*)$", "${1}/posts/${2}"))

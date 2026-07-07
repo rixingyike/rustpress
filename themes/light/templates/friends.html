@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+<!-- 友情链接页面模板 -->
+{% block title %}友情链接 - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 页面标题 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink">友情链接</h1>
+    </header>
+
+    <!-- 友链列表 -->
+    {% if friends %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        {% for friend in friends %}
+        <div class="bg-flat-white border border-sage-line/10 p-5 flex items-center justify-between">
+            <div class="flex items-start min-w-0">
+                {% if friend.avatar %}
+                <img src="{{ friend.avatar }}" alt="{{ friend.title | default(value=friend.name) }}" class="w-10 h-10 object-cover mr-3 flex-shrink-0" loading="lazy">
+                {% endif %}
+                <div class="min-w-0">
+                    <a href="{{ friend.link | default(value=friend.url) }}" target="_blank" rel="noopener" class="font-semibold text-moss-ink hover:text-cyber-mint">
+                        {{ friend.title | default(value=friend.name) }}
+                    </a>
+                    {% if friend.domain %}
+                    <div class="text-xs text-mist-green mt-0.5">{{ friend.domain }}</div>
+                    {% endif %}
+                    {% if friend.description %}
+                    <p class="text-mist-green text-sm mt-2">{{ friend.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{{ friend.url }}" class="flex-shrink-0 ml-4 text-sage-line hover:text-cyber-mint transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <p class="text-mist-green text-lg">暂无友情链接</p>
+    </div>
+    {% endif %}
+
+    <!-- 申请说明（来自 friends.md 的正文） -->
+    {% if page_content %}
+    <div class="prose prose-lg max-w-none">
+        {{ page_content | safe }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

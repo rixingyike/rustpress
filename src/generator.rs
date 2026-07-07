@@ -17,6 +17,7 @@ pub struct Generator {
     #[allow(dead_code)]
     config: Config,
     template_engine: TemplateEngine,
+    pub mem_fs: Option<std::sync::Arc<std::sync::RwLock<std::collections::HashMap<String, Vec<u8>>>>>,
 }
 
 impl Generator {
@@ -27,7 +28,48 @@ impl Generator {
         Ok(Generator {
             config,
             template_engine,
+            mem_fs: None,
         })
+    }
+
+    /// 注入虚拟内存文件系统以供 Serve 阶段进行内存无落盘编译
+    pub fn with_mem_fs(mut self, mem_fs: std::sync::Arc<std::sync::RwLock<std::collections::HashMap<String, Vec<u8>>>>) -> Self {
+        self.mem_fs = Some(mem_fs);
+        self
+    }
+
+    /// 按 URL 按需渲染单个页面（开发模式用）
+    pub fn render_post_by_url(&self, url: &str, all_posts: &[Post]) -> Result<String> {
+        let post = all_posts.iter()
+            .find(|p| p.data.get("url").and_then(|v| v.as_str()) == Some(url))
+            .ok_or_else(|| Error::Other(format!("未找到匹配URL的文章: {}", url)))?;
+        self.template_engine.render_post(post, all_posts)
+    }
+
+    fn write_file<P: AsRef<Path>>(&self, path: P, content: &str) -> Result<()> {
+        self.write_file_bytes(path, content.as_bytes())
+    }
+
+    fn write_file_bytes<P: AsRef<Path>>(&self, path: P, content: &[u8]) -> Result<()> {
+        if let Some(mem_fs) = &self.mem_fs {
+            let path = path.as_ref();
+            let path_str = path.to_string_lossy().replace("\\", "/");
+            let key = if let Some(idx) = path_str.find("/public/") {
+                path_str[idx + 7..].to_string()
+            } else if let Some(idx) = path_str.find("public/") {
+                format!("/{}", &path_str[idx + 7..])
+            } else {
+                format!("/{}", path.file_name().unwrap_or_default().to_string_lossy())
+            };
+
+            println!("[DEBUG] 写入虚拟内存文件: {} (key: {})", path.display(), key);
+            let mut map = mem_fs.write().unwrap();
+            map.insert(key, content.to_vec());
+            Ok(())
+        } else {
+            std::fs::write(path.as_ref(), content)?;
+            Ok(())
+        }
     }
 
     /// 构建网站
@@ -39,8 +81,19 @@ impl Generator {
 
         // 清理并重新创建输出目录
         if output_dir.exists() {
-            std::fs::remove_dir_all(output_dir)
-                .map_err(|e| Error::Other(format!("无法清理输出目录 {:?}: {}", output_dir, e)))?;
+            let mut retries = 5;
+            loop {
+                match std::fs::remove_dir_all(output_dir) {
+                    Ok(_) => break,
+                    Err(e) => {
+                        retries -= 1;
+                        if retries == 0 {
+                            return Err(Error::Other(format!("无法清理输出目录 {:?}: {}", output_dir, e)));
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(50));
+                    }
+                }
+            }
         }
         std::fs::create_dir_all(output_dir)?;
 
@@ -84,7 +137,7 @@ impl Generator {
 
         // 渲染首页（Home 布局，集成 home.md 内容与导航）
         let index_html = if total_pages > 1 {
-            // 有分页时，首页显示最大页（最新）
+            // 有分页时，首页显示最后一页（最新页）
             self.template_engine.render_home_page(
                 &posts,
                 &all_tags,
@@ -92,33 +145,26 @@ impl Generator {
                 total_pages,
             )?
         } else {
-            // 仅1页时，显示 Home 第1页
+            // 仅1页时，显示 Home 第1页（注：render_home内部不处理分页，对应第0页）
             self.template_engine
                 .render_home(&posts, &all_tags, &all_categories)?
         };
-        std::fs::write(output_dir.join("index.html"), index_html)
+        self.write_file(output_dir.join("index.html"), &index_html)
             .map_err(|e| Error::Other(format!("无法写入首页文件: {}", e)))?;
 
-        // 生成首页分页页面（根目录 index{n}.html，最大页为 index.html）
+        // 生成首页分页页面（根目录 index{n}.html，第0页为 index.html）
         self.generate_index_pages(&posts, &all_tags, &all_categories, output_dir)?;
 
         // 渲染每篇文章
         for post in &posts {
+            // 如果是站点首页对应的 README.md (categories为空且slug为index)，则跳过，因为首页由 render_home_page 单独渲染并写入 index.html
+            if post.categories().is_empty() && post.slug() == Some("index") {
+                continue;
+            }
             let post_html = self.template_engine.render_post(post, &posts)?;
-
-            if let Some(slug) = post.slug() {
-                let categories = post.categories();
-                let rel_dir = if categories.is_empty() {
-                    String::new()
-                } else {
-                    categories.join("/")
-                };
-
-                let out_path = if rel_dir.is_empty() {
-                    output_dir.join(format!("{}.html", slug))
-                } else {
-                    output_dir.join(format!("{}/{}.html", rel_dir, slug))
-                };
+            if let Some(url) = post.url() {
+                let rel_path = url.trim_start_matches('/');
+                let out_path = output_dir.join(rel_path);
 
                 if let Some(parent) = out_path.parent() {
                     std::fs::create_dir_all(parent).map_err(|e| {
@@ -126,24 +172,33 @@ impl Generator {
                     })?;
                 }
 
-                std::fs::write(&out_path, post_html)
+                self.write_file(&out_path, &post_html)
                     .map_err(|e| Error::Other(format!("无法写入文章文件 {:?}: {}", out_path, e)))?;
             }
         }
 
-        // 渲染标签页
+        // 渲染标签页（双路写入以兼容 /tags.html 与 /tags/）
         let tags_html = self.template_engine.render_tags(&posts, &all_tags)?;
-        std::fs::write(output_dir.join("tags.html"), tags_html)
-            .map_err(|e| Error::Other(format!("无法写入标签页: {}", e)))?;
+        let tags_dir = output_dir.join("tags");
+        std::fs::create_dir_all(&tags_dir)?;
+        self.write_file(tags_dir.join("index.html"), &tags_html)
+            .map_err(|e| Error::Other(format!("无法写入 tags/index.html 标签页: {}", e)))?;
+        self.write_file(output_dir.join("tags.html"), &tags_html)
+            .map_err(|e| Error::Other(format!("无法写入 tags.html 标签页: {}", e)))?;
 
         // 生成单标签文章列表分页页面
         self.generate_tag_pages(&posts, output_dir)?;
+
+        // 生成专栏标签分类页面
+        self.generate_columns_tag_pages(&posts, output_dir.as_ref())?;
 
         // 渲染分类页
         let categories_html =
             self.template_engine
                 .render_categories(&posts, &all_categories, &all_tags)?;
-        std::fs::write(output_dir.join("categories.html"), categories_html)
+        let categories_dir = output_dir.join("categories");
+        std::fs::create_dir_all(&categories_dir)?;
+        self.write_file(categories_dir.join("index.html"), &categories_html)
             .map_err(|e| Error::Other(format!("无法写入分类页: {}", e)))?;
 
         // 为每个分类生成分类索引页面
@@ -151,7 +206,9 @@ impl Generator {
 
         // 渲染归档页
         let archives_html = self.template_engine.render_archives(&posts, &all_years)?;
-        std::fs::write(output_dir.join("archives.html"), archives_html)
+        let archives_dir = output_dir.join("archives");
+        std::fs::create_dir_all(&archives_dir)?;
+        self.write_file(archives_dir.join("index.html"), &archives_html)
             .map_err(|e| Error::Other(format!("无法写入归档页: {}", e)))?;
 
         // 生成年份归档页
@@ -161,24 +218,26 @@ impl Generator {
         let about_html = self
             .template_engine
             .render_about(&posts, &all_tags, &all_categories)?;
-        std::fs::write(output_dir.join("about.html"), about_html)
+        self.write_file(output_dir.join("about.html"), &about_html)
             .map_err(|e| Error::Other(format!("无法写入关于页面: {}", e)))?;
 
         // 渲染友链页面
-        let friends_html = self.template_engine.render_friends()?;
-        std::fs::write(output_dir.join("friends.html"), friends_html)
+        let friends_html = self.template_engine.render_friends(&posts)?;
+        let friends_dir = output_dir.join("friends");
+        std::fs::create_dir_all(&friends_dir)?;
+        self.write_file(friends_dir.join("index.html"), &friends_html)
             .map_err(|e| Error::Other(format!("无法写入友链页面: {}", e)))?;
 
         // 渲染搜索页面
         let search_html = self.template_engine.render_search(&posts, &all_tags)?;
-        std::fs::write(output_dir.join("search.html"), search_html)
+        self.write_file(output_dir.join("search.html"), &search_html)
             .map_err(|e| Error::Other(format!("无法写入搜索页面: {}", e)))?;
 
         // 渲染404页面
         let not_found_html = self
             .template_engine
             .render_404(&posts, &all_tags, &all_categories)?;
-        std::fs::write(output_dir.join("404.html"), not_found_html)
+        self.write_file(output_dir.join("404.html"), &not_found_html)
             .map_err(|e| Error::Other(format!("无法写入404页面: {}", e)))?;
 
         // 生成搜索索引
@@ -222,7 +281,7 @@ impl Generator {
 
         if !domain.is_empty() {
             let robots_txt = format!("User-agent: *\nAllow: /\n\nSitemap: {}/sitemap.xml", domain);
-            std::fs::write(output_dir.join("robots.txt"), robots_txt)
+            self.write_file(output_dir.join("robots.txt"), &robots_txt)
                 .map_err(|e| Error::Other(format!("无法写入 robots.txt: {}", e)))?;
             println!("robots.txt 已生成");
         } else {
@@ -287,7 +346,7 @@ impl Generator {
             std::fs::create_dir_all(&tag_dir)
                 .map_err(|e| Error::Other(format!("无法创建标签目录 {:?}: {}", tag_dir, e)))?;
 
-            // 逐页渲染并输出（倒分页）：最大页（最新）输出为 index.html，其余为 indexN.html
+            // 逐页渲染并输出：倒分页（最大页为最新，生成为 index.html）
             for page in 1..=total_pages {
                 let html = self.template_engine.render_tag_page(
                     &tag_posts,
@@ -295,19 +354,113 @@ impl Generator {
                     page,
                     posts_per_page,
                 )?;
-                let file_name = if page == total_pages {
-                    "index.html".to_string()
+                if page == total_pages {
+                    let out_path = tag_dir.join("index.html");
+                    self.write_file(&out_path, &html).map_err(|e| {
+                        Error::Other(format!("无法写入标签分页文件 {:?}: {}", out_path, e))
+                    })?;
+                    if total_pages > 1 {
+                        let out_path_n = tag_dir.join(format!("index{}.html", total_pages));
+                        self.write_file(&out_path_n, &html).map_err(|e| {
+                            Error::Other(format!("无法写入标签分页文件 {:?}: {}", out_path_n, e))
+                        })?;
+                    }
                 } else {
-                    format!("index{}.html", page)
-                };
-                let out_path = tag_dir.join(file_name);
-                std::fs::write(&out_path, html).map_err(|e| {
-                    Error::Other(format!("无法写入标签分页文件 {:?}: {}", out_path, e))
-                })?;
+                    let out_path = tag_dir.join(format!("index{}.html", page));
+                    self.write_file(&out_path, &html).map_err(|e| {
+                        Error::Other(format!("无法写入标签分页文件 {:?}: {}", out_path, e))
+                    })?;
+                }
             }
         }
 
         println!("已生成标签分页页面：路径模式 tags/<name>/index[.N].html");
+        Ok(())
+    }
+
+    /// 生成专栏标签分类页面
+    fn generate_columns_tag_pages(&self, posts: &[Post], output_dir: &Path) -> Result<()> {
+        let output_path = output_dir;
+        
+        // 1. 寻找专栏主页的 post 模板（通常是 categories = ["columns"], slug = "index"）
+        let columns_homepage_post = posts.iter().find(|p| {
+            let cats = p.categories();
+            cats.first().map(|c| c == "columns").unwrap_or(false)
+                && cats.len() == 1
+                && p.slug() == Some("index")
+                && p.data.get("layout").and_then(|v| v.as_str()) == Some("columns")
+        });
+
+        let base_post = match columns_homepage_post {
+            Some(p) => p,
+            None => return Ok(()),
+        };
+
+        // 2. 提取所有的专栏列表
+        let all_columns = self.template_engine.get_columns(posts);
+        let columns_count = all_columns.len();
+
+        // 3. 提取所有唯一的标签
+        let mut unique_tags = std::collections::HashSet::new();
+        for col in &all_columns {
+            if let Some(tags) = col.get("tags").and_then(|v| v.as_array()) {
+                for tag in tags {
+                    if let Some(tag_str) = tag.as_str() {
+                        unique_tags.insert(tag_str.to_string());
+                    }
+                }
+            }
+        }
+
+        // 4. 创建专栏标签存储目录：public/columns/tags/
+        let col_tags_dir = output_path.join("columns").join("tags");
+        std::fs::create_dir_all(&col_tags_dir)
+            .map_err(|e| Error::Other(format!("无法创建专栏标签目录 {:?}: {}", col_tags_dir, e)))?;
+
+        // 5. 生成各个标签页面
+        for tag in &unique_tags {
+            // 过滤匹配当前标签的专栏
+            let filtered_columns: Vec<serde_json::Value> = all_columns
+                .iter()
+                .filter(|col| {
+                    if let Some(tags) = col.get("tags").and_then(|v| v.as_array()) {
+                        tags.iter().any(|t| t.as_str() == Some(tag.as_str()))
+                    } else {
+                        false
+                    }
+                })
+                .cloned()
+                .collect();
+
+            let mut context = self.template_engine.create_base_context();
+            context.insert("columns", &filtered_columns);
+            context.insert("active_tag", &tag);
+            context.insert("columns_count", &columns_count);
+
+            // 收集并排序所有唯一标签
+            let mut sorted_all_tags: Vec<String> = unique_tags.iter().cloned().collect();
+            sorted_all_tags.sort();
+            context.insert("unique_tags", &sorted_all_tags);
+
+            // 克隆专栏首页数据作为 page 并修改 title
+            let mut page_data = base_post.data.clone();
+            if let Some(obj) = page_data.as_object_mut() {
+                obj.insert("title".to_string(), serde_json::Value::String(format!("{} - 专栏", tag)));
+            }
+            context.insert("page", &page_data);
+
+            if let Some(content) = base_post.content() {
+                context.insert("page_content", content);
+            }
+
+            // 渲染
+            let html = self.template_engine.render_columns_tag_page_html(&context)?;
+            let file_name = format!("{}.html", tag);
+            let out_path = col_tags_dir.join(file_name);
+            self.write_file(&out_path, &html)
+                .map_err(|e| Error::Other(format!("无法写入专栏标签文件 {:?}: {}", out_path, e)))?;
+        }
+
         Ok(())
     }
 
@@ -371,7 +524,7 @@ impl Generator {
                     format!("index{}.html", page)
                 };
                 let out_path = tag_dir.join(file_name);
-                std::fs::write(&out_path, html).map_err(|e| {
+                self.write_file(&out_path, &html).map_err(|e| {
                     Error::Other(format!("无法写入标签分页文件 {:?}: {}", out_path, e))
                 })?;
                 let rel = out_path.strip_prefix(output_dir).unwrap_or(&out_path);
@@ -458,7 +611,7 @@ impl Generator {
                 p.categories() == category_path && p.slug() == Some("index")
             });
 
-            // 逐页渲染并输出（倒分页）：最大页（最新）输出为 index.html，其余为 indexN.html
+            // 逐页渲染并输出：倒分页（最大页为最新，生成为 index.html）
             for page in 1..=total_pages {
                 let html = self.template_engine.render_category_page(
                     &category_posts,
@@ -466,19 +619,25 @@ impl Generator {
                     page,
                     posts_per_page,
                 )?;
-                let file_name = if page == total_pages {
-                    if has_manual_index {
-                        // 如果有手动定义的 index 文章，跳过自动生成的 index.html 以免覆盖
-                        continue;
+                if page == total_pages {
+                    if !has_manual_index {
+                        let out_path = category_dir.join("index.html");
+                        self.write_file(&out_path, &html).map_err(|e| {
+                            Error::Other(format!("无法写入分类分页文件 {:?}: {}", out_path, e))
+                        })?;
                     }
-                    "index.html".to_string()
+                    if total_pages > 1 {
+                        let out_path_n = category_dir.join(format!("index{}.html", total_pages));
+                        self.write_file(&out_path_n, &html).map_err(|e| {
+                            Error::Other(format!("无法写入分类分页文件 {:?}: {}", out_path_n, e))
+                        })?;
+                    }
                 } else {
-                    format!("index{}.html", page)
-                };
-                let out_path = category_dir.join(file_name);
-                std::fs::write(&out_path, html).map_err(|e| {
-                    Error::Other(format!("无法写入分类分页文件 {:?}: {}", out_path, e))
-                })?;
+                    let out_path = category_dir.join(format!("index{}.html", page));
+                    self.write_file(&out_path, &html).map_err(|e| {
+                        Error::Other(format!("无法写入分类分页文件 {:?}: {}", out_path, e))
+                    })?;
+                }
             }
         }
 
@@ -557,7 +716,7 @@ impl Generator {
                     format!("index{}.html", page)
                 };
                 let out_path = category_dir.join(file_name);
-                std::fs::write(&out_path, html).map_err(|e| {
+                self.write_file(&out_path, &html).map_err(|e| {
                     Error::Other(format!("无法写入分类分页文件 {:?}: {}", out_path, e))
                 })?;
                 let rel = out_path.strip_prefix(output_dir).unwrap_or(&out_path);
@@ -601,8 +760,8 @@ impl Generator {
         }
 
         // 生成所有分页页面为根目录文件 index{n}.html
-        // 注意：最大页为首页 index.html，因此仅生成到 total_pages-1
-        for page in 1..=std::cmp::max(1, total_pages.saturating_sub(1)) {
+        // 从第 1 页到 total_pages 页
+        for page in 1..=total_pages {
             let page_html = self
                 .template_engine
                 .render_home_page(posts, all_tags, all_categories, page)
@@ -611,7 +770,7 @@ impl Generator {
             // 根目录下命名为 index{n}.html
             let page_file = output_dir.join(format!("index{}.html", page));
 
-            std::fs::write(&page_file, page_html)
+            self.write_file(&page_file, &page_html)
                 .map_err(|e| Error::Other(format!("无法写入分页文件 {:?}: {}", page_file, e)))?;
         }
 
@@ -623,7 +782,7 @@ impl Generator {
         Ok(())
     }
 
-    /// 仅为指定页码集合生成首页分页页面（倒分页），并输出详细路径日志
+    /// 仅为指定页码集合生成首页分页页面，并输出详细路径日志
     fn generate_index_pages_for<P: AsRef<Path>>(
         &self,
         posts: &[Post],
@@ -651,31 +810,36 @@ impl Generator {
         let mut list: Vec<usize> = pages
             .iter()
             .cloned()
-            .filter(|p| *p >= 1 && *p <= total_pages)
+            .filter(|p| *p <= total_pages)
             .collect();
         list.sort_unstable();
 
         let mut rebuilt_paths: Vec<String> = Vec::new();
         for page in list {
-            if total_pages == 1 && page == 1 {
-                let html = self
-                    .template_engine
-                    .render_home(posts, all_tags, all_categories)?;
+            if page == total_pages {
+                let html = if total_pages > 1 {
+                    self.template_engine.render_home_page(posts, all_tags, all_categories, total_pages)?
+                } else {
+                    self.template_engine.render_home(posts, all_tags, all_categories)?
+                };
                 let out_path = output_dir.join("index.html");
-                std::fs::write(&out_path, html)
+                self.write_file(&out_path, &html)
                     .map_err(|e| Error::Other(format!("无法写入首页文件 {:?}: {}", out_path, e)))?;
                 rebuilt_paths.push("/index.html".to_string());
+
+                if total_pages > 1 {
+                    let out_path_n = output_dir.join(format!("index{}.html", total_pages));
+                    self.write_file(&out_path_n, &html)
+                        .map_err(|e| Error::Other(format!("无法写入分页文件 {:?}: {}", out_path_n, e)))?;
+                    rebuilt_paths.push(format!("/index{}.html", total_pages));
+                }
             } else {
                 let html = self
                     .template_engine
                     .render_home_page(posts, all_tags, all_categories, page)
                     .map_err(|e| Error::Other(format!("无法渲染第{}页: {}", page, e)))?;
-                let out_path = if page == total_pages {
-                    output_dir.join("index.html")
-                } else {
-                    output_dir.join(format!("index{}.html", page))
-                };
-                std::fs::write(&out_path, html)
+                let out_path = output_dir.join(format!("index{}.html", page));
+                self.write_file(&out_path, &html)
                     .map_err(|e| Error::Other(format!("无法写入分页文件 {:?}: {}", out_path, e)))?;
                 let rel = out_path.strip_prefix(output_dir).unwrap_or(&out_path);
                 rebuilt_paths.push(format!("/{}", rel.to_string_lossy()));
@@ -703,14 +867,8 @@ impl Generator {
 
             let content_text = strip_html_tags(&content_with_spaces);
 
-            // 生成与输出目录结构一致的 URL
             let slug = post.slug().unwrap_or("");
-            let categories = post.categories();
-            let url = if categories.is_empty() {
-                format!("/{}.html", slug)
-            } else {
-                format!("/{}/{}.html", categories.join("/"), slug)
-            };
+            let url = post.url().unwrap_or("");
 
             let search_item = serde_json::json!({
                 "id": i,
@@ -728,7 +886,7 @@ impl Generator {
         let search_json = serde_json::to_string_pretty(&search_data)
             .map_err(|e| Error::Other(format!("无法序列化搜索数据: {}", e)))?;
 
-        std::fs::write(output_dir.join("search.json"), search_json)
+        self.write_file(output_dir.join("search.json"), &search_json)
             .map_err(|e| Error::Other(format!("无法写入搜索索引文件: {}", e)))?;
 
         println!("搜索索引已生成：{:?}/search.json", output_dir);
@@ -773,13 +931,7 @@ impl Generator {
         let mut items_xml = String::new();
         for post in posts {
             let title = escape_xml(post.title().unwrap_or(""));
-            let slug = post.slug().unwrap_or("");
-            let cats = post.categories();
-            let path = if cats.is_empty() {
-                format!("/{}.html", slug)
-            } else {
-                format!("/{}/{}.html", cats.join("/"), slug)
-            };
+            let path = post.url().unwrap_or("");
             let link = format!("{}{}", base, path);
 
             let content = post.content().unwrap_or("");
@@ -805,7 +957,7 @@ impl Generator {
             items_xml
         );
 
-        std::fs::write(output_dir.join("rss.xml"), rss_xml)
+        self.write_file(output_dir.join("rss.xml"), &rss_xml)
             .map_err(|e| Error::Other(format!("无法写入RSS文件: {}", e)))?;
         println!("RSS 已生成：{:?}/rss.xml", output_dir);
         Ok(())
@@ -850,13 +1002,7 @@ impl Generator {
 
         // 文章页
         for post in posts {
-            let slug = post.slug().unwrap_or("");
-            let cats = post.categories();
-            let path = if cats.is_empty() {
-                format!("/{}.html", slug)
-            } else {
-                format!("/{}/{}.html", cats.join("/"), slug)
-            };
+            let path = post.url().unwrap_or("");
             urls.push(format!("{}{}", base, path));
         }
 
@@ -970,19 +1116,25 @@ impl Generator {
             }
         }
         for year in years.into_iter() {
-            urls.push(format!("{}/archives/{}.html", base, year));
+            urls.push(format!("{}/archives/{}/", base, year));
         }
 
         // 主要静态页面
         for static_page in [
-            "tags.html",
-            "categories.html",
-            "archives.html",
             "about.html",
-            "friends.html",
             "search.html",
         ] {
             urls.push(format!("{}/{}", base, static_page));
+        }
+        
+        // 列表概览页目录式 URL
+        for list_page in [
+            "tags/",
+            "categories/",
+            "archives/",
+            "friends/",
+        ] {
+            urls.push(format!("{}/{}", base, list_page));
         }
 
         // 生成XML
@@ -993,13 +1145,13 @@ impl Generator {
         }
         xml.push_str("</urlset>\n");
 
-        std::fs::write(output_dir.join("sitemap.xml"), xml)
+        self.write_file(output_dir.join("sitemap.xml"), &xml)
             .map_err(|e| Error::Other(format!("无法写入Sitemap文件: {}", e)))?;
         println!("Sitemap 已生成：{:?}/sitemap.xml", output_dir);
         Ok(())
     }
 
-    /// 生成年份归档页面
+    /// 生成年份/月份归档页面
     fn generate_year_archive_pages<P: AsRef<Path>>(
         &self,
         posts: &[Post],
@@ -1028,17 +1180,46 @@ impl Generator {
             }
         }
 
-        // 为每个年份生成归档页
+        // 为每个年份和月份生成归档页
         for (year, year_post_list) in year_posts {
+            // 1. 生成年份概览页：/archives/{year}/index.html
             let year_archive_html = self
                 .template_engine
-                .render_year_archive(&year_post_list, &year)?;
-            let year_file_path = archives_dir.join(format!("{}.html", year));
+                .render_year_archive(&year_post_list, &year, None)?;
+            let year_dir = archives_dir.join(&year);
+            std::fs::create_dir_all(&year_dir)?;
+            let year_file_path = year_dir.join("index.html");
 
-            std::fs::write(&year_file_path, year_archive_html)
+            self.write_file(&year_file_path, &year_archive_html)
                 .map_err(|e| Error::Other(format!("无法写入年份归档页 {}: {}", year, e)))?;
 
             println!("年份归档页已生成：{:?}", year_file_path);
+
+            // 2. 生成月份详情页：/archives/{year}/{month}/index.html
+            let mut month_posts: std::collections::HashMap<String, Vec<&Post>> =
+                std::collections::HashMap::new();
+            for post in &year_post_list {
+                if let Some(date) = post.date() {
+                    if date.len() >= 7 {
+                        let month = date[5..7].to_string();
+                        month_posts.entry(month).or_insert_with(Vec::new).push(*post);
+                    }
+                }
+            }
+
+            for (month, month_post_list) in month_posts {
+                let month_archive_html = self
+                    .template_engine
+                    .render_year_archive(&month_post_list, &year, Some(&month))?;
+                let month_dir = year_dir.join(&month);
+                std::fs::create_dir_all(&month_dir)?;
+                let month_file_path = month_dir.join("index.html");
+
+                self.write_file(&month_file_path, &month_archive_html)
+                    .map_err(|e| Error::Other(format!("无法写入月份归档页 {}-{}: {}", year, month, e)))?;
+
+                println!("月份归档页已生成：{:?}", month_file_path);
+            }
         }
 
         Ok(())
@@ -1073,12 +1254,40 @@ impl Generator {
         }
 
         for (year, list) in year_posts {
-            let html = self.template_engine.render_year_archive(&list, &year)?;
-            let file_path = archives_dir.join(format!("{}.html", year));
-            std::fs::write(&file_path, html)
+            // 1. 年份概览页
+            let html = self.template_engine.render_year_archive(&list, &year, None)?;
+            let year_dir = archives_dir.join(&year);
+            std::fs::create_dir_all(&year_dir)?;
+            let file_path = year_dir.join("index.html");
+            self.write_file(&file_path, &html)
                 .map_err(|e| Error::Other(format!("无法写入年份归档页 {}: {}", year, e)))?;
             let rel = file_path.strip_prefix(output_dir).unwrap_or(&file_path);
             println!("年份重建: {} -> /{}", year, rel.to_string_lossy());
+
+            // 2. 月份详情页
+            let mut month_posts: std::collections::HashMap<String, Vec<&Post>> =
+                std::collections::HashMap::new();
+            for post in &list {
+                if let Some(date) = post.date() {
+                    if date.len() >= 7 {
+                        let month = date[5..7].to_string();
+                        month_posts.entry(month).or_insert_with(Vec::new).push(*post);
+                    }
+                }
+            }
+
+            for (month, month_post_list) in month_posts {
+                let month_html = self
+                    .template_engine
+                    .render_year_archive(&month_post_list, &year, Some(&month))?;
+                let month_dir = year_dir.join(&month);
+                std::fs::create_dir_all(&month_dir)?;
+                let month_file_path = month_dir.join("index.html");
+                self.write_file(&month_file_path, &month_html)
+                    .map_err(|e| Error::Other(format!("无法写入月份归档页 {}-{}: {}", year, month, e)))?;
+                let rel_month = month_file_path.strip_prefix(output_dir).unwrap_or(&month_file_path);
+                println!("月份重建: {}-{} -> /{}", year, month, rel_month.to_string_lossy());
+            }
         }
 
         Ok(())
@@ -1172,25 +1381,20 @@ impl Generator {
 
         // 渲染被修改的文章
         for &post in &changed_posts {
+            // 如果是站点首页对应的 README.md (categories为空且slug为index)，则跳过
+            if post.categories().is_empty() && post.slug() == Some("index") {
+                continue;
+            }
             let post_html = self.template_engine.render_post(post, &posts)?;
 
-            if let Some(slug) = post.slug() {
-                let categories = post.categories();
-                let rel_dir = if categories.is_empty() {
-                    String::new()
-                } else {
-                    categories.join("/")
-                };
-                let out_path = if rel_dir.is_empty() {
-                    output_dir.join(format!("{}.html", slug))
-                } else {
-                    output_dir.join(format!("{}/{}.html", rel_dir, slug))
-                };
+            if let Some(url) = post.url() {
+                let rel_path = url.trim_start_matches('/');
+                let out_path = output_dir.join(rel_path);
 
                 if let Some(parent) = out_path.parent() {
                     std::fs::create_dir_all(parent)?;
                 }
-                std::fs::write(&out_path, post_html)
+                self.write_file(&out_path, &post_html)
                     .map_err(|e| Error::Other(format!("无法写入文章文件 {:?}: {}", out_path, e)))?;
             }
         }
@@ -1246,14 +1450,10 @@ impl Generator {
                 .iter()
                 .position(|p| p.slug().unwrap_or("") == cs && p.categories() == cc)
             {
-                let page = if total_pages == 0 {
-                    1
-                } else {
-                    total_pages - (pos / posts_per_page)
-                };
-                affected_pages.insert(std::cmp::max(1, page));
+                let page = total_pages.saturating_sub(pos / posts_per_page).max(1);
+                affected_pages.insert(page);
             } else {
-                affected_pages.insert(std::cmp::max(1, total_pages));
+                affected_pages.insert(total_pages);
             }
         }
         // 如果总页数增加，需要补充新增的 indexN.html 页
@@ -1273,7 +1473,7 @@ impl Generator {
                 }
             }
         }
-        let expected_max_n = total_pages.saturating_sub(1);
+        let expected_max_n = total_pages;
         if expected_max_n > existing_max_n {
             for n in (existing_max_n + 1)..=expected_max_n {
                 affected_pages.insert(n);
@@ -1281,7 +1481,7 @@ impl Generator {
         }
         // 如果 index.html 不存在，也需要补充生成
         if !output_dir.join("index.html").exists() {
-            affected_pages.insert(std::cmp::max(1, total_pages));
+            affected_pages.insert(total_pages);
         }
         if !affected_pages.is_empty() {
             self.generate_index_pages_for(
@@ -1306,11 +1506,18 @@ impl Generator {
             }
             if need_tags_overview {
                 let tags_html = self.template_engine.render_tags(&posts, &all_tags)?;
-                std::fs::write(output_dir.join("tags.html"), tags_html)
-                    .map_err(|e| Error::Other(format!("无法写入标签页: {}", e)))?;
+                let tags_dir = output_dir.join("tags");
+                std::fs::create_dir_all(&tags_dir)?;
+                self.write_file(tags_dir.join("index.html"), &tags_html)
+                    .map_err(|e| Error::Other(format!("无法写入 tags/index.html 标签页: {}", e)))?;
+                self.write_file(output_dir.join("tags.html"), &tags_html)
+                    .map_err(|e| Error::Other(format!("无法写入 tags.html 标签页: {}", e)))?;
             }
             self.generate_tag_pages_for(&posts, &changed_tags, output_dir)?;
         }
+
+        // 生成专栏标签分类页面
+        self.generate_columns_tag_pages(&posts, output_dir.as_ref())?;
 
         // 仅生成受影响分类分页（含祖先路径）
         if !changed_categories.is_empty() {
@@ -1397,13 +1604,8 @@ impl Generator {
         // 1. 收集所有当前活跃文章的预期相对路径
         let mut active_article_paths = std::collections::HashSet::new();
         for post in posts {
-            if let Some(slug) = post.slug() {
-                let cats = post.categories();
-                let rel_path = if cats.is_empty() {
-                    format!("{}.html", slug)
-                } else {
-                    format!("{}/{}.html", cats.join("/"), slug)
-                };
+            if let Some(url) = post.url() {
+                let rel_path = url.trim_start_matches('/').to_string();
                 active_article_paths.insert(rel_path);
             }
         }
@@ -1411,11 +1613,11 @@ impl Generator {
         // 2. 定义系统级保留页面关键词与完全匹配项
         let system_pages = [
             "index.html",
-            "tags.html",
-            "categories.html",
-            "archives.html",
+            "tags/index.html",
+            "categories/index.html",
+            "archives/index.html",
             "about.html",
-            "friends.html",
+            "friends/index.html",
             "search.html",
             "404.html",
             "robots.txt",

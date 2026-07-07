@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+<!-- 分类页面模板 -->
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink mb-4">文章分类</h1>
+        <p class="text-lg text-mist-green">按层次结构浏览所有分类</p>
+    </header>
+    
+    <!-- 全站目录树状结构 -->
+    <div class="bg-white p-6">
+        <div class="space-y-2">
+
+            <!-- 博客（可展开，包含 all_categories 树） -->
+            <div class="category-tree-item" x-data="{ isOpen: false }">
+                <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                    <div @click="isOpen = !isOpen" class="flex items-center space-x-3 cursor-pointer">
+                        <!-- 目录图标，可展开 -->
+                        <button @click.stop="isOpen = !isOpen" class="text-mist-green hover:text-moss-ink transition-colors pointer-events-none">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="!isOpen">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="isOpen">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h9a2 2 0 012 2v1a1 1 0 01-1 1H3m14 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2h14a2 2 0 012 2z"></path>
+                            </svg>
+                        </button>
+                        <span class="text-lg font-medium text-moss-ink">博客</span>
+                    </div>
+                    <a href="/blog/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                        查看
+                    </a>
+                </div>
+
+                <!-- 博客子分类（all_categories 树） -->
+                <div class="pl-8 space-y-2 mt-2" x-show="isOpen" x-transition>
+                    {% if all_categories %}
+                    {% for category in all_categories %}
+                    <div class="category-tree-item" x-data="{ isOpen: false }">
+                        <!-- 主分类 -->
+                        <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                            <div @click="isOpen = !isOpen" class="flex items-center space-x-3 cursor-pointer">
+                                {% if category.children %}
+                                <!-- 目录图标，可展开 -->
+                                <button @click.stop="isOpen = !isOpen" class="text-mist-green hover:text-moss-ink transition-colors pointer-events-none">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="!isOpen">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="isOpen">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h9a2 2 0 012 2v1a1 1 0 01-1 1H3m14 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2h14a2 2 0 012 2z"></path>
+                                    </svg>
+                                </button>
+                                {% else %}
+                                <!-- 叶子图标，不可展开 -->
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                {% endif %}
+                                
+                                <span class="text-lg font-medium text-moss-ink">
+                                    {{ category.name }}
+                                </span>
+                            </div>
+                            <a href="/{{ category.name }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                                查看({{ category.count }})
+                            </a>
+                        </div>
+                        
+                        <!-- 子分类 -->
+                        {% if category.children %}
+                        <div class="pl-8 space-y-2 mt-2" x-show="isOpen" x-transition>
+                            {% for subcategory in category.children %}
+                            <div class="category-tree-item" x-data="{ isOpen: false }">
+                                <div class="flex items-center justify-between py-2 px-4 hover:bg-air-bg transition-colors">
+                                    <div @click="isOpen = !isOpen" class="flex items-center space-x-3 cursor-pointer">
+                                        {% if subcategory.children %}
+                                        <!-- 目录图标，可展开 -->
+                                        <button @click.stop="isOpen = !isOpen" class="text-mist-green hover:text-moss-ink transition-colors pointer-events-none">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="!isOpen">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="isOpen">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h9a2 2 0 012 2v1a1 1 0 01-1 1H3m14 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2h14a2 2 0 012 2z"></path>
+                                            </svg>
+                                        </button>
+                                        {% else %}
+                                        <!-- 叶子图标，不可展开 -->
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        {% endif %}
+                                        
+                                        <span class="text-base font-medium text-moss-ink">
+                                            {{ subcategory.name }}
+                                        </span>
+                                    </div>
+                                    <a href="/{{ category.name }}/{{ subcategory.name }}/" class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-200 text-moss-ink hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                                        查看({{ subcategory.count }})
+                                    </a>
+                                </div>
+                                
+                                <!-- 三级分类 -->
+                                {% if subcategory.children %}
+                                <div class="pl-8 space-y-1 mt-1" x-show="isOpen" x-transition>
+                                    {% for subsubcategory in subcategory.children %}
+                                    <div class="flex items-center justify-between py-1 px-4 hover:bg-air-bg transition-colors">
+                                        <div class="flex items-center space-x-3">
+                                            <!-- 叶子图标，不可展开 -->
+                                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            
+                                            <span class="text-sm text-mist-green">
+                                                {{ subsubcategory.name }}
+                                            </span>
+                                        </div>
+                                        <a href="/{{ category.name }}/{{ subcategory.name }}/{{ subsubcategory.name }}/" class="text-xs text-mist-green hover:text-cyber-mint transition-colors">
+                                            查看({{ subsubcategory.count }})
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 闲言 -->
+            <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-lg font-medium text-moss-ink">闲言</span>
+                </div>
+                <a href="/tweets/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                    查看
+                </a>
+            </div>
+
+            <!-- 专栏 -->
+            <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-lg font-medium text-moss-ink">专栏</span>
+                </div>
+                <a href="/columns/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                    查看
+                </a>
+            </div>
+
+            <!-- 项目 -->
+            <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-lg font-medium text-moss-ink">项目</span>
+                </div>
+                <a href="/projects/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                    查看
+                </a>
+            </div>
+
+            <!-- 著作 -->
+            <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-lg font-medium text-moss-ink">著作</span>
+                </div>
+                <a href="/works/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                    查看
+                </a>
+            </div>
+
+            <!-- 友链 -->
+            <div class="flex items-center justify-between py-3 px-4 hover:bg-air-bg transition-colors">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="text-lg font-medium text-moss-ink">友链</span>
+                </div>
+                <a href="/friends/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                    查看
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{# 分类总览页不显示底部广告位 1 #}
+{% block ad1 %}{% endblock %}

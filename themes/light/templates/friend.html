@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - 友情链接 - {{ site.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
+        <a href="/friends/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+    </nav>
+
+    <div class="bg-flat-white border border-sage-line/10 p-8 flex flex-col items-center text-center">
+        {% if page.avatar %}
+        <img src="{{ page.avatar }}" alt="{{ page.title }}" class="w-24 h-24 object-cover mb-4">
+        {% endif %}
+        <h1 class="text-2xl font-bold text-moss-ink mb-2">{{ page.title }}</h1>
+        {% if page.domain %}
+        <p class="text-sm text-mist-green mb-4">{{ page.domain }}</p>
+        {% endif %}
+        {% if page.description %}
+        <p class="text-mist-green text-sm mb-6">{{ page.description }}</p>
+        {% endif %}
+        {% if page.link %}
+        <a href="{{ page.link }}" target="_blank" rel="noopener" class="inline-flex items-center px-6 py-2.5 bg-moss-ink text-white text-sm hover:bg-cyber-mint hover:text-moss-ink transition-colors">
+            访问网站
+            <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

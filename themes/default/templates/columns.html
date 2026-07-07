@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - {{ site.name }}{% endblock %}
+
+{% block ad1 %}{% endblock %}
+
+{% block content %}
+<div>
+    {% if column_posts %}
+    <div class="max-w-4xl mx-auto">
+    <!-- 面包屑导航 -->
+    <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
+        <a href="/columns/" class="hover:text-cyber-mint transition-colors">专栏</a>
+    </nav>
+    {% if page.cover %}
+    <div class="mb-6 overflow-hidden border border-sage-line/10">
+        <img src="{{ page.cover }}" alt="{{ page.title }} 封面" class="w-full h-64 object-cover">
+    </div>
+    {% endif %}
+
+    <header class="mb-4">
+        <h1 class="text-3xl font-bold text-moss-ink">{{ page.title }}</h1>
+    </header>
+
+    {% if page_content %}
+    <div class="prose prose-slate max-w-none mb-10">
+        {{ page_content | safe }}
+    </div>
+    {% endif %}
+
+    <div class="space-y-2">
+        {% for p in column_posts %}
+        <a href="{{ p.url }}" class="block bg-white border border-sage-line/20 hover:border-cyber-mint transition-colors p-4">
+            <div class="flex items-center justify-between" style="padding-left: {{ p.indent_level | default(value=0) * 0.75 }}rem;">
+                <h2 class="text-base font-semibold text-moss-ink">{% if p.catalog_num %}{{ p.catalog_num }}{% else %}{{ loop.index }}{% endif %}. {{ p.title }}</h2>
+                {% if p.date_ymd %}
+                <span class="text-xs text-mist-green flex-shrink-0 ml-4">{{ p.date_ymd }} {{ p.create_time_hm | default(value="08:00") }}</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- 标签 -->
+    {% if page.tags %}
+    <div class="flex flex-wrap gap-x-4 gap-y-2 mt-6">
+      {% for tag in page.tags %}
+      <a href="/columns/tags/{{ tag }}.html" class="text-sm text-mist-green hover:text-cyber-mint transition-colors">#{{ tag }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 版权信息 -->
+    <div class="mt-8 text-xs text-mist-green">
+      <p>本文链接：<a href="{{ site.domain }}{{ page.url }}" class="text-sage-line hover:underline" target="_blank" rel="noopener">{{ site.domain }}{{ page.url }}</a></p>
+      <p class="mt-1">共享许可：<a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" class="text-sage-line hover:underline">署名-非商业性 4.0 国际 (CC-BY-NC-4.0)</a></p>
+    </div>
+
+    <!-- 分享功能 -->
+    <div class="mt-6 mb-16">
+      <div class="flex flex-wrap gap-3">
+        <button onclick="shareToTwitter()" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+          <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          分享到X
+        </button>
+        <button onclick="navigator.clipboard.writeText(window.location.href).then(() => { window.showToast && window.showToast('复制成功') }).catch(() => { var ta=document.createElement('textarea'); ta.value=window.location.href; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); window.showToast && window.showToast('复制成功') })" class="btn-outline inline-flex items-center text-xs py-1.5 px-3 cursor-pointer">
+          <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span>复制链接</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 返回专栏列表 -->
+    <div class="text-center mt-12 mb-6">
+        <a href="/columns/" class="btn-secondary inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            返回专栏列表
+        </a>
+    </div>
+
+    </div>
+
+    {% elif columns %}
+    <header class="mb-10 text-center">
+        <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink mb-4">专栏</h1>
+        <p class="text-lg text-mist-green">告别信息碎片，重塑底层认知</p>
+    </header>
+
+    <!-- 移动端/平板端：水平滚动标签栏（在主列上方，不占空间） -->
+    {% if unique_tags %}
+    <div class="lg:hidden mb-6 overflow-x-auto scrollbar-hide flex gap-2 pb-2 select-none">
+        <!-- 全部 -->
+        <a href="/columns/"
+            class="flex-shrink-0 px-3 py-1.5 text-xs transition-colors {% if active_tag == '全部' %}bg-moss-ink text-flat-white{% else %}bg-white text-mist-green hover:text-moss-ink{% endif %}">
+            全部 ({{ columns_count | default(value=columns | length) }})
+        </a>
+        <!-- 各标签 -->
+        {% for tag in unique_tags %}
+        <a href="/columns/tags/{{ tag }}.html"
+            class="flex-shrink-0 px-3 py-1.5 text-xs transition-colors {% if active_tag == tag %}bg-moss-ink text-flat-white{% else %}bg-white text-mist-green hover:text-moss-ink{% endif %}">
+            {{ tag }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 相对定位的包装容器，实现完全居中与绝对定位的左边栏 -->
+    <div class="relative max-w-3xl mx-auto">
+        <!-- 左侧：标签导航栏 (仅在 lg 及以上屏幕显示，且绝对定位偏出左边，不抢占中间空间) -->
+        {% if unique_tags %}
+        <div class="hidden lg:block absolute -left-48 top-0 h-full w-40 pointer-events-none">
+            <aside class="sticky top-24 pointer-events-auto">
+                <nav class="space-y-1">
+                    <p class="text-xs text-gray-400 font-medium mb-3 uppercase tracking-wider">标签筛选</p>
+
+                    <!-- 全部 -->
+                    <a
+                        href="/columns/"
+                        class="block text-left px-3 py-1.5 text-sm transition-colors {% if active_tag == '全部' %}bg-moss-ink text-flat-white{% else %}text-mist-green hover:text-moss-ink hover:bg-air-bg{% endif %}">
+                        全部
+                        <span class="ml-1 text-xs opacity-60">{{ columns_count | default(value=columns | length) }}</span>
+                    </a>
+
+                    <!-- 各标签 -->
+                    {% for tag in unique_tags %}
+                    <a
+                        href="/columns/tags/{{ tag }}.html"
+                        class="block text-left px-3 py-1.5 text-sm transition-colors {% if active_tag == tag %}bg-moss-ink text-flat-white{% else %}text-mist-green hover:text-moss-ink hover:bg-air-bg{% endif %}">
+                        {{ tag }}
+                    </a>
+                    {% endfor %}
+                </nav>
+            </aside>
+        </div>
+        {% endif %}
+
+        <!-- 右侧/中间：专栏卡片网格 -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for s in columns %}
+            <div class="card flex flex-col">
+                <!-- 封面：四周留白，内缩显示 -->
+                <div class="px-4 pt-4">
+                {% if s.cover %}
+                    <img src="{{ s.cover }}" alt="{{ s.title }}" class="w-full h-44 object-cover">
+                {% else %}
+                    <div class="w-full h-44 bg-air-bg flex items-center justify-center">
+                        <span class="text-moss-ink font-bold text-2xl">{{ s.title | truncate(length=4, end="") }}</span>
+                    </div>
+                {% endif %}
+                </div>
+                <!-- 文本区 -->
+                <div class="px-4 pt-3 pb-4 flex-1 flex flex-col">
+                    <h2 class="text-lg font-bold text-moss-ink mb-2 leading-snug">{{ s.title }}</h2>
+                    <p class="text-mist-green text-sm flex-1 leading-relaxed mb-4">{{ s.description | default(value="") | truncate(length=80) }}</p>
+                    <!-- 标签 -->
+                    {% if s.tags %}
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for tag in s.tags %}
+                        <a
+                            href="/columns/tags/{{ tag }}.html"
+                            class="inline-flex items-center px-2 py-0.5 text-xs bg-air-bg text-mist-green hover:bg-cyber-mint/10 hover:text-cyber-mint transition-colors cursor-pointer">#{{ tag }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <!-- 底部：价格 + 进入按钮 -->
+                    <div class="flex items-center justify-between pt-3">
+                        {% if s.price and s.price > 0 %}
+                        <span class="text-sm font-medium text-cyber-mint">¥{{ s.price }}</span>
+                        {% else %}
+                        <span class="text-xs text-mist-green/60">免费</span>
+                        {% endif %}
+                        <a href="{{ s.url }}" class="inline-flex items-center text-sm font-medium text-sage-line hover:text-cyber-mint transition-colors">
+                            进入专栏
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <svg class="mx-auto h-16 w-16 text-mist-green/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <h3 class="text-lg font-medium text-mist-green">暂无专栏</h3>
+        <p class="text-mist-green text-sm mt-1">专栏正在筹备中，敬请期待</p>
+    </div>
+    {% endif %}
+
+    {% if page_content and not column_posts %}
+    <div class="mt-16 prose prose-slate max-w-none">
+        {{ page_content | safe }}
+    </div>
+    {% endif %}
+</div>
+<script>
+function shareToTwitter() {
+  var url = encodeURIComponent(window.location.href);
+  var text = encodeURIComponent(document.title);
+  window.open('https://x.com/intent/tweet?url=' + url + '&text=' + text, '_blank');
+}
+</script>
+{% endblock %}

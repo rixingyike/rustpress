@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}专栏系列 - {{ site.name }}{% endblock %}
+
+{% block ad1 %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <header class="mb-12 text-center">
+        <h1 class="text-4xl font-extrabold text-moss-ink mb-4">{{ page.title | default(value="专栏系列") }}</h1>
+        {% if page.description %}
+        <p class="text-xl text-mist-green">{{ page.description }}</p>
+        {% endif %}
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% if docs %}
+        {% for doc in docs %}
+        <div class="bg-white overflow-hidden hover: transition- flex flex-col">
+            {% if doc.cover %}
+            <img src="{{ doc.cover }}" alt="{{ doc.title }}" class="w h-48 object-cover">
+            {% else %}
+            <div class="w h-48 bg-gradient-to-br from-indigo-950 via-slate-900 to-black flex items-center justify-center p-8 text-center overflow-hidden relative group">
+                <!-- 动态背景光晕 -->
+                <div class="absolute top-0 left-0 w h bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.1),transparent_70%)]">
+                </div>
+                <!-- 顶部边纹装饰 -->
+                <div class="absolute top-0 left-0 w h-1 bg-gradient-to-r from-primary-500/30 to-transparent"></div>
+
+                <!-- 标题内容区 -->
+                <div class="relative z-10 transform group-hover:scale-105 transition-transform duration-500">
+                    <span class="text-white font-extrabold text-xl sm:text-2xl tracking-tight leading-tight drop- inline-block max-w-[200px]">
+                        {{ doc.title }}
+                    </span>
+                    <div class="mt-4 flex justify-center">
+                        <div class="w-12 h-1 bg-primary-500/50  -[0_0_10px_rgba(59,130,246,0.5)]">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 装饰标识 -->
+                <div class="absolute bottom-3 right-4 flex items-center space-x-2 opacity-40">
+                    <div class="w-1.5 h-1.5  bg-primary-400"></div>
+                    <span class="text-[9px] text-sage-line/30 uppercase tracking-[0.25em] font-mono">Collection</span>
+                </div>
+
+                <!-- 书脊深度模拟 -->
+                <div class="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/50 to-transparent"></div>
+            </div>
+            {% endif %}
+
+            <div class="p-6 flex-1 flex flex-col">
+                <h2 class="text-xl font-bold text-moss-ink mb-2">{{ doc.title }}</h2>
+                <div class="text-mist-green text-sm mb-4 flex-1">
+                    {{ doc.description | default(value="暂无描述") | truncate(length=100) }}
+                </div>
+
+                <div class="flex items-center justify-between mt-auto pt-4">
+                    <span class="text-xs text-mist-green">{{ doc.date_ymd | default(value="") }}</span>
+                    <a href="{{ doc.url }}" class="inline-flex items-center text-sage-line font-semibold hover:text-cyber-mint">
+                        开始阅读
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-span py-12 text-center text-mist-green">
+            暂无书籍。
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 底部内容 -->
+    {% if page.content %}
+    <div class="mt-16 prose prose-slate max-w-none">
+        {{ page.content | safe }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

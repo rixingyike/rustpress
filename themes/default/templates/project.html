@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block ad1 %}{% endblock %}
+
 {% block head_meta %}
 <meta name="description" content="{{ page.description | default(value=site.description) }}">
 <meta property="og:type" content="website">
@@ -192,29 +194,6 @@
     {% if comment_system_script %}
     {{ comment_system_script | safe }}
     {% endif %}
-
-    <!-- 支持开发 -->
-    {% if site.author.donate_qrcode %}
-    <div class="bg-indigo-50 rounded-2xl p-8 mb-10 border border-indigo-100 flex flex-col items-center text-center">
-        <h3 class="text-xl font-bold text-gray-900 mb-2">支持项目开发</h3>
-        <p class="text-gray-600 mb-6 max-w-md">如果您觉得这个项目对您有所帮助，欢迎通过以下方式支持作者继续改进和维护。</p>
-
-        <div class="bg-white p-3 rounded-xl shadow-sm border border-indigo-100">
-            <img src="{{ site.author.donate_qrcode }}" alt="赞助二维码" class="w-32 h-32 object-contain">
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- 返回顶部 -->
-    <div class="text-center mt-8 mb-12">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="btn-secondary inline-flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18">
-                </path>
-            </svg>
-            返回顶部
-        </button>
-    </div>
 
 </div>
 {% endblock %}

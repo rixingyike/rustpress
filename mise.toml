@@ -1,11 +1,79 @@
 [tools]
-rust = "1.85"
+rust = { version = "1.85", os = ["macos"] }
 node = "22"
 
 [tasks.dev]
-description = "启动开发模式（包含热重载和 CSS 构建）"
-run = "rm -rf public && cargo run -- serve"
+description = "启动开发模式（先编译二进制再启动，避免增量编译死循环）"
+run = '''
+#!/usr/bin/env bash
+if [ "$(uname)" = "Darwin" ]; then
+  cargo build || exit 1
+  rm -rf public
+  rm -f .rebuild-trigger
+  
+  echo "=== 开发服务器已启动，监听 .rebuild-trigger 编译触发信号 ==="
+  
+  while true; do
+    # 启动前强行释放 1111 端口占用，防止旧的孤儿进程残留
+    lsof -ti:1111 | xargs kill -9 2>/dev/null || true
+    
+    dev=pushpen POLL=1 ./target/debug/rustpress serve &
+    PID=$!
+    
+    trap 'kill $PID 2>/dev/null; lsof -ti:1111 | xargs kill -9 2>/dev/null || true; exit' SIGINT SIGTERM
+    
+    while true; do
+      if [ -f .rebuild-trigger ]; then
+        rm -f .rebuild-trigger
+        echo "=== [Trigger] 收到重新编译信号，正在重启开发服务器... ==="
+        kill $PID 2>/dev/null
+        wait $PID 2>/dev/null
+        lsof -ti:1111 | xargs kill -9 2>/dev/null || true
+        break
+      fi
+      
+      # 检测后台服务是否意外退出
+      if ! kill -0 $PID 2>/dev/null; then
+        echo "=== [Status] 开发服务器已停止（可能编译失败或挂起），等待重新编译信号... ==="
+        while true; do
+          if [ -f .rebuild-trigger ]; then
+            rm -f .rebuild-trigger
+            echo "=== [Trigger] 重新拉起开发服务器... ==="
+            break 2
+          fi
+          sleep 1
+        done
+      fi
+      
+      sleep 1
+    done
+  done
+else
+  echo "Not on macOS, skipping compilation/development server."
+fi
+'''
 
 [tasks.release]
 description = "执行生产环境构建"
-run = "cargo run -- build"
+run = '''
+#!/usr/bin/env bash
+if [ "$(uname)" = "Darwin" ]; then
+  cargo run -- build
+else
+  echo "Not on macOS, skipping production build compilation."
+fi
+'''
+
+[tasks.build]
+description = "编译二进制并构建静态站点"
+run = '''
+#!/usr/bin/env bash
+if [ "$(uname)" = "Darwin" ]; then
+  cargo build --release
+  ./target/release/rustpress build
+else
+  echo "Not on macOS, skipping build."
+fi
+'''
+
+

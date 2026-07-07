@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+<!-- 标签页面模板 -->
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- 页面头部 -->
+    <header class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink mb-4">标签云</h1>
+        <p class="text-lg text-mist-green">通过标签快速找到相关内容</p>
+    </header>
+    
+    {% if all_tags %}
+    <!-- 标签统计 -->
+    <div class="mb-8 text-center">
+        <div class="inline-flex items-center px-6 py-3 bg-air-bg">
+            <svg class="w-5 h-5 mr-2 text-mist-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+            <span class="text-moss-ink font-medium">共 {{ all_tags | length }} 个标签</span>
+        </div>
+    </div>
+    
+    <!-- 所有标签 - 圆形标签样式 -->
+    <div class="bg-white p-8 mb-8">
+        <h2 class="text-2xl font-semibold text-moss-ink mb-6">所有标签</h2>
+        <div class="flex flex-wrap gap-3">
+            {% for tag in all_tags | sort(attribute="name") %}
+            <a href="/tags/{{ tag.name }}/" class="inline-flex items-center px-4 py-2 bg-air-bg text-moss-ink font-medium hover:bg-primary-100 hover:text-cyber-mint transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                {{ tag.name }}
+                <span class="ml-2 inline-flex items-center text-xs font-medium bg-transparent text-mist-green">
+                    {{ tag.count }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- 热门标签 -->
+    {% set popular_tags = all_tags | sort(attribute="count") | reverse | slice(end=8) %}
+    {% if popular_tags | length > 0 %}
+    <div class="bg-air-bg p-8">
+        <h2 class="text-2xl font-semibold text-moss-ink mb-6 text-center">热门标签</h2>
+        <div class="flex flex-wrap justify-center gap-3">
+            {% for tag in popular_tags %}
+            <a href="/tags/{{ tag.name }}/" class="inline-flex items-center px-6 py-3 bg-white border-2 border-primary-200 text-primary-700 font-medium hover:bg-primary-50 hover:border-primary-300 transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                {{ tag.name }}
+                <span class="ml-2 inline-flex items-center text-xs font-medium bg-transparent text-primary-700">
+                    {{ tag.count }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-moss-ink">暂无标签</h3>
+        <p class="mt-2 text-mist-green">还没有创建任何标签</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block ad1 %}
+{% endblock %}

@@ -14,15 +14,15 @@
     {% if friends %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {% for friend in friends %}
-        <div class="card hover:shadow-md transition-shadow">
+        <div class="card hover:shadow-md transition-shadow relative">
             <div class="card-body">
                 <div class="flex items-start">
                     {% if friend.avatar %}
-                    <img src="{{ friend.avatar }}" alt="{{ friend.name }}" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
+                    <img src="{{ friend.avatar }}" alt="{{ friend.title | default(value=friend.name) }}" class="w-10 h-10 rounded mr-3 object-cover" loading="lazy">
                     {% endif %}
-                    <div class="min-w-0">
-                        <a href="{{ friend.url }}" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
-                            {{ friend.name }}
+                    <div class="min-w-0 flex-1">
+                        <a href="{{ friend.link | default(value=friend.url) }}" target="_blank" rel="noopener" class="font-semibold text-gray-900 hover:text-primary-700">
+                            {{ friend.title | default(value=friend.name) }}
                         </a>
                         {% if friend.domain %}
                         <div class="text-xs text-gray-500 mt-0.5">{{ friend.domain }}</div>
@@ -31,6 +31,11 @@
                         <p class="text-gray-600 text-sm mt-2">{{ friend.description }}</p>
                         {% endif %}
                     </div>
+                    <a href="{{ friend.url }}" class="flex-shrink-0 ml-2 self-center text-gray-400 hover:text-primary-600 transition-colors" title="查看详情">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
-compile_mode = "full"
-last_build_time = "2026-03-16 10:29:41"
+full_compile = true
+last_build_time = "2026-07-07 14:09:17"
 md_dir = "source"
 output_dir = "public"
 

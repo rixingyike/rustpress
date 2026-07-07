@@ -10,12 +10,10 @@
             <!-- 页面头部 -->
             <header class="mb-8">
                 <!-- 面包屑导航 -->
-                <nav class="mb-6 text-sm text-gray-600">
-                    <a href="/" class="hover:text-primary-600">首页</a>
-                    <span class="mx-2">›</span>
-                    <a href="/tags.html" class="hover:text-primary-600">标签</a>
-                    <span class="mx-2">›</span>
-                    <span class="text-gray-900">{{ tag_name }}</span>
+                <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5">
+                    <a href="/tags/" class="hover:text-primary-600">标签</a>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-gray-500">{{ tag_name }}</span>
                 </nav>
                 
                 <div class="flex items-center mb-4">
@@ -26,7 +24,7 @@
                     </div>
                     <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">{{ tag_name }}</h1>
                 </div>
-                <p class="text-lg text-gray-600">共 {{ posts | length }} 篇相关文章</p>
+                <p class="text-lg text-gray-600">共 {{ posts | length }} 条相关内容</p>
             </header>
             
             <!-- 文章列表 -->
@@ -77,7 +75,7 @@
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
                                     </svg>
-                                    {{ post.categories | join(sep=' › ') }}
+                                    {{ post.categories | join(sep=' / ') }}
                                 </span>
                                 {% endif %}
                             </div>
@@ -89,9 +87,9 @@
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                         </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">标签 "{{ tag_name }}" 暂无文章</h3>
-                        <p class="mt-2 text-gray-500">这个标签下还没有发布任何文章</p>
-                        <a href="/tags.html" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回标签页</a>
+                        <h3 class="mt-4 text-lg font-medium text-gray-900">标签 "{{ tag_name }}" 暂无内容</h3>
+                        <p class="mt-2 text-gray-500">这个标签下还没有发布任何内容</p>
+                        <a href="/tags/" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回标签页</a>
                     </div>
                 {% endif %}
             </div>
