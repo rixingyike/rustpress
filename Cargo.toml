@@ -12,7 +12,8 @@ readme = "README.md"
 
 exclude = [
     "/public/**",
-    "/source/**",
+    "/source/*/*",
+    "/source/README.md",
     "/test_blog/**",
     "**/node_modules",
     "themes/**/.cache/**",
