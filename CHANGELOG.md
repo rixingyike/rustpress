@@ -1,3 +1,9 @@
+## [Unreleased] - 2026-07-08
+
+- fix: restore local static assets by correcting gitignore and templating
+
+---
+
 ## [0.2.0] - 2026-07-07
 
 - 重构：数据源目录结构调整，引入 columns/works/friends/tweets 等新模块
