@@ -5,15 +5,15 @@ set -euo pipefail
 
 # RustPress 发布脚本（更简单、自动）
 # 功能：
-# - 使用 cargo-release 提升版本号（默认 patch）
+# - 使用 cargo-release 提升版本号（默认 minor）
 # - 发布到 crates.io（需本机已登录或设置 CARGO_REGISTRY_TOKEN）
 # - 将提交与标签推送到 Git 远端
-# 默认参数：LEVEL=patch, TAG_PREFIX=v, REMOTE=origin
+# 默认参数：LEVEL=minor, TAG_PREFIX=v, REMOTE=origin
 
 # 发布参数
 # 说明：默认不清理 .gitignore 指定的文件，以保留本地预览输出（如 public/）和测试目录（如 testblog/）。
 # 如需清理可在运行时设置 CLEAN_IGNORED=1（保留列表由 PRESERVE_IGNORED 控制）。
-LEVEL="${LEVEL:-patch}"
+LEVEL="${LEVEL:-minor}"
 REMOTE="${REMOTE:-origin}"
 TAG_PREFIX="${TAG_PREFIX:-v}"
 NO_CONFIRM="${NO_CONFIRM:-1}"

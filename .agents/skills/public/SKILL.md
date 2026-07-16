@@ -20,11 +20,11 @@ description: 发布新 tag 并发布 Rust 包到 crates.io。当用户请求 "/p
 2. **运行发布命令**：
    - 引导用户在宿主开发机终端（或者在具备 Rust 工具链的环境中）运行以下命令：
      ```bash
-     # 1. 默认升级小版本号并发布至 crates.io
+     # 1. 默认升级次要版本号（minor）并自动提交未暂存改动，并发布至 crates.io
      bash publish_to_crates.sh
      
-     # 2. 升级次要版本号（minor）并自动提交未暂存改动
-     LEVEL=minor AUTO_COMMIT=1 bash publish_to_crates.sh
+     # 2. 仅升级修订版本号（patch）
+     LEVEL=patch bash publish_to_crates.sh
      
      # 3. 仅提升版本、标记并推送 Git Tag，跳过 crates.io 发布
      SKIP_PUBLISH=1 bash publish_to_crates.sh
