@@ -166,17 +166,51 @@
         <div class="article-content prose prose-lg max-w-none" x-data x-init="$nextTick(() => {
             document.querySelectorAll('#project-content pre code').forEach((codeBlock) => {
                 const pre = codeBlock.parentElement;
-                if (!pre.querySelector('.copy-code-btn')) {
-                    const button = document.createElement('button');
-                    button.className = 'copy-code-btn';
-                    button.textContent = '复制';
-                    button.setAttribute('x-data', `{ copied: false }`);
-                    button.setAttribute('@click', `navigator.clipboard.writeText(this.parentElement.querySelector('code').textContent).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000) })`);
-                    button.setAttribute(':class', `{ 'bg-green-600': copied }`);
-                    button.setAttribute('x-text', `copied ? '已复制' : '复制'`);
-                    pre.style.position = 'relative';
-                    pre.appendChild(button);
-                }
+                if (!pre || pre.querySelector('.copy-code-btn')) return;
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'copy-code-btn';
+                button.textContent = 'copy';
+                button.setAttribute('aria-label', '复制代码');
+
+                button.addEventListener('click', function() {
+                    const code = pre.querySelector('code');
+                    const text = code ? code.textContent : pre.textContent;
+                    const fallback = function() {
+                        try {
+                            const ta = document.createElement('textarea');
+                            ta.value = text;
+                            ta.style.position = 'fixed';
+                            ta.style.opacity = '0';
+                            ta.style.top = '0';
+                            ta.style.left = '0';
+                            document.body.appendChild(ta);
+                            ta.focus();
+                            ta.select();
+                            const ok = document.execCommand('copy');
+                            ta.remove();
+                            return ok;
+                        } catch (e) { return false; }
+                    };
+                    const done = function(success) {
+                        button.textContent = success ? '代码已复制' : '复制失败';
+                        button.classList.add('copied');
+                        setTimeout(function() {
+                            button.textContent = 'copy';
+                            button.classList.remove('copied');
+                        }, 2000);
+                        if (window.showToast) {
+                            window.showToast(success ? '代码已复制' : '复制失败');
+                        }
+                    };
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => done(true)).catch(() => done(!!fallback()));
+                    } else {
+                        done(!!fallback());
+                    }
+                });
+
+                pre.appendChild(button);
             });
         })" id="project-content">
             {{ page.content | safe }}

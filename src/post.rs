@@ -3,7 +3,7 @@
 //! 负责解析 Markdown 文件，提取元数据和内容
 
 use crate::error::{Error, Result};
-use pulldown_cmark::{Options, Parser, html};
+use comrak::{Options, markdown_to_html};
 use regex::Regex;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -617,18 +617,26 @@ impl PostParser {
 
     /// 将Markdown转换为HTML
     fn markdown_to_html(markdown: &str) -> String {
-        let mut options = Options::empty();
-        options.insert(Options::ENABLE_TABLES);
-        options.insert(Options::ENABLE_FOOTNOTES);
-        options.insert(Options::ENABLE_STRIKETHROUGH);
-        options.insert(Options::ENABLE_TASKLISTS);
-        options.insert(Options::ENABLE_HEADING_ATTRIBUTES);
+        // 复用 comrak 渲染，对照原 pulldown-cmark 启用的扩展：
+        // ENABLE_TABLES / ENABLE_FOOTNOTES / ENABLE_STRIKETHROUGH / ENABLE_TASKLISTS。
+        // 额外启用 highlight（==高亮== → <mark>），pulldown-cmark 0.9 不支持此扩展。
+        let mut options = Options::default();
+        options.extension.table = true;
+        options.extension.strikethrough = true;
+        options.extension.footnotes = true;
+        options.extension.tasklist = true;
+        options.extension.highlight = true;
 
-        let parser = Parser::new_ext(markdown, options);
-        let mut html = String::new();
-        html::push_html(&mut html, parser);
+        let html = markdown_to_html(markdown, &options);
 
-        html
+        // 归一化代码块尾部多余空行：围栏内若以一个空行结尾，渲染器会在 </code>
+        // 前保留多换行，叠加 Typography 的 pre 上下 1em padding 导致底部空白偏大。
+        // 把 <code> 内部 2 个及以上的尾部换行压缩为 1 个。
+        let re = Regex::new(r"(?s)(<code[^>]*>)([\s\S]*?)(\n{2,})</code>").unwrap();
+        re.replace_all(&html, |c: &regex::Captures| {
+            format!("{}{}\n</code>", &c[1], &c[2])
+        })
+        .to_string()
     }
 
     /// 统计所有标签及计数

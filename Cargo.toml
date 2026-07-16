@@ -22,7 +22,7 @@ exclude = [
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
-pulldown-cmark = "0.9"
+comrak = "0.54"
 gray_matter = "0.2"
 tera = "1.19"
 walkdir = "2.4"
