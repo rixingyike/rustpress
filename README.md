@@ -2,14 +2,6 @@
 
 一个用 Rust 构建的无后端静态博客程序，支持增量编译与倒分页。每次构建只重建受影响的页面（首页及相关标签/分类/年份页），无论文章是 1 篇还是几千篇，构建速度都保持稳定。内置 Tera 模板、纯前端搜索（search.json + JS）、RSS 与 Sitemap；并可通过 `source/build.toml` 的 `compile_mode` 在本地与 CI 中按需切换增量或全量构建。
 
-compile_mode：
-incremental
-full
-
-cd "/Users/liyi/Library/Application\ Support/app.pushpen.writer/"
-cargo run --manifest-path "/Users/liyi/workspace/rustpress/Cargo.toml" -- -m "source" serve --output-dir "public"
-
-
 ## 特性
 
 - 🚀 **快速**：使用Rust语言编写，编译速度快，生成网站高效
@@ -125,25 +117,7 @@ fn main() -> rustpress::Result<()> {
 }
 ```
 
-### 3）Fork 源码自由定制
-
-- Fork 本仓库并克隆到本地，按需修改源码与模板：
-  - 模板路径：`themes/default/templates/`
-  - 静态资源（主题）：`themes/default/static/`
-- 本地开发建议：
-
-```bash
-# 开发环境构建（编译 CSS + 构建站点）
-cargo run -- build-dev
-
-# 开发模式（构建 + 启动预览）
-cargo run -- dev
-
-# 开启模板热重载
-cargo run -- dev --hotreload
-```
-
-### 4）通过 GitHub Actions 自动部署（示例 deploy.yml）
+### 3）通过 GitHub Actions 自动部署（示例 deploy.yml）
 
 将以下文件保存为 `.github/workflows/deploy.yml`，每次推送到 `main` 分支时自动构建并部署到 GitHub Pages：
 
