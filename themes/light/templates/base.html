@@ -570,6 +570,23 @@
                 }, 300);
             }, 3000);
         };
+
+        // 客户端环境校验：仅在本地开发或测试域名下显示草稿标识
+        (function() {
+            var devDomains = {{ site.dev_domains | default(value=["localhost", "127.0.0.1", "dev.yishulun.com"]) | json_encode | safe }};
+            var hostname = window.location.hostname;
+            var isDevHost = (Array.isArray(devDomains) && devDomains.some(function(d) { return hostname === d || hostname.endsWith('.' + d); })) ||
+                            hostname === 'localhost' ||
+                            hostname === '127.0.0.1' ||
+                            hostname.startsWith('dev.') ||
+                            hostname.startsWith('test.') ||
+                            hostname.startsWith('staging.');
+            if (isDevHost) {
+                document.querySelectorAll('.draft-badge').forEach(function(el) {
+                    el.classList.remove('hidden');
+                });
+            }
+        })();
     </script>
 </body>
 

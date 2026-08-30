@@ -39,7 +39,7 @@
             <div class="flex items-center justify-between" style="padding-left: {{ p.indent_level | default(value=0) * 0.75 }}rem;">
                 <h2 class="text-base font-semibold text-moss-ink flex items-center">
                     {% if p.draft %}
-                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-2 select-none">草稿</span>
+                    <span class="draft-badge hidden inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-2 select-none">草稿</span>
                     {% endif %}
                     {{ p.title }}
                 </h2>
@@ -155,7 +155,7 @@
                 <div class="px-4 pt-4">
                     <div class="relative w-full h-44">
                         {% if s.draft %}
-                        <span class="absolute top-2 right-2 z-10 inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded select-none shadow-sm">草稿</span>
+                        <span class="draft-badge hidden absolute top-2 right-2 z-10 inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded select-none shadow-sm">草稿</span>
                         {% endif %}
                         {% if s.cover %}
                             <img src="{{ s.cover }}" alt="{{ s.title }}" class="w-full h-full object-cover">
