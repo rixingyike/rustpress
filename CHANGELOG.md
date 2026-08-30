@@ -1,5 +1,11 @@
 ## [Unreleased] - 2026-08-30
 
+- docs: update README with concise advantages, demo and documentation links
+
+---
+
+## [Unreleased] - 2026-08-30
+
 - update: 2026-08-15 20:46:12
 
 ---

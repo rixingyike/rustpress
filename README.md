@@ -1,7 +1,7 @@
 # RustPress
 
 <p align="center">
-  <strong>🚀 极速、纯静态、零后端依赖的现代静态博客与数字花园生成器</strong>
+  <strong>🚀 极速、纯静态、零后端依赖，现代静态编译博客程序</strong>
 </p>
 
 <p align="center">
@@ -141,4 +141,4 @@ tags = "/tag"
 
 - 💻 GitHub 仓库：[https://github.com/rixingyike/rustpress](https://github.com/rixingyike/rustpress)
 - 📦 Crates.io 类库：[https://crates.io/crates/rustpress](https://crates.io/crates/rustpress)
-- 📖 专栏文档：[https://yishulun.com/c/rustpress/index.html](https://yishulun.com/c/rustpress/index.html)
+- 📖 使用说明文档：[https://yishulun.com/c/rustpress/index.html](https://yishulun.com/c/rustpress/index.html)

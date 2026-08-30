@@ -1,271 +1,387 @@
 {% extends "base.html" %}
 
+<!-- 闲言分页列表页面模板 -->
+{% block title %}闲言 - {{ site.name }}{% endblock %}
+
 {% block content %}
-<!-- 闲言标题区 -->
-<div class="max-w-3xl mx-auto mt-8 mb-6">
-    <div class="flex items-center justify-between border-b border-sage-line/20 pb-4">
-        <div>
-            <h1 class="text-2xl font-bold text-moss-ink tracking-tight flex items-center gap-2">
-                <svg class="w-6 h-6 text-cyber-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                </svg>
-                闲言碎语
-            </h1>
-            <p class="text-xs text-mist-green mt-1">记录所思所想，捕捉生活与技术的每一个瞬间</p>
-        </div>
-        <span class="text-xs text-mist-green bg-air-bg px-3 py-1 rounded">共 {{ paginator.total_posts | default(value=posts | length) }} 条动态</span>
-    </div>
-</div>
-
-{% if is_dev_domain or is_pushpen %}
-<!-- Pushpen 发表框 (开发/测试环境下展示) -->
-<div class="max-w-3xl mx-auto mb-8">
-    <div class="bg-flat-white p-4">
-        <h2 class="text-lg font-bold text-moss-ink mb-3">发表新闲言</h2>
-        <div id="tweet-form-status" class="hidden text-sm mb-3 px-3 py-2"></div>
-        <textarea id="tweet-textarea" rows="3" maxlength="1000"
-            class="w-full p-3 text-sm bg-air-bg resize-none outline-none border-0 text-moss-ink placeholder:text-mist-green"
-            placeholder="有什么新鲜事？"></textarea>
-        <div class="flex items-center justify-between mt-2">
-            <div class="flex items-center space-x-2">
-                <label class="cursor-pointer text-mist-green hover:text-cyber-mint transition-colors p-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+<div class="max-w-6xl mx-auto">
+    <!-- 主要内容区域（参照 HIG 规范，内容全宽） -->
+    <main class="w">
+        <!-- 页面头部 -->
+        <header class="mb-8">
+            <!-- 面包屑导航 -->
+            <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5">
+                <a href="/" class="hover:text-cyber-mint">首页</a>
+                <span class="text-gray-300">/</span>
+                <span class="text-moss-ink font-medium">闲言</span>
+            </nav>
+            
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-primary-100 flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6 text-sage-line" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
-                    <input type="file" id="tweet-images-input" accept="image/*" multiple class="hidden">
-                </label>
-                <span id="tweet-images-count" class="text-xs text-mist-green hidden"></span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-moss-ink">闲言</h1>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="tweet-char-count" class="text-xs text-mist-green">0/1000 · 闲言</span>
-                <button id="tweet-submit-btn"
-                    class="px-5 py-1.5 bg-cyber-mint text-black font-bold text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50"
-                    disabled>发表</button>
+            <p class="text-lg text-mist-green">共 {{ paginator.total_posts | default(value=posts | length) }} 条相关内容</p>
+        </header>
+
+        <!-- Pushpen 发表框 (仅在本地/测试域名客户端环境下展示) -->
+        <div id="tweet-publish-box" class="hidden bg-flat-white p-4 mb-10">
+            <h2 class="text-lg font-bold text-moss-ink mb-3">发表新闲言</h2>
+            <div id="tweet-form-status" class="hidden text-sm mb-3 px-3 py-2"></div>
+            <textarea id="tweet-textarea" rows="3" maxlength="1000"
+                class="w-full p-3 text-sm bg-air-bg resize-none outline-none border-0 text-moss-ink placeholder:text-mist-green"
+                placeholder="有什么新鲜事？"></textarea>
+            <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center space-x-2">
+                    <label class="cursor-pointer text-mist-green hover:text-cyber-mint transition-colors p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <input type="file" id="tweet-images-input" accept="image/*" multiple class="hidden">
+                    </label>
+                    <span id="tweet-images-count" class="text-xs text-mist-green hidden"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="tweet-char-count" class="text-xs text-mist-green">0/1000 · 闲言</span>
+                    <button id="tweet-submit-btn"
+                        class="px-5 py-1.5 bg-cyber-mint text-black font-bold text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50"
+                        disabled>发表</button>
+                </div>
             </div>
+            <div id="tweet-image-previews" class="flex gap-2 mt-3 flex-wrap hidden"></div>
         </div>
-        <div id="tweet-image-previews" class="flex gap-2 mt-3 flex-wrap hidden"></div>
-    </div>
-</div>
 
-<script>
-(function() {
-    const textarea = document.getElementById('tweet-textarea');
-    const submitBtn = document.getElementById('tweet-submit-btn');
-    const imagesInput = document.getElementById('tweet-images-input');
-    const previews = document.getElementById('tweet-image-previews');
-    const imagesCount = document.getElementById('tweet-images-count');
-    const charCount = document.getElementById('tweet-char-count');
-    const status = document.getElementById('tweet-form-status');
-    let selectedFiles = [];
+        <script>
+        (function() {
+            // 仅在本地开发或测试域名下展示发布框
+            const devDomains = {{ site.dev_domains | default(value=["localhost", "127.0.0.1", "dev.yishulun.com"]) | json_encode | safe }};
+            const hostname = window.location.hostname;
+            const isDevHost = (Array.isArray(devDomains) && devDomains.some(d => hostname === d || hostname.endsWith('.' + d))) ||
+                              hostname === 'localhost' ||
+                              hostname === '127.0.0.1' ||
+                              hostname.startsWith('dev.') ||
+                              hostname.startsWith('test.') ||
+                              hostname.startsWith('staging.');
 
-    function updateUI() {
-        const len = textarea.value.length;
-        const hasText = textarea.value.trim().length > 0;
-        const hasImages = selectedFiles.length > 0;
-        submitBtn.disabled = !(hasText || hasImages);
+            const box = document.getElementById('tweet-publish-box');
+            if (!isDevHost || !box) {
+                return;
+            }
+            box.classList.remove('hidden');
 
-        charCount.textContent = len + '/1000 · 闲言';
+            const textarea = document.getElementById('tweet-textarea');
+            const submitBtn = document.getElementById('tweet-submit-btn');
+            const imagesInput = document.getElementById('tweet-images-input');
+            const previews = document.getElementById('tweet-image-previews');
+            const imagesCount = document.getElementById('tweet-images-count');
+            const charCount = document.getElementById('tweet-char-count');
+            const status = document.getElementById('tweet-form-status');
+            let selectedFiles = [];
 
-        if (selectedFiles.length > 0) {
-            imagesCount.textContent = selectedFiles.length + '/4 张';
-            imagesCount.classList.remove('hidden');
-        } else {
-            imagesCount.classList.add('hidden');
-        }
-    }
+            function updateUI() {
+                const len = textarea.value.length;
+                const hasText = textarea.value.trim().length > 0;
+                const hasImages = selectedFiles.length > 0;
+                submitBtn.disabled = !(hasText || hasImages);
 
-    textarea.addEventListener('input', updateUI);
+                charCount.textContent = len + '/1000 · 闲言';
 
-    textarea.addEventListener('paste', function(e) {
-        const items = e.clipboardData && e.clipboardData.items;
-        if (!items) return;
-        for (const item of items) {
-            if (item.type.startsWith('image/')) {
-                e.preventDefault();
-                const file = item.getAsFile();
-                if (file && selectedFiles.length < 4) {
-                    selectedFiles.push(file);
-                    renderPreviews();
-                    updateUI();
+                if (selectedFiles.length > 0) {
+                    imagesCount.textContent = selectedFiles.length + '/4 张';
+                    imagesCount.classList.remove('hidden');
+                } else {
+                    imagesCount.classList.add('hidden');
                 }
-                break;
             }
-        }
-    });
 
-    imagesInput.addEventListener('change', function(e) {
-        const newFiles = Array.from(e.target.files || []);
-        const remaining = 4 - selectedFiles.length;
-        const toAdd = newFiles.slice(0, remaining);
-        selectedFiles = selectedFiles.concat(toAdd);
-        renderPreviews();
-        updateUI();
-        this.value = '';
-    });
+            textarea.addEventListener('input', updateUI);
 
-    function renderPreviews() {
-        previews.innerHTML = '';
-        if (selectedFiles.length === 0) {
-            previews.classList.add('hidden');
-            return;
-        }
-        previews.classList.remove('hidden');
-        selectedFiles.forEach((file, idx) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'relative group';
-            const img = document.createElement('img');
-            img.className = 'w-20 h-20 object-cover';
-            img.src = URL.createObjectURL(file);
-            wrapper.appendChild(img);
-            const rm = document.createElement('button');
-            rm.className = 'absolute -top-1.5 -right-1.5 w-5 h-5 bg-moss-ink text-white text-xs flex items-center justify-center hover:bg-red-600 transition-colors';
-            rm.textContent = '×';
-            rm.type = 'button';
-            rm.onclick = function() {
-                selectedFiles.splice(idx, 1);
+            textarea.addEventListener('paste', function(e) {
+                const items = e.clipboardData && e.clipboardData.items;
+                if (!items) return;
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file && selectedFiles.length < 4) {
+                            selectedFiles.push(file);
+                            renderPreviews();
+                            updateUI();
+                        }
+                        break;
+                    }
+                }
+            });
+
+            imagesInput.addEventListener('change', function(e) {
+                const newFiles = Array.from(e.target.files || []);
+                const remaining = 4 - selectedFiles.length;
+                const toAdd = newFiles.slice(0, remaining);
+                selectedFiles = selectedFiles.concat(toAdd);
                 renderPreviews();
                 updateUI();
-            };
-            wrapper.appendChild(rm);
-            previews.appendChild(wrapper);
-        });
-    }
+                this.value = '';
+            });
 
-    submitBtn.addEventListener('click', async function() {
-        const text = textarea.value.trim();
-        if (!text && selectedFiles.length === 0) return;
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = '发表中...';
-        status.className = 'hidden';
-
-        const formData = new FormData();
-        formData.append('text', text);
-        selectedFiles.forEach(file => formData.append('images', file));
-
-        try {
-            const res = await fetch('/api/tweets', { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.ok) {
-                status.className = 'text-sm mb-3 px-3 py-2 bg-green-100 text-green-800';
-                status.textContent = '发表成功！页面即将刷新...';
-                status.classList.remove('hidden');
-                textarea.value = '';
-                selectedFiles = [];
-                renderPreviews();
-                updateUI();
-                setTimeout(function() { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(function() { location.reload(); }, 500); }, 500);
-            } else {
-                status.className = 'text-sm mb-3 px-3 py-2 bg-red-100 text-red-700';
-                status.textContent = '发表失败: ' + (data.error || '未知错误');
-                status.classList.remove('hidden');
+            function renderPreviews() {
+                previews.innerHTML = '';
+                if (selectedFiles.length === 0) {
+                    previews.classList.add('hidden');
+                    return;
+                }
+                previews.classList.remove('hidden');
+                selectedFiles.forEach((file, idx) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative group';
+                    const img = document.createElement('img');
+                    img.className = 'w-20 h-20 object-cover';
+                    img.src = URL.createObjectURL(file);
+                    wrapper.appendChild(img);
+                    const rm = document.createElement('button');
+                    rm.className = 'absolute -top-1.5 -right-1.5 w-5 h-5 bg-moss-ink text-white text-xs flex items-center justify-center hover:bg-red-600 transition-colors';
+                    rm.textContent = '×';
+                    rm.type = 'button';
+                    rm.onclick = function() {
+                        selectedFiles.splice(idx, 1);
+                        renderPreviews();
+                        updateUI();
+                    };
+                    wrapper.appendChild(rm);
+                    previews.appendChild(wrapper);
+                });
             }
-        } catch (err) {
-            status.className = 'text-sm mb-3 px-3 py-2 bg-red-100 text-red-700';
-            status.textContent = '网络错误: ' + err.message;
-            status.classList.remove('hidden');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '发表';
-        }
-    });
-})();
-</script>
-{% endif %}
 
-<!-- 闲言流 -->
-<div class="max-w-3xl mx-auto">
-    <div id="articles" class="space-y-10" data-current-page="{{ current_page | default(value=1) }}" data-total-pages="{{ total_pages | default(value=1) }}" data-base-path="/{{ site.taxonomies.dirs.tweets | default(value='t') }}">
-        {% if posts %}
-        {% for post in posts %}
-        <article class="pb-10 border-b border-sage-line/10 last:border-b-0" data-url="{{ post.url }}">
-            <div class="flex items-center space-x-3 mb-3">
-                <img src="{{ site.author.avatar | default(value='/static/images/avatar.png') | safe }}" class="w-9 h-9 object-cover" alt="Avatar">
-                <div>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="font-semibold text-moss-ink text-sm">{{ site.author.name | default(value='作者') }}</span>
-                        {% if post.draft %}
-                        <span class="inline-flex items-center px-1.5 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded select-none">草稿</span>
-                        {% endif %}
+            submitBtn.addEventListener('click', async function() {
+                const text = textarea.value.trim();
+                if (!text && selectedFiles.length === 0) return;
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = '发表中...';
+                status.className = 'hidden';
+
+                const formData = new FormData();
+                formData.append('text', text);
+                selectedFiles.forEach(file => formData.append('images', file));
+
+                try {
+                    const res = await fetch('/api/tweets', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (data.ok) {
+                        status.className = 'text-sm mb-3 px-3 py-2 bg-green-100 text-green-800';
+                        status.textContent = '发表成功！页面即将刷新...';
+                        status.classList.remove('hidden');
+                        textarea.value = '';
+                        selectedFiles = [];
+                        renderPreviews();
+                        updateUI();
+                        setTimeout(function() { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(function() { location.reload(); }, 500); }, 500);
+                    } else {
+                        status.className = 'text-sm mb-3 px-3 py-2 bg-red-100 text-red-700';
+                        status.textContent = '发表失败: ' + (data.error || '未知错误');
+                        status.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    status.className = 'text-sm mb-3 px-3 py-2 bg-red-100 text-red-700';
+                    status.textContent = '网络错误: ' + err.message;
+                    status.classList.remove('hidden');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '发表';
+                }
+            });
+        })();
+        </script>
+
+        <!-- 文章/闲言列表 -->
+        <div id="articles-list" class="space-y-10">
+            {% if posts and posts | length > 0 %}
+                {% for post in posts %}
+                <article class="pb-10" data-url="{{ post.url }}">
+                    {% if post.categories and post.categories | length > 0 %}
+                    <div class="breadcrumb text-[11px] text-gray-400 mb-2 select-none flex items-center space-x-1">
+                        {% set_global accum_path = "" %}
+                        {% set_global show_sep = false %}
+                        {% for cat in post.categories %}
+                            {% set_global accum_path = accum_path ~ "/" ~ cat %}
+                            {% set cat_url = accum_path ~ "/" %}
+                            {% set index_url = cat_url ~ "index.html" %}
+                            {% if post.url != cat_url and post.url != index_url %}
+                                {% if show_sep %}
+                                <span class="text-gray-300">/</span>
+                                {% endif %}
+                                {% set_global show_sep = true %}
+                                {% if cat == "tweets" or cat == "tweet" %}
+                                    <a href="/{{ site.taxonomies.dirs.tweets | default(value='t') }}/" class="hover:text-cyber-mint transition-colors">闲言</a>
+                                {% elif cat == "friends" or cat == "friend" %}
+                                    <a href="/{{ site.taxonomies.dirs.friends | default(value='f') }}/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+                                {% elif cat == "projects" or cat == "project" %}
+                                    <a href="/{{ site.taxonomies.dirs.projects | default(value='p') }}/" class="hover:text-cyber-mint transition-colors">项目</a>
+                                {% elif cat == "works" or cat == "work" %}
+                                    <a href="/{{ site.taxonomies.dirs.works | default(value='w') }}/" class="hover:text-cyber-mint transition-colors">著作</a>
+                                {% else %}
+                                    <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                    <a href="{{ post.url | default(value='#') }}" class="block text-[12px] text-mist-green hover:text-cyber-mint mt-0.5">{{ post.date | default(value=post.date_ymd) }}</a>
-                </div>
-            </div>
-            <!-- 编译后的闲言 HTML 正文 -->
-            <div class="prose prose-sm text-moss-ink leading-relaxed">
-                {{ post.content | safe }}
-            </div>
-            {% if post.images %}
-            <div class="grid {% if post.images | length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-2 mt-3">
-                {% for img in post.images %}
-                <img src="{{ img | safe }}" class="max-h-72 w object-cover" alt="Tweet Image">
+                    {% endif %}
+                    <div class="flex items-center space-x-3 mb-3">
+                        <img src="{{ site.author.avatar | default(value='/static/images/avatar.png') | safe }}" class="w-9 h-9 object-cover" alt="Avatar">
+                        <div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="font-semibold text-moss-ink text-sm">{{ site.author.name | default(value='作者') }}</span>
+                                {% if post.draft %}
+                                <span class="inline-flex items-center px-1.5 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded select-none">草稿</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ post.url | default(value='#') }}" class="block text-[12px] text-mist-green hover:text-cyber-mint mt-0.5">{{ post.date | default(value=post.date_ymd) }}</a>
+                        </div>
+                    </div>
+                    <!-- 编译后的闲言 HTML 正文 -->
+                    <div class="prose prose-sm text-moss-ink leading-relaxed">
+                        {{ post.content | safe }}
+                    </div>
+                    {% if post.images %}
+                    <div class="grid {% if post.images | length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-2 mt-3">
+                        {% for img in post.images %}
+                        <img src="{{ img | safe }}" class="max-h-72 w object-cover" alt="Tweet Image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if post.tags %}
+                    <div class="flex flex-wrap gap-2 mt-3 select-none">
+                        {% for tag in post.tags %}
+                        <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <!-- 评论/点赞/收藏 交互按钮 -->
+                    <div class="flex items-center mt-2 select-none">
+                        <div class="flex items-center space-x-8 text-xs text-mist-green/80">
+                            <!-- 评论 -->
+                            <a href="{{ post.url | default(value='#') }}" class="flex items-center space-x-2 hover:text-cyber-mint hover:bg-air-bg/50 px-3 py-1.5 rounded-full transition-all group duration-300 -ml-3">
+                                <svg class="w-4 h-4 text-sage-line/50 group-hover:text-cyber-mint transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742h.008v.008h-.008v-.008zM12 10.742h.008v.008H12v-.008zm3.308 0h.008v.008h-.008v-.008zM21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                <span class="font-medium group-hover:text-moss-ink transition-colors">{{ post.comment_count | default(value=0) }}</span>
+                            </a>
+                            <!-- 点赞 -->
+                            <button class="flex items-center space-x-2 hover:text-rose-500 hover:bg-rose-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                <svg class="w-4 h-4 text-sage-line/50 group-hover:text-rose-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span class="font-medium group-hover:text-rose-600 transition-colors">{{ post.like_count | default(value=0) }}</span>
+                            </button>
+                            <!-- 收藏 -->
+                            <button class="flex items-center space-x-2 hover:text-amber-500 hover:bg-amber-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
+                                <svg class="w-4 h-4 text-sage-line/50 group-hover:text-amber-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                                <span class="font-medium group-hover:text-amber-600 transition-colors">{{ post.bookmark_count | default(value=0) }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
                 {% endfor %}
-            </div>
-            {% endif %}
-            {% if post.tags %}
-            <div class="flex flex-wrap gap-2 mt-3 select-none">
-                {% for tag in post.tags %}
-                <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
-                {% endfor %}
-            </div>
-            {% endif %}
-            <!-- 评论/点赞/收藏 交互按钮 -->
-            <div class="flex items-center mt-3 select-none">
-                <div class="flex items-center space-x-8 text-xs text-mist-green/80">
-                    <a href="{{ post.url | default(value='#') }}" class="flex items-center space-x-2 hover:text-cyber-mint hover:bg-air-bg/50 px-3 py-1.5 rounded-full transition-all group duration-300 -ml-3">
-                        <svg class="w-4 h-4 text-sage-line/50 group-hover:text-cyber-mint transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742h.008v.008h-.008v-.008zM12 10.742h.008v.008H12v-.008zm3.308 0h.008v.008h-.008v-.008zM21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span class="font-medium group-hover:text-moss-ink transition-colors">{{ post.comment_count | default(value=0) }}</span>
-                    </a>
-                    <button class="flex items-center space-x-2 hover:text-rose-500 hover:bg-rose-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
-                        <svg class="w-4 h-4 text-sage-line/50 group-hover:text-rose-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        <span class="font-medium group-hover:text-rose-600 transition-colors">{{ post.like_count | default(value=0) }}</span>
-                    </button>
-                    <button class="flex items-center space-x-2 hover:text-amber-500 hover:bg-amber-50/50 px-3 py-1.5 rounded-full transition-all group duration-300">
-                        <svg class="w-4 h-4 text-sage-line/50 group-hover:text-amber-500 transition-colors duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                        </svg>
-                        <span class="font-medium group-hover:text-amber-600 transition-colors">{{ post.bookmark_count | default(value=0) }}</span>
-                    </button>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-moss-ink">暂无闲言内容</h3>
+                    <p class="mt-2 text-mist-green">还没有发布任何闲言动态</p>
                 </div>
-            </div>
-        </article>
-        {% endfor %}
-        {% else %}
-        <div class="text-center py-16">
-            <p class="text-mist-green">暂无闲言动态</p>
+            {% endif %}
         </div>
-        {% endif %}
-    </div>
+        
+        <!-- 分页导航（瀑布流模式，与 tag.html 完全一致） -->
+        {% if paginator %}
+        <div id="load-more-trigger" class="text-center py-8 text-mist-green text-sm flex items-center justify-center gap-2" data-next-url="{{ paginator.next | default(value='') }}">
+            <svg class="animate-spin h-5 w-5 text-cyber-mint hidden" id="loading-spinner" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="loading-text">{% if paginator.next %}往下拉加载更多...{% else %}已经到底啦{% endif %}</span>
+        </div>
 
-    <!-- 分页导航（SEO 与无 JS 降级） -->
-    {% if paginator and paginator.pages and paginator.pages | length > 1 %}
-    <nav class="flex items-center justify-between border-t border-sage-line/10 py-6 mt-8">
-        <div>
-            {% if paginator.previous %}
-            <a href="{{ paginator.previous }}" class="text-xs text-moss-ink hover:text-cyber-mint flex items-center gap-1">
-                ← 上一页
-            </a>
-            {% endif %}
-        </div>
-        <div class="flex items-center gap-2">
-            {% for p in paginator.pages %}
-            <a href="{{ p.url }}" class="text-xs px-2.5 py-1 {% if p.is_current %}bg-cyber-mint text-black font-bold{% else %}text-mist-green hover:text-moss-ink{% endif %}">
-                {{ p.number }}
-            </a>
-            {% endfor %}
-        </div>
-        <div>
-            {% if paginator.next %}
-            <a href="{{ paginator.next }}" class="text-xs text-moss-ink hover:text-cyber-mint flex items-center gap-1">
-                下一页 →
-            </a>
-            {% endif %}
-        </div>
-    </nav>
-    {% endif %}
+        <script>
+        (function() {
+            const trigger = document.getElementById("load-more-trigger");
+            if (!trigger) return;
+            
+            let nextUrl = trigger.getAttribute("data-next-url");
+            const articlesContainer = document.getElementById("articles-list");
+            const spinner = document.getElementById("loading-spinner");
+            const text = document.getElementById("loading-text");
+            let isLoading = false;
+            
+            if (!nextUrl) {
+                return;
+            }
+            
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !isLoading && nextUrl) {
+                    loadNextPage();
+                }
+            }, { threshold: 0.1, rootMargin: '100px' });
+            
+            observer.observe(trigger);
+            
+            async function loadNextPage() {
+                isLoading = true;
+                spinner.classList.remove("hidden");
+                text.textContent = "加载中...";
+                
+                try {
+                    const res = await fetch(nextUrl);
+                    if (!res.ok) throw new Error("无法加载下一页");
+                    const htmlText = await res.text();
+                    
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, "text/html");
+                    
+                    // 提取文章列表
+                    const newArticles = doc.querySelectorAll("#articles-list > article");
+                    newArticles.forEach(article => {
+                        articlesContainer.appendChild(article);
+                    });
+                    
+                    // 更新地址栏
+                    window.history.replaceState({}, "", nextUrl);
+                    
+                    // 提取下一页的 paginator.next 链接
+                    const nextTrigger = doc.getElementById("load-more-trigger");
+                    if (nextTrigger) {
+                        nextUrl = nextTrigger.getAttribute("data-next-url");
+                    } else {
+                        nextUrl = "";
+                    }
+                    
+                    if (!nextUrl) {
+                        observer.unobserve(trigger);
+                        spinner.classList.add("hidden");
+                        text.textContent = "已经到底啦";
+                    } else {
+                        spinner.classList.add("hidden");
+                        text.textContent = "往下拉加载更多...";
+                    }
+                } catch (err) {
+                    console.error(err);
+                    text.textContent = "加载失败，请重试";
+                    spinner.classList.add("hidden");
+                } finally {
+                    isLoading = false;
+                }
+            }
+        })();
+        </script>
+        {% endif %}
+    </main>
 </div>
 {% endblock %}
+
+{# 闲言列表页不显示底部广告位 1 #}
+{% block ad1 %}{% endblock %}

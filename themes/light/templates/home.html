@@ -4,9 +4,8 @@
 <!-- Hero 组件 -->
 {% include "components/hero.html" %}
 
-{% if is_pushpen or is_dev_domain %}
-<!-- Pushpen 发表框 (开发/测试环境下展示) -->
-<div class="max-w-3xl mx-auto mt-10">
+<!-- Pushpen 发表框 (仅在本地/测试域名客户端环境下展示) -->
+<div id="tweet-publish-box" class="hidden max-w-3xl mx-auto mt-10">
     <div class="bg-flat-white p-4 mb-10">
         <h2 class="text-lg font-bold text-moss-ink mb-3">闲言碎语</h2>
         <div id="tweet-form-status" class="hidden text-sm mb-3 px-3 py-2"></div>
@@ -36,6 +35,22 @@
 
 <script>
 (function() {
+    // 仅在本地开发或测试域名下展示发布框
+    const devDomains = {{ site.dev_domains | default(value=["localhost", "127.0.0.1", "dev.yishulun.com"]) | json_encode | safe }};
+    const hostname = window.location.hostname;
+    const isDevHost = (Array.isArray(devDomains) && devDomains.some(d => hostname === d || hostname.endsWith('.' + d))) ||
+                      hostname === 'localhost' ||
+                      hostname === '127.0.0.1' ||
+                      hostname.startsWith('dev.') ||
+                      hostname.startsWith('test.') ||
+                      hostname.startsWith('staging.');
+
+    const box = document.getElementById('tweet-publish-box');
+    if (!isDevHost || !box) {
+        return;
+    }
+    box.classList.remove('hidden');
+
     const textarea = document.getElementById('tweet-textarea');
     const submitBtn = document.getElementById('tweet-submit-btn');
     const imagesInput = document.getElementById('tweet-images-input');
@@ -158,7 +173,6 @@
     });
 })();
 </script>
-{% endif %}
 
 <!-- 文章流 -->
 <div class="max-w-3xl mx-auto mt-10">
