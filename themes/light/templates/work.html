@@ -17,7 +17,7 @@
 <div class="max-w-4xl mx-auto">
     <!-- 面包屑导航 -->
     <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
-        <a href="/works/" class="hover:text-cyber-mint transition-colors">著作</a>
+        <a href="/{{ site.taxonomies.dirs.works | default(value='w') }}/" class="hover:text-cyber-mint transition-colors">著作</a>
     </nav>
 
     <!-- 著作详细信息卡片 -->
@@ -39,7 +39,12 @@
         <!-- 图书属性介绍 -->
         <div class="flex-1 flex flex-col justify-between">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-moss-ink mb-2">{{ page.title }}</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-moss-ink mb-2">
+                    {% if page.draft %}
+                    <span class="inline-flex items-center px-2 py-0.5 text-xs sm:text-sm font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-2 align-middle select-none">草稿</span>
+                    {% endif %}
+                    {{ page.title }}
+                </h1>
                 {% if page.subtitle %}
                 <p class="text-base text-mist-green mb-4">{{ page.subtitle }}</p>
                 {% endif %}

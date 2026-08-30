@@ -30,3 +30,6 @@ dist
 /target
 /test_blog/public
 /test_blog/source
+__pycache__/
+*.py[cod]
+.rebuild-trigger

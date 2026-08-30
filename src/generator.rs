@@ -38,6 +38,11 @@ impl Generator {
         self
     }
 
+    /// 是否应该包含草稿（在开发环境、测试域名如 dev.yishulun.com、localhost、127.0.0.1 等时包含）
+    pub fn should_include_drafts(&self) -> bool {
+        self.config.is_dev_or_test_domain()
+    }
+
     /// 按 URL 按需渲染单个页面（开发模式用）
     pub fn render_post_by_url(&self, url: &str, all_posts: &[Post]) -> Result<String> {
         let post = all_posts.iter()
@@ -112,8 +117,8 @@ impl Generator {
         // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（覆盖原有顶层 assets 与根层非 md 的拷贝策略）
         crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir)?;
 
-        // 列出所有文章
-        let posts = PostParser::list_posts(md_dir)?;
+        // 列出所有文章（根据环境决定是否包含草稿）
+        let posts = PostParser::list_posts_with_config(md_dir, self.should_include_drafts(), Some(&self.config))?;
 
         // 首次构建时生成侧边栏数据（可手动编辑，写入优先项目根）
         crate::utils::ensure_sidebar_data(md_dir, &posts)?;
@@ -122,6 +127,9 @@ impl Generator {
         let all_tags = PostParser::collect_tags(&posts);
         let all_years = PostParser::collect_years(&posts);
         let all_categories = PostParser::generate_hierarchical_categories(&posts);
+
+        // 获取分类法路径配置
+        let taxonomies = self.config.taxonomies_config();
 
         // 获取每页文章数量配置
         let posts_per_page = self
@@ -179,12 +187,13 @@ impl Generator {
 
         // 渲染标签页（双路写入以兼容 /tags.html 与 /tags/）
         let tags_html = self.template_engine.render_tags(&posts, &all_tags)?;
-        let tags_dir = output_dir.join("tags");
+        let tags_dir_name = taxonomies.get_dir("tags");
+        let tags_dir = output_dir.join(&tags_dir_name);
         std::fs::create_dir_all(&tags_dir)?;
         self.write_file(tags_dir.join("index.html"), &tags_html)
-            .map_err(|e| Error::Other(format!("无法写入 tags/index.html 标签页: {}", e)))?;
-        self.write_file(output_dir.join("tags.html"), &tags_html)
-            .map_err(|e| Error::Other(format!("无法写入 tags.html 标签页: {}", e)))?;
+            .map_err(|e| Error::Other(format!("无法写入 {}/index.html 标签页: {}", tags_dir_name, e)))?;
+        self.write_file(output_dir.join(format!("{}.html", tags_dir_name)), &tags_html)
+            .map_err(|e| Error::Other(format!("无法写入 {}.html 标签页: {}", tags_dir_name, e)))?;
 
         // 生成单标签文章列表分页页面
         self.generate_tag_pages(&posts, output_dir)?;
@@ -196,19 +205,28 @@ impl Generator {
         let categories_html =
             self.template_engine
                 .render_categories(&posts, &all_categories, &all_tags)?;
-        let categories_dir = output_dir.join("categories");
+        let cat_dir_name = taxonomies.get_dir("categories");
+        let categories_dir = output_dir.join(&cat_dir_name);
         std::fs::create_dir_all(&categories_dir)?;
         self.write_file(categories_dir.join("index.html"), &categories_html)
+            .map_err(|e| Error::Other(format!("无法写入分类页: {}", e)))?;
+        self.write_file(output_dir.join(format!("{}.html", cat_dir_name)), &categories_html)
             .map_err(|e| Error::Other(format!("无法写入分类页: {}", e)))?;
 
         // 为每个分类生成分类索引页面
         self.generate_category_pages(&posts, output_dir)?;
 
+        // 为闲言（tweets）生成分页索引页面
+        self.generate_tweets_pages(&posts, output_dir)?;
+
         // 渲染归档页
         let archives_html = self.template_engine.render_archives(&posts, &all_years)?;
-        let archives_dir = output_dir.join("archives");
+        let archives_dir_name = taxonomies.get_dir("archives");
+        let archives_dir = output_dir.join(&archives_dir_name);
         std::fs::create_dir_all(&archives_dir)?;
         self.write_file(archives_dir.join("index.html"), &archives_html)
+            .map_err(|e| Error::Other(format!("无法写入归档页: {}", e)))?;
+        self.write_file(output_dir.join(format!("{}.html", archives_dir_name)), &archives_html)
             .map_err(|e| Error::Other(format!("无法写入归档页: {}", e)))?;
 
         // 生成年份归档页
@@ -218,14 +236,22 @@ impl Generator {
         let about_html = self
             .template_engine
             .render_about(&posts, &all_tags, &all_categories)?;
-        self.write_file(output_dir.join("about.html"), &about_html)
+        let about_rel = taxonomies.about.trim_start_matches('/');
+        let about_path = output_dir.join(about_rel);
+        if let Some(parent) = about_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        self.write_file(&about_path, &about_html)
             .map_err(|e| Error::Other(format!("无法写入关于页面: {}", e)))?;
 
         // 渲染友链页面
         let friends_html = self.template_engine.render_friends(&posts)?;
-        let friends_dir = output_dir.join("friends");
+        let friends_dir_name = taxonomies.get_dir("friends");
+        let friends_dir = output_dir.join(&friends_dir_name);
         std::fs::create_dir_all(&friends_dir)?;
         self.write_file(friends_dir.join("index.html"), &friends_html)
+            .map_err(|e| Error::Other(format!("无法写入友链页面: {}", e)))?;
+        self.write_file(output_dir.join(format!("{}.html", friends_dir_name)), &friends_html)
             .map_err(|e| Error::Other(format!("无法写入友链页面: {}", e)))?;
 
         // 渲染搜索页面
@@ -341,8 +367,9 @@ impl Generator {
                 (total_posts + posts_per_page - 1) / posts_per_page
             };
 
-            // 创建输出目录：public/tags/{tag_name}/
-            let tag_dir = output_dir.join("tags").join(&tag_name);
+            // 创建输出目录：public/{tags_dir}/{tag_name}/
+            let tags_dir_name = self.config.taxonomies_config().get_dir("tags");
+            let tag_dir = output_dir.join(&tags_dir_name).join(&tag_name);
             std::fs::create_dir_all(&tag_dir)
                 .map_err(|e| Error::Other(format!("无法创建标签目录 {:?}: {}", tag_dir, e)))?;
 
@@ -382,10 +409,10 @@ impl Generator {
     fn generate_columns_tag_pages(&self, posts: &[Post], output_dir: &Path) -> Result<()> {
         let output_path = output_dir;
         
-        // 1. 寻找专栏主页的 post 模板（通常是 categories = ["columns"], slug = "index"）
+        // 1. 寻找专栏主页的 post 模板（通常是 categories = ["columns"] 或 ["column"], slug = "index"）
         let columns_homepage_post = posts.iter().find(|p| {
             let cats = p.categories();
-            cats.first().map(|c| c == "columns").unwrap_or(false)
+            cats.first().map(|c| c == "columns" || c == "column").unwrap_or(false)
                 && cats.len() == 1
                 && p.slug() == Some("index")
                 && p.data.get("layout").and_then(|v| v.as_str()) == Some("columns")
@@ -412,8 +439,9 @@ impl Generator {
             }
         }
 
-        // 4. 创建专栏标签存储目录：public/columns/tags/
-        let col_tags_dir = output_path.join("columns").join("tags");
+        // 4. 创建专栏标签存储目录：public/{columns_dir}/tags/
+        let col_dir_name = self.config.taxonomies_config().get_dir("columns");
+        let col_tags_dir = output_path.join(&col_dir_name).join("tags");
         std::fs::create_dir_all(&col_tags_dir)
             .map_err(|e| Error::Other(format!("无法创建专栏标签目录 {:?}: {}", col_tags_dir, e)))?;
 
@@ -488,6 +516,7 @@ impl Generator {
             })
             .unwrap_or(8) as usize;
 
+        let tags_dir_name = self.config.taxonomies_config().get_dir("tags");
         for tag_name in tags.iter() {
             let mut rebuilt_paths: Vec<String> = Vec::new();
             let mut tag_posts: Vec<&Post> = posts
@@ -507,7 +536,7 @@ impl Generator {
                 (total_posts + posts_per_page - 1) / posts_per_page
             };
 
-            let tag_dir = output_dir.join("tags").join(tag_name);
+            let tag_dir = output_dir.join(&tags_dir_name).join(tag_name);
             std::fs::create_dir_all(&tag_dir)
                 .map_err(|e| Error::Other(format!("无法创建标签目录 {:?}: {}", tag_dir, e)))?;
 
@@ -562,12 +591,29 @@ impl Generator {
             })
             .unwrap_or(8) as usize;
 
-        // 收集所有分类路径（包括多层级分类）
+        // 收集所有分类路径（包括多层级分类，排除专栏、推文、友链、项目、著作等独立 taxonomy）
         let mut category_paths: std::collections::HashSet<Vec<String>> =
             std::collections::HashSet::new();
         for post in posts {
             let cats = post.categories();
             if !cats.is_empty() {
+                let top_cat = &cats[0];
+                if matches!(
+                    top_cat.as_str(),
+                    "columns"
+                        | "column"
+                        | "projects"
+                        | "project"
+                        | "works"
+                        | "work"
+                        | "friends"
+                        | "friend"
+                        | "tweets"
+                        | "tweet"
+                        | "short"
+                ) {
+                    continue;
+                }
                 // 为每个分类路径的每个层级生成索引页面
                 for i in 1..=cats.len() {
                     let path = cats[0..i].to_vec();
@@ -575,6 +621,9 @@ impl Generator {
                 }
             }
         }
+
+        let cat_prefix = self.config.taxonomies_config().get_prefix("categories");
+        let cat_dir_name = self.config.taxonomies_config().get_dir("categories");
 
         // 为每个分类路径生成分页页面（倒分页）
         for category_path in category_paths.into_iter() {
@@ -594,7 +643,11 @@ impl Generator {
             });
 
             // 构建分类目录路径
-            let category_dir = output_dir.join(category_path.join("/"));
+            let category_dir = if !cat_prefix.is_empty() {
+                output_dir.join(&cat_dir_name).join(category_path.join("/"))
+            } else {
+                output_dir.join(category_path.join("/"))
+            };
             std::fs::create_dir_all(&category_dir)
                 .map_err(|e| Error::Other(format!("无法创建分类目录 {:?}: {}", category_dir, e)))?;
 
@@ -669,7 +722,30 @@ impl Generator {
             })
             .unwrap_or(8) as usize;
 
+        let cat_prefix = self.config.taxonomies_config().get_prefix("categories");
+        let cat_dir_name = self.config.taxonomies_config().get_dir("categories");
+
         for category_path in category_paths.iter() {
+            if category_path.is_empty() {
+                continue;
+            }
+            let top_cat = &category_path[0];
+            if matches!(
+                top_cat.as_str(),
+                "columns"
+                    | "column"
+                    | "projects"
+                    | "project"
+                    | "works"
+                    | "work"
+                    | "friends"
+                    | "friend"
+                    | "tweets"
+                    | "tweet"
+                    | "short"
+            ) {
+                continue;
+            }
             let mut rebuilt_paths: Vec<String> = Vec::new();
             let mut category_posts: Vec<&Post> = posts
                 .iter()
@@ -684,7 +760,11 @@ impl Generator {
                 db.cmp(da)
             });
 
-            let category_dir = output_dir.join(category_path.join("/"));
+            let category_dir = if !cat_prefix.is_empty() {
+                output_dir.join(&cat_dir_name).join(category_path.join("/"))
+            } else {
+                output_dir.join(category_path.join("/"))
+            };
             std::fs::create_dir_all(&category_dir)
                 .map_err(|e| Error::Other(format!("无法创建分类目录 {:?}: {}", category_dir, e)))?;
 
@@ -1007,13 +1087,14 @@ impl Generator {
         }
 
         // 标签分页（倒分页）
+        let taxonomies = self.config.taxonomies_config();
         let mut tag_set: std::collections::HashSet<String> = std::collections::HashSet::new();
         for p in posts {
             for t in p.tags() {
                 tag_set.insert(t.clone());
             }
         }
-        let tags_dir = "tags";
+        let tags_dir_name = taxonomies.get_dir("tags");
         for tag in tag_set.into_iter() {
             let mut tag_posts: Vec<&Post> =
                 posts.iter().filter(|p| p.tags().contains(&tag)).collect();
@@ -1048,7 +1129,7 @@ impl Generator {
                 } else {
                     format!("index{}.html", page)
                 };
-                urls.push(format!("{}/{}/{}/{}", base, tags_dir, tag, file_name));
+                urls.push(format!("{}/{}/{}/{}", base, tags_dir_name, tag, file_name));
             }
         }
 
@@ -1058,11 +1139,29 @@ impl Generator {
         for post in posts {
             let cats = post.categories();
             if !cats.is_empty() {
+                let top_cat = &cats[0];
+                if matches!(
+                    top_cat.as_str(),
+                    "columns"
+                        | "column"
+                        | "projects"
+                        | "project"
+                        | "works"
+                        | "work"
+                        | "friends"
+                        | "friend"
+                        | "tweets"
+                        | "tweet"
+                        | "short"
+                ) {
+                    continue;
+                }
                 for i in 1..=cats.len() {
                     category_paths.insert(cats[0..i].to_vec());
                 }
             }
         }
+        let cat_prefix = taxonomies.get_prefix("categories");
         let posts_per_page_cat = self
             .config
             .data
@@ -1102,7 +1201,11 @@ impl Generator {
                 } else {
                     format!("index{}.html", page)
                 };
-                urls.push(format!("{}/{}/{}", base, path.join("/"), file_name));
+                if !cat_prefix.is_empty() {
+                    urls.push(format!("{}{}/{}/{}", base, cat_prefix, path.join("/"), file_name));
+                } else {
+                    urls.push(format!("{}/{}/{}", base, path.join("/"), file_name));
+                }
             }
         }
 
@@ -1115,26 +1218,34 @@ impl Generator {
                 }
             }
         }
+        let archives_dir_name = taxonomies.get_dir("archives");
         for year in years.into_iter() {
-            urls.push(format!("{}/archives/{}/", base, year));
+            urls.push(format!("{}/{}/{}/", base, archives_dir_name, year));
         }
 
         // 主要静态页面
+        let about_rel = taxonomies.about.trim_start_matches('/');
         for static_page in [
-            "about.html",
+            about_rel,
             "search.html",
         ] {
             urls.push(format!("{}/{}", base, static_page));
         }
         
         // 列表概览页目录式 URL
-        for list_page in [
-            "tags/",
-            "categories/",
-            "archives/",
-            "friends/",
-        ] {
-            urls.push(format!("{}/{}", base, list_page));
+        let list_dirs = [
+            taxonomies.get_dir("tags"),
+            taxonomies.get_dir("categories"),
+            taxonomies.get_dir("archives"),
+            taxonomies.get_dir("friends"),
+            taxonomies.get_dir("columns"),
+            taxonomies.get_dir("projects"),
+            taxonomies.get_dir("works"),
+        ];
+        for list_page in list_dirs {
+            if !list_page.is_empty() {
+                urls.push(format!("{}/{}/", base, list_page));
+            }
         }
 
         // 生成XML
@@ -1160,7 +1271,8 @@ impl Generator {
         let output_dir = output_dir.as_ref();
 
         // 创建archives目录
-        let archives_dir = output_dir.join("archives");
+        let archives_dir_name = self.config.taxonomies_config().get_dir("archives");
+        let archives_dir = output_dir.join(&archives_dir_name);
         std::fs::create_dir_all(&archives_dir)?;
 
         // 按年份分组文章
@@ -1182,7 +1294,7 @@ impl Generator {
 
         // 为每个年份和月份生成归档页
         for (year, year_post_list) in year_posts {
-            // 1. 生成年份概览页：/archives/{year}/index.html
+            // 1. 生成年份概览页：/{archives_dir}/{year}/index.html
             let year_archive_html = self
                 .template_engine
                 .render_year_archive(&year_post_list, &year, None)?;
@@ -1195,7 +1307,7 @@ impl Generator {
 
             println!("年份归档页已生成：{:?}", year_file_path);
 
-            // 2. 生成月份详情页：/archives/{year}/{month}/index.html
+            // 2. 生成月份详情页：/{archives_dir}/{year}/{month}/index.html
             let mut month_posts: std::collections::HashMap<String, Vec<&Post>> =
                 std::collections::HashMap::new();
             for post in &year_post_list {
@@ -1225,6 +1337,89 @@ impl Generator {
         Ok(())
     }
 
+    /// 为闲言（tweets）生成分页页面（倒分页）：最新一页为 index.html，历史分页为 index{n}.html
+    pub fn generate_tweets_pages<P: AsRef<Path>>(&self, posts: &[Post], output_dir: P) -> Result<()> {
+        let output_dir = output_dir.as_ref();
+
+        // 过滤出所有闲言（通过 layout、categories 或缺少标题的短动态）
+        let mut tweet_posts: Vec<&Post> = posts
+            .iter()
+            .filter(|p| {
+                p.is_tweet()
+                    || p.data.get("layout").and_then(|v| v.as_str()) == Some("tweet")
+                    || p.data.get("layout").and_then(|v| v.as_str()) == Some("short")
+                    || p.categories().first().map(|c| c == "tweets" || c == "tweet" || c == "short").unwrap_or(false)
+                    || p.title().is_none() || p.title().unwrap_or("").is_empty()
+            })
+            .collect();
+
+        // 按发布日期降序排序（最新在前）
+        tweet_posts.sort_by(|a, b| {
+            let da = a.date().unwrap_or("");
+            let db = b.date().unwrap_or("");
+            db.cmp(da)
+        });
+
+        let posts_per_page = self
+            .config
+            .data
+            .get("tweets")
+            .and_then(|v| v.get("posts_per_page"))
+            .and_then(|v| v.as_integer())
+            .or_else(|| {
+                self.config
+                    .data
+                    .get("homepage")
+                    .and_then(|v| v.get("posts_per_page"))
+                    .and_then(|v| v.as_integer())
+            })
+            .unwrap_or(10) as usize;
+
+        let total_posts = tweet_posts.len();
+        let total_pages = if total_posts == 0 {
+            1
+        } else {
+            (total_posts + posts_per_page - 1) / posts_per_page
+        };
+
+        let tweets_dir_name = self.config.taxonomies_config().get_dir("tweets");
+        let tweets_dir = output_dir.join(&tweets_dir_name);
+        std::fs::create_dir_all(&tweets_dir)
+            .map_err(|e| Error::Other(format!("无法创建闲言目录 {:?}: {}", tweets_dir, e)))?;
+
+        for page in 1..=total_pages {
+            let html = self.template_engine.render_tweets_page(
+                &tweet_posts,
+                page,
+                posts_per_page,
+            )?;
+
+            // 倒分页：最新一页 (page == total_pages) 输出为 index.html
+            if page == total_pages {
+                let out_path_index = tweets_dir.join("index.html");
+                self.write_file(&out_path_index, &html).map_err(|e| {
+                    Error::Other(format!("无法写入闲言首页文件 {:?}: {}", out_path_index, e))
+                })?;
+                let out_path_t = output_dir.join(format!("{}.html", tweets_dir_name));
+                let _ = self.write_file(&out_path_t, &html);
+                if total_pages > 1 {
+                    let out_path_n = tweets_dir.join(format!("index{}.html", total_pages));
+                    self.write_file(&out_path_n, &html).map_err(|e| {
+                        Error::Other(format!("无法写入闲言分页文件 {:?}: {}", out_path_n, e))
+                    })?;
+                }
+            } else {
+                let out_path = tweets_dir.join(format!("index{}.html", page));
+                self.write_file(&out_path, &html).map_err(|e| {
+                    Error::Other(format!("无法写入闲言分页文件 {:?}: {}", out_path, e))
+                })?;
+            }
+        }
+
+        println!("已生成闲言分页页面：路径模式 /t/index[.N].html 共 {} 篇，{} 页", total_posts, total_pages);
+        Ok(())
+    }
+
     /// 仅为指定年份集合生成归档页面，并输出详细路径日志
     fn generate_year_archive_pages_for<P: AsRef<Path>>(
         &self,
@@ -1234,7 +1429,8 @@ impl Generator {
     ) -> Result<()> {
         let output_dir = output_dir.as_ref();
 
-        let archives_dir = output_dir.join("archives");
+        let archives_dir_name = self.config.taxonomies_config().get_dir("archives");
+        let archives_dir = output_dir.join(&archives_dir_name);
         std::fs::create_dir_all(&archives_dir)?;
 
         let mut year_posts: std::collections::HashMap<String, Vec<&Post>> =
@@ -1323,8 +1519,8 @@ impl Generator {
         // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（增量模式也执行，以便更新附件）
         crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir)?;
 
-        // 列出所有文章（用于派生页计算）
-        let posts = PostParser::list_posts(md_dir)?;
+        // 列出所有文章（用于派生页计算，根据环境决定是否包含草稿）
+        let posts = PostParser::list_posts_with_config(md_dir, self.should_include_drafts(), Some(&self.config))?;
 
         // 首次构建时生成侧边栏数据（可手动编辑）
         crate::utils::ensure_sidebar_data(md_dir, &posts)?;
@@ -1496,9 +1692,11 @@ impl Generator {
         // 仅生成受影响标签分页
         if !changed_tags.is_empty() {
             // 当新标签首次出现时，更新标签总览页
+            let taxonomies = self.config.taxonomies_config();
+            let tags_dir_name = taxonomies.get_dir("tags");
             let mut need_tags_overview = false;
             for tag in &changed_tags {
-                let dir = output_dir.join("tags").join(tag);
+                let dir = output_dir.join(&tags_dir_name).join(tag);
                 if !dir.exists() {
                     need_tags_overview = true;
                     break;
@@ -1506,12 +1704,12 @@ impl Generator {
             }
             if need_tags_overview {
                 let tags_html = self.template_engine.render_tags(&posts, &all_tags)?;
-                let tags_dir = output_dir.join("tags");
+                let tags_dir = output_dir.join(&tags_dir_name);
                 std::fs::create_dir_all(&tags_dir)?;
                 self.write_file(tags_dir.join("index.html"), &tags_html)
-                    .map_err(|e| Error::Other(format!("无法写入 tags/index.html 标签页: {}", e)))?;
-                self.write_file(output_dir.join("tags.html"), &tags_html)
-                    .map_err(|e| Error::Other(format!("无法写入 tags.html 标签页: {}", e)))?;
+                    .map_err(|e| Error::Other(format!("无法写入 {}/index.html 标签页: {}", tags_dir_name, e)))?;
+                self.write_file(output_dir.join(format!("{}.html", tags_dir_name)), &tags_html)
+                    .map_err(|e| Error::Other(format!("无法写入 {}.html 标签页: {}", tags_dir_name, e)))?;
             }
             self.generate_tag_pages_for(&posts, &changed_tags, output_dir)?;
         }
@@ -1528,6 +1726,9 @@ impl Generator {
         if !changed_years.is_empty() {
             self.generate_year_archive_pages_for(&posts, &changed_years, output_dir)?;
         }
+
+        // 增量模式下生成/更新闲言页面
+        self.generate_tweets_pages(&posts, output_dir)?;
 
         // 静态导航页（about、friends、search、404）在增量模式下不变更时跳过重建
 
@@ -1611,13 +1812,9 @@ impl Generator {
         }
 
         // 2. 定义系统级保留页面关键词与完全匹配项
-        let system_pages = [
+        let taxonomies = self.config.taxonomies_config();
+        let mut system_pages: std::collections::HashSet<String> = [
             "index.html",
-            "tags/index.html",
-            "categories/index.html",
-            "archives/index.html",
-            "about.html",
-            "friends/index.html",
             "search.html",
             "404.html",
             "robots.txt",
@@ -1625,7 +1822,31 @@ impl Generator {
             "search.json",
             "rss.xml",
             "atom.xml",
-        ];
+            "tags/index.html",
+            "tags.html",
+            "categories/index.html",
+            "categories.html",
+            "archives/index.html",
+            "archives.html",
+            "friends/index.html",
+            "friends.html",
+            "columns/index.html",
+            "columns.html",
+            "projects/index.html",
+            "projects.html",
+            "works/index.html",
+            "works.html",
+            "about.html",
+        ].iter().map(|s| s.to_string()).collect();
+
+        for key in &["tags", "categories", "archives", "friends", "columns", "projects", "works"] {
+            let dir = taxonomies.get_dir(key);
+            if !dir.is_empty() {
+                system_pages.insert(format!("{}/index.html", dir));
+                system_pages.insert(format!("{}.html", dir));
+            }
+        }
+        system_pages.insert(taxonomies.about.trim_start_matches('/').to_string());
 
         // 3. 递归扫描输出目录
         for entry in walkdir::WalkDir::new(output_dir)
@@ -1651,7 +1872,7 @@ impl Generator {
             println!("正在检查文件: {}, 相对路径: {}", file_name, rel_path);
 
             // 系统级保留页直接跳过
-            if system_pages.contains(&rel_path.as_str()) {
+            if system_pages.contains(&rel_path) {
                 continue;
             }
 

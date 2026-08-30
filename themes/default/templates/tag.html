@@ -11,7 +11,7 @@
             <header class="mb-8">
                 <!-- 面包屑导航 -->
                 <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5">
-                    <a href="/tags/" class="hover:text-primary-600">标签</a>
+                    <a href="{{ site.taxonomies.tags | default(value='/tags') }}/" class="hover:text-primary-600">标签</a>
                     <span class="text-gray-300">/</span>
                     <span class="text-gray-500">{{ tag_name }}</span>
                 </nav>
@@ -34,17 +34,13 @@
                     <article class="card hover:shadow-lg transition-shadow duration-300">
                         <div class="card-body">
                             <h2 class="text-xl sm:text-2xl font-semibold mb-3">
-                                {% if post.categories and post.categories | length > 0 %}
-                                <a href="/{{ post.categories | join(sep='/') }}/{{ post.slug }}.html" 
-                                   class="text-gray-900 hover:text-primary-600 transition-colors">
-                                    {{ post.title | default(value=post.slug) }}
-                                </a>
-                                {% else %}
-                                <a href="/{{ post.slug }}.html" 
-                                   class="text-gray-900 hover:text-primary-600 transition-colors">
-                                    {{ post.title | default(value=post.slug) }}
-                                </a>
+                                {% if post.draft %}
+                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-2 align-middle select-none">草稿</span>
                                 {% endif %}
+                                <a href="{% if post.url %}{{ post.url }}{% elif post.categories and post.categories | length > 0 %}/{{ post.categories | join(sep='/') }}/{{ post.slug }}.html{% else %}/{{ post.slug }}.html{% endif %}" 
+                                   class="text-gray-900 hover:text-primary-600 transition-colors">
+                                    {{ post.title | default(value=post.slug) }}
+                                </a>
                             </h2>
                             
                             {% if post.description %}
@@ -89,7 +85,7 @@
                         </svg>
                         <h3 class="mt-4 text-lg font-medium text-gray-900">标签 "{{ tag_name }}" 暂无内容</h3>
                         <p class="mt-2 text-gray-500">这个标签下还没有发布任何内容</p>
-                        <a href="/tags/" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回标签页</a>
+                        <a href="{{ site.taxonomies.tags | default(value='/tags') }}/" class="mt-4 inline-block text-primary-600 hover:text-primary-700">返回标签页</a>
                     </div>
                 {% endif %}
             </div>

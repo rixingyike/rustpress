@@ -26,6 +26,11 @@
                 {% if book_pages %}
                 <div class="relative pl-1 border-l ml-3">
                     {% for p in book_pages %}
+                    {% if p.is_group %}
+                    <div class="pt-3 pb-1 px-2 text-xs font-bold text-moss-ink uppercase tracking-wider select-none mb-1" style="margin-left: {{ p.level | default(value=0) * 0.75 }}rem">
+                        {{ p.title }}
+                    </div>
+                    {% else %}
                     {% set is_active = (p.url == page.url) %}
                     {% set level = p.level | default(value=0) %}
                     <div class="relative flex items-center py-1" style="margin-left: {{ level * 0.75 }}rem">
@@ -40,9 +45,15 @@
                             {% else %}
                             <svg class="w-3.5 h-3.5 mr-2 text-gray-400 group-hover:text-cyber-mint transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             {% endif %}
-                            <span class="truncate">{{ p.title | default(value=p.slug) }}</span>
+                            <span class="truncate">
+                                {% if p.draft %}
+                                <span class="inline-flex items-center px-1 py-0.2 text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1 select-none">草稿</span>
+                                {% endif %}
+                                {{ p.title | default(value=p.slug) }}
+                            </span>
                         </a>
                     </div>
+                    {% endif %}
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -55,7 +66,12 @@
         <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
             <article class="prose prose-slate max-w-none">
                 <header class="mb-4 pb-4">
-                    <h1 class="text-3xl font-extrabold text-moss-ink tracking-tight mb-2">{{ page.title }}</h1>
+                    <h1 class="text-3xl font-extrabold text-moss-ink tracking-tight mb-2">
+                        {% if page.draft %}
+                        <span class="inline-flex items-center px-2 py-0.5 text-sm font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-2 align-middle select-none">草稿</span>
+                        {% endif %}
+                        {{ page.title }}
+                    </h1>
                     {% if page.date_ymd %}
                     <p class="text-sm text-mist-green">更新于 {{ page.date_ymd }}</p>
                     {% endif %}
@@ -67,32 +83,22 @@
 
                 <!-- 底部翻页导航 -->
                 <nav class="mt-12 pt-8 flex justify-between gap-4">
-                    {% if book_pages %}
-                    {% for p in book_pages %}
-                    {% if p.url == page.url %}
-                    {% if loop.first %}
-                    <div class="flex-1"></div>
-                    {% else %}
-                    {% set prev_idx = loop.index0 - 1 %}
-                    {% set prev_p = book_pages[prev_idx] %}
-                    <a href="{{ prev_p.url }}" class="flex-1 group">
-                        <span class="text-xs text-mist-green block mb-1">上一页</span>
-                        <span class="text-sage-line font-medium group-hover:underline">← {{ prev_p.title }}</span>
+                    {% if prev_post %}
+                    <a href="{{ prev_post.url }}" class="flex-1 group">
+                        <span class="text-xs text-mist-green block mb-1">上一篇</span>
+                        <span class="text-sage-line font-medium group-hover:underline">← {{ prev_post.title }}</span>
                     </a>
+                    {% else %}
+                    <div class="flex-1"></div>
                     {% endif %}
 
-                    {% if loop.last %}
-                    <div class="flex-1"></div>
-                    {% else %}
-                    {% set next_idx = loop.index0 + 1 %}
-                    {% set next_p = book_pages[next_idx] %}
-                    <a href="{{ next_p.url }}" class="flex-1 text-right group">
-                        <span class="text-xs text-mist-green block mb-1">下一页</span>
-                        <span class="text-sage-line font-medium group-hover:underline">{{ next_p.title }} →</span>
+                    {% if next_post %}
+                    <a href="{{ next_post.url }}" class="flex-1 text-right group">
+                        <span class="text-xs text-mist-green block mb-1">下一篇</span>
+                        <span class="text-sage-line font-medium group-hover:underline">{{ next_post.title }} →</span>
                     </a>
-                    {% endif %}
-                    {% endif %}
-                    {% endfor %}
+                    {% else %}
+                    <div class="flex-1"></div>
                     {% endif %}
                 </nav>
             </article>

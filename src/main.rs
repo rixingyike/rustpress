@@ -62,6 +62,17 @@ fn main() -> Result<()> {
             }
         }
         Commands::BuildSidebar => build_sidebar(&cli.md_dir, &cli.config),
+        Commands::NewBlog { title } => rustpress::commands::new_blog(&cli.md_dir, title),
+        Commands::NewArticle { column, title } => {
+            rustpress::commands::new_article(&cli.md_dir, column, title)
+        }
+        Commands::NewTweet { content } => rustpress::commands::new_tweet(&cli.md_dir, content),
+        Commands::MakeCatalog { column, all } => {
+            rustpress::commands::make_catalog(&cli.md_dir, column.as_deref(), *all)
+        }
+        Commands::MakeCover { column, all, style } => {
+            rustpress::commands::make_cover(&cli.md_dir, column.as_deref(), *all, style)
+        }
     }
 }
 
@@ -253,9 +264,14 @@ fn dev_site_hotreload(
 }
 
 /// 重新生成首页侧边栏数据到 build.toml（热门文章/标签/分类）
-fn build_sidebar(md_dir: &str, _config_file: &str) -> Result<()> {
+fn build_sidebar(md_dir: &str, config_file: &str) -> Result<()> {
     // 列出所有文章，基于当前内容重新生成侧边栏数据
-    let posts = rustpress::post::PostParser::list_posts(md_dir)?;
+    let config_path =
+        rustpress::utils::resolve_config_toml_path_read(Path::new(md_dir), config_file);
+    let include_drafts = Config::from_file(&config_path)
+        .map(|c| c.is_dev_or_test_domain())
+        .unwrap_or(false);
+    let posts = rustpress::post::PostParser::list_posts_with_options(md_dir, include_drafts)?;
     rustpress::utils::regenerate_sidebar(std::path::Path::new(md_dir), &posts)?;
     println!("已根据当前内容重新生成 build.toml 的侧边栏数据");
     Ok(())

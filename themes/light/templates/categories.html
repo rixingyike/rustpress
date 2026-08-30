@@ -67,7 +67,7 @@
                                     {{ category.name }}
                                 </span>
                             </div>
-                            <a href="/{{ category.name }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                            <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                                 查看({{ category.count }})
                             </a>
                         </div>
@@ -103,7 +103,7 @@
                                             {{ subcategory.name }}
                                         </span>
                                     </div>
-                                    <a href="/{{ category.name }}/{{ subcategory.name }}/" class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-200 text-moss-ink hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                                    <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/{{ subcategory.name }}/" class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-200 text-moss-ink hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                                         查看({{ subcategory.count }})
                                     </a>
                                 </div>
@@ -124,7 +124,7 @@
                                                 {{ subsubcategory.name }}
                                             </span>
                                         </div>
-                                        <a href="/{{ category.name }}/{{ subcategory.name }}/{{ subsubcategory.name }}/" class="text-xs text-mist-green hover:text-cyber-mint transition-colors">
+                                        <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/{{ subcategory.name }}/{{ subsubcategory.name }}/" class="text-xs text-mist-green hover:text-cyber-mint transition-colors">
                                             查看({{ subsubcategory.count }})
                                         </a>
                                     </div>
@@ -150,7 +150,7 @@
                     </svg>
                     <span class="text-lg font-medium text-moss-ink">闲言</span>
                 </div>
-                <a href="/tweets/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                <a href="/{{ site.taxonomies.dirs.tweets | default(value='t') }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                     查看
                 </a>
             </div>
@@ -164,7 +164,7 @@
                     </svg>
                     <span class="text-lg font-medium text-moss-ink">专栏</span>
                 </div>
-                <a href="/columns/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                <a href="/{{ site.taxonomies.dirs.columns | default(value='c') }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                     查看
                 </a>
             </div>
@@ -178,7 +178,7 @@
                     </svg>
                     <span class="text-lg font-medium text-moss-ink">项目</span>
                 </div>
-                <a href="/projects/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                <a href="/{{ site.taxonomies.dirs.projects | default(value='p') }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                     查看
                 </a>
             </div>
@@ -192,7 +192,7 @@
                     </svg>
                     <span class="text-lg font-medium text-moss-ink">著作</span>
                 </div>
-                <a href="/works/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                <a href="/{{ site.taxonomies.dirs.works | default(value='w') }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                     查看
                 </a>
             </div>
@@ -206,7 +206,7 @@
                     </svg>
                     <span class="text-lg font-medium text-moss-ink">友链</span>
                 </div>
-                <a href="/friends/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
+                <a href="/{{ site.taxonomies.dirs.friends | default(value='f') }}/" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-air-bg text-mist-green hover:bg-sage-line hover:text-flat-white transition-colors duration-150">
                     查看
                 </a>
             </div>

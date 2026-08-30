@@ -47,7 +47,7 @@
                             {{ category.name }}
                         </span>
                     </div>
-                    <a href="/{{ category.name }}/" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
+                    <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors">
                         查看({{ category.count }})
                     </a>
                 </div>
@@ -86,7 +86,7 @@
                                     {{ subcategory.name }}
                                 </span>
                             </div>
-                            <a href="/{{ category.name }}/{{ subcategory.name }}/" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
+                            <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/{{ subcategory.name }}/" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
                                 查看({{ subcategory.count }})
                             </a>
                         </div>
@@ -107,7 +107,7 @@
                                         {{ subsubcategory.name }}
                                     </span>
                                 </div>
-                                <a href="/{{ category.name }}/{{ subcategory.name }}/{{ subsubcategory.name }}/" class="text-xs text-gray-500 hover:text-primary-600 transition-colors">
+                                <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/{{ subcategory.name }}/{{ subsubcategory.name }}/" class="text-xs text-gray-500 hover:text-primary-600 transition-colors">
                                     查看({{ subsubcategory.count }})
                                 </a>
                             </div>

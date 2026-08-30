@@ -5,7 +5,7 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <nav class="mb-6 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
-        <a href="/friends/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+        <a href="/{{ site.taxonomies.dirs.friends | default(value='f') }}/" class="hover:text-cyber-mint transition-colors">友情链接</a>
     </nav>
 
     <div class="bg-flat-white border border-sage-line/10 p-8 flex flex-col items-center text-center">

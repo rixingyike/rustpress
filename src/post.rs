@@ -97,12 +97,40 @@ impl Post {
     pub fn modified_epoch(&self) -> Option<i64> {
         self.data.get("modified_epoch").and_then(|v| v.as_i64())
     }
+
+    /// 是否为草稿
+    pub fn is_draft(&self) -> bool {
+        PostParser::is_draft_value(self.data.get("draft"))
+    }
+
+    /// 是否为闲言碎语（tweet/short）
+    pub fn is_tweet(&self) -> bool {
+        let layout = self.data.get("layout").and_then(|v| v.as_str()).unwrap_or("");
+        if layout == "tweet" || layout == "short" {
+            return true;
+        }
+        let cats = self.categories();
+        if cats.first().map(|c| c == "tweets" || c == "tweet" || c == "short").unwrap_or(false) {
+            return true;
+        }
+        self.title().is_none() || self.title().unwrap_or("").is_empty()
+    }
 }
 
 /// 文章解析器
 pub struct PostParser;
 
 impl PostParser {
+    /// 判断 Value 是否代表草稿（true / "true" / 1）
+    pub fn is_draft_value(val: Option<&Value>) -> bool {
+        match val {
+            Some(Value::Bool(b)) => *b,
+            Some(Value::String(s)) => s.eq_ignore_ascii_case("true") || s == "1",
+            Some(Value::Number(n)) => n.as_i64() == Some(1),
+            _ => false,
+        }
+    }
+
     /// 从 Markdown 文本中提取标题：优先首个 H1（`# 标题`），否则首个任意级别标题
     fn extract_title_from_markdown(markdown: &str) -> Option<String> {
         // 先扫描首个 H1
@@ -147,10 +175,30 @@ impl PostParser {
         None
     }
 
-    /// 列出指定目录下的所有文章
+    /// 列出指定目录下的所有文章（默认不包含草稿）
     pub fn list_posts<P: AsRef<Path>>(md_dir: P) -> Result<Vec<Post>> {
-        let mut posts = Vec::new();
+        Self::list_posts_with_options(md_dir, false)
+    }
+
+    /// 列出指定目录下的所有文章，支持指定是否包含草稿
+    pub fn list_posts_with_options<P: AsRef<Path>>(md_dir: P, include_drafts: bool) -> Result<Vec<Post>> {
+        Self::list_posts_with_config(md_dir, include_drafts, None)
+    }
+
+    /// 列出指定目录下的所有文章，支持指定是否包含草稿以及传入 Config
+    pub fn list_posts_with_config<P: AsRef<Path>>(
+        md_dir: P,
+        include_drafts: bool,
+        config: Option<&crate::config::Config>,
+    ) -> Result<Vec<Post>> {
         let content_dir = md_dir.as_ref();
+        let taxonomies = if let Some(cfg) = config {
+            cfg.taxonomies_config()
+        } else {
+            Self::resolve_taxonomies_from_dir(content_dir)
+        };
+
+        let mut posts = Vec::new();
 
         // 检查目录是否存在
         if !content_dir.exists() {
@@ -168,9 +216,9 @@ impl PostParser {
             let path = entry.path();
             if path.file_name().map_or(false, |n| n == "README.md") {
                 if let Ok(content) = std::fs::read_to_string(path) {
-                    if let Ok(Some(post_data)) = Self::parse_post(&content, path, content_dir) {
-                        let is_draft = post_data.get("draft").and_then(|v| v.as_bool()).unwrap_or(false);
-                        if is_draft {
+                    if let Ok(Some(post_data)) = Self::parse_post_with_taxonomies(&content, path, content_dir, &taxonomies) {
+                        let is_draft = Self::is_draft_value(post_data.get("draft"));
+                        if is_draft && !include_drafts {
                             if let Some(parent) = path.parent() {
                                 draft_dirs.insert(parent.to_path_buf());
                             }
@@ -223,7 +271,7 @@ impl PostParser {
                     continue;
                 }
                 // 如果文件在被禁用的 draft 目录下，则跳过
-                if draft_dirs.iter().any(|d| entry.path().starts_with(d)) {
+                if !include_drafts && draft_dirs.iter().any(|d| entry.path().starts_with(d)) {
                     continue;
                 }
 
@@ -234,23 +282,30 @@ impl PostParser {
                 }
                 let content = std::fs::read_to_string(entry.path())
                     .map_err(|e| Error::Other(format!("无法读取文件 {:?}: {}", entry.path(), e)))?;
-                    if let Ok(Some(mut post)) = Self::parse_post(&content, entry.path(), content_dir) {
-                        // 检查 draft 字段，如果是 true 则跳过
-                        let is_draft = post
-                            .get("draft")
-                            .and_then(|v| v.as_bool())
-                            .unwrap_or(false);
-                        if is_draft {
-                            continue;
-                        }
+                if let Ok(Some(mut post)) = Self::parse_post_with_taxonomies(&content, entry.path(), content_dir, &taxonomies) {
+                    // 检查 draft 字段，如果是 true 且不包含草稿则跳过
+                    let is_draft = Self::is_draft_value(post.get("draft"));
+                    if is_draft && !include_drafts {
+                        continue;
+                    }
 
-                        // 处理布局与封面数据逻辑
-                        let cats = Post::from_value(post.clone()).categories();
-                        if let Some(obj) = post.as_object_mut() {
-                            // 1. 自动应用分支逻辑（仅在未设置布局时）
+                    // 处理布局与封面数据逻辑
+                    let cats = Post::from_value(post.clone()).categories();
+                    if let Some(obj) = post.as_object_mut() {
+                        // 1. 自动应用分支逻辑（仅在未设置布局时）
                             if !obj.contains_key("layout") {
-                                if cats.first().map(|c| c == "projects").unwrap_or(false) {
-                                    obj.insert("layout".to_string(), Value::String("project".to_string()));
+                                if cats.first().map(|c| c == "projects" || c == "project").unwrap_or(false) {
+                                    if entry.path().file_name().map_or(false, |n| n == "README.md") && cats.len() == 1 {
+                                        obj.insert("layout".to_string(), Value::String("projects".to_string()));
+                                    } else {
+                                        obj.insert("layout".to_string(), Value::String("project".to_string()));
+                                    }
+                                } else if cats.first().map(|c| c == "works" || c == "work").unwrap_or(false) {
+                                    if entry.path().file_name().map_or(false, |n| n == "README.md") && cats.len() == 1 {
+                                        obj.insert("layout".to_string(), Value::String("works".to_string()));
+                                    } else {
+                                        obj.insert("layout".to_string(), Value::String("work".to_string()));
+                                    }
                                 } else if book_dirs.iter().any(|(d, _)| entry.path().starts_with(d)) {
                                     obj.insert("layout".to_string(), Value::String("doc".to_string()));
                                 }
@@ -281,8 +336,123 @@ impl PostParser {
         Ok(posts)
     }
 
+    /// 尝试从源目录或项目根解析 TaxonomiesConfig
+    fn resolve_taxonomies_from_dir<P: AsRef<Path>>(md_dir: P) -> crate::config::TaxonomiesConfig {
+        let md_dir = md_dir.as_ref();
+        let paths = [
+            md_dir.join("config.toml"),
+            md_dir.parent().map(|p| p.join("config.toml")).unwrap_or_else(|| std::path::PathBuf::from("config.toml")),
+            std::path::PathBuf::from("config.toml"),
+        ];
+        for p in &paths {
+            if p.exists() {
+                if let Ok(cfg) = crate::config::Config::from_file(p) {
+                    return cfg.taxonomies_config();
+                }
+            }
+        }
+        crate::config::TaxonomiesConfig::default()
+    }
+
+    /// 根据分类路径、slug 和分类法配置生成统一的文章 URL
+    pub fn compute_post_url(
+        categories: &[String],
+        slug: &str,
+        taxonomies: &crate::config::TaxonomiesConfig,
+    ) -> String {
+        let slug = if slug == "README" { "index" } else { slug };
+        if categories.is_empty() {
+            if slug == "about" {
+                taxonomies.about.clone()
+            } else if slug == "index" {
+                "/index.html".to_string()
+            } else {
+                format!("/{}.html", slug)
+            }
+        } else {
+            let top_cat = &categories[0];
+            let is_taxonomy = matches!(
+                top_cat.as_str(),
+                "columns"
+                    | "column"
+                    | "projects"
+                    | "project"
+                    | "works"
+                    | "work"
+                    | "friends"
+                    | "friend"
+                    | "tweets"
+                    | "tweet"
+                    | "short"
+            );
+
+            if is_taxonomy {
+                let tax_prefix = taxonomies.get_prefix(top_cat);
+                if categories.len() == 1 {
+                    if slug == "index" {
+                        // 专栏/项目/著作/友链的主列表页
+                        if !tax_prefix.is_empty() {
+                            format!("{}/index.html", tax_prefix)
+                        } else {
+                            // 当设置为根目录 "/" 时，总览页不占用根目录 index.html，生成为 /{top_cat}/index.html
+                            format!("/{}/index.html", top_cat)
+                        }
+                    } else {
+                        // 单文件叶子节点（如 works/miniprogram-0-1.md, projects/rustpress.md, friends/1.md）
+                        if !tax_prefix.is_empty() {
+                            format!("{}/{}.html", tax_prefix, slug)
+                        } else {
+                            format!("/{}.html", slug)
+                        }
+                    }
+                } else {
+                    // 多级子项（如 columns/harness/README.md, columns/harness/1.认识GPT.md, projects/enyan/README.md, tweets/2026/07/xxx.md）
+                    let sub_cats = &categories[1..];
+                    if slug == "index" {
+                        // 兼容某些单篇著作放于子目录的情况：如果 top_cat 是 works 且分类数为2（如 works/1/README.md），兼容生成为 /{w}/{sub_cats[0]}.html
+                        if (top_cat == "works" || top_cat == "work") && sub_cats.len() == 1 {
+                            if !tax_prefix.is_empty() {
+                                format!("{}/{}.html", tax_prefix, sub_cats[0])
+                            } else {
+                                format!("/{}.html", sub_cats[0])
+                            }
+                        } else if !tax_prefix.is_empty() {
+                            format!("{}/{}/index.html", tax_prefix, sub_cats.join("/"))
+                        } else {
+                            format!("/{}/index.html", sub_cats.join("/"))
+                        }
+                    } else {
+                        if !tax_prefix.is_empty() {
+                            format!("{}/{}/{}.html", tax_prefix, sub_cats.join("/"), slug)
+                        } else {
+                            format!("/{}/{}.html", sub_cats.join("/"), slug)
+                        }
+                    }
+                }
+            } else {
+                // 普通分类目录（如 2021/19.md 或 blog/xxx）
+                if slug == "index" {
+                    format!("/{}/index.html", categories.join("/"))
+                } else {
+                    format!("/{}/{}.html", categories.join("/"), slug)
+                }
+            }
+        }
+    }
+
     /// 解析单篇文章
     fn parse_post<P: AsRef<Path>>(content: &str, path: P, md_dir: P) -> Result<Option<Value>> {
+        let taxonomies = Self::resolve_taxonomies_from_dir(md_dir.as_ref());
+        Self::parse_post_with_taxonomies(content, path, md_dir, &taxonomies)
+    }
+
+    /// 使用指定的分类法配置解析单篇文章
+    pub fn parse_post_with_taxonomies<P: AsRef<Path>>(
+        content: &str,
+        path: P,
+        md_dir: P,
+        taxonomies: &crate::config::TaxonomiesConfig,
+    ) -> Result<Option<Value>> {
         let path = path.as_ref();
         let md_dir = md_dir.as_ref();
 
@@ -360,16 +530,8 @@ impl PostParser {
             .map(|cat| Value::String(cat.clone()))
             .collect();
 
-        // 生成 URL
-        let url = if categories.is_empty() {
-            format!("/{}.html", slug)
-        } else {
-            if categories[0] == "works" && categories.len() == 2 && slug == "index" {
-                format!("/works/{}.html", categories[1])
-            } else {
-                format!("/{}/{}.html", categories.join("/"), slug)
-            }
-        };
+        // 统一计算 URL
+        let url = Self::compute_post_url(&categories, &slug, taxonomies);
 
         // 创建完整的文章对象
         let mut post = match metadata_json {
@@ -415,8 +577,8 @@ impl PostParser {
                 Value::Number(modified_epoch.into()),
             );
             
-            // 如果属于某个专栏 (首个分类是 "columns" 且分类数 >= 2)，提取专栏标题 (即同级 README.md 的 title) 并注入 column_title
-            if categories.first().map(|c| c == "columns").unwrap_or(false) && categories.len() >= 2 {
+            // 如果属于某个专栏 (首个分类是 "columns" 或 "column" 且分类数 >= 2)，提取专栏标题 (即同级 README.md 的 title) 并注入 column_title
+            if categories.first().map(|c| c == "columns" || c == "column").unwrap_or(false) && categories.len() >= 2 {
                 if let Some(parent) = path.parent() {
                     let readme_path = parent.join("README.md");
                     if readme_path.exists() {
@@ -425,7 +587,6 @@ impl PostParser {
                             if let Some(caps) = re_title.captures(&readme_content) {
                                 let col_title = caps.get(1).map(|m| m.as_str().trim().to_string()).unwrap_or_default();
                                 obj.insert("column_title".to_string(), Value::String(col_title.clone()));
-
                             }
                         }
                     }
@@ -626,6 +787,7 @@ impl PostParser {
         options.extension.footnotes = true;
         options.extension.tasklist = true;
         options.extension.highlight = true;
+        options.render.r#unsafe = true;
 
         let html = markdown_to_html(markdown, &options);
 
@@ -738,7 +900,7 @@ impl PostParser {
 
         // 排除的特殊目录（这些是内容类型而不是文章分类）
         let excluded: std::collections::HashSet<&str> =
-            ["columns", "friends", "projects", "tweets", "works"].into();
+            ["columns", "column", "friends", "friend", "projects", "project", "tweets", "tweet", "short", "works", "work"].into();
 
         let mut root = CategoryNode::new("root".to_string(), vec![]);
 
@@ -825,14 +987,8 @@ impl PostParser {
         }
 
         let categories = Self::extract_categories_from_path(path, md_dir);
-        if categories.is_empty() {
-            format!("/{}.html", slug)
-        } else {
-            if categories[0] == "works" && categories.len() == 2 && slug == "index" {
-                format!("/works/{}.html", categories[1])
-            } else {
-                format!("/{}/{}.html", categories.join("/"), slug)
-            }
-        }
+        let taxonomies = Self::resolve_taxonomies_from_dir(md_dir);
+        Self::compute_post_url(&categories, &slug, &taxonomies)
     }
 }
+

@@ -17,7 +17,7 @@
     <!-- 项目卡片网格 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {% for project in projects %}
-        <a href="/{{ project.slug }}.html" class="group block bg-white overflow-hidden hover: hover:border-primary-300 transition-all duration-300">
+        <a href="{% if project.url %}{{ project.url }}{% else %}/{{ project.slug }}.html{% endif %}" class="group block bg-white overflow-hidden hover: hover:border-primary-300 transition-all duration-300">
             <!-- 项目头部 -->
             <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white">
                 <div class="flex items-center space-x-4">
@@ -35,7 +35,12 @@
                     </div>
                     {% endif %}
                     <div>
-                        <h2 class="text-xl font-bold group-hover:underline">{{ project.title }}</h2>
+                        <h2 class="text-xl font-bold group-hover:underline flex items-center">
+                            {% if project.draft %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-400 text-amber-950 rounded mr-2 select-none">草稿</span>
+                            {% endif %}
+                            {{ project.title }}
+                        </h2>
                         {% if project.version %}
                         <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-white/20 ">v{{
                             project.version }}</span>

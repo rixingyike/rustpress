@@ -40,7 +40,7 @@ impl DevServer {
         shutdown: impl std::future::Future<Output = ()> + Send + 'static,
     ) -> Result<()> {
         let output_dir = output_dir.as_ref().to_path_buf();
-        let addr = SocketAddr::from(([127, 0, 0, 1], port));
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
         let state = Arc::new(AppState { md_dir });
 
         // 静态文件服务

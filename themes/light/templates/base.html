@@ -321,20 +321,20 @@
         if (!query || !query.trim()) return [];
         var q = query.trim().toLowerCase();
         var map = {
-            '作者': '/about.html', '关于': '/about.html',
-            '项目': '/projects/',
-            '专栏': '/columns/', '系列': '/columns/',
-            '博客': '/archives/', '归档': '/archives/', '文章': '/archives/',
-            '友链': '/friends/', '友情链接': '/friends/',
-            '分类': '/categories/', '标签': '/tags/',
-            '作品': '/works/', '出版': '/works/', '图书': '/works/', '书': '/works/', '著作': '/works/',
-            '闲言': '/tweets/', '碎语': '/tweets/',
+            '作者': '{{ site.taxonomies.about | default(value="/about.html") }}', '关于': '{{ site.taxonomies.about | default(value="/about.html") }}',
+            '项目': '/{{ site.taxonomies.dirs.projects | default(value="p") }}/',
+            '专栏': '/{{ site.taxonomies.dirs.columns | default(value="c") }}/', '系列': '/{{ site.taxonomies.dirs.columns | default(value="c") }}/',
+            '博客': '/{{ site.taxonomies.dirs.archives | default(value="a") }}/', '归档': '/{{ site.taxonomies.dirs.archives | default(value="a") }}/', '文章': '/{{ site.taxonomies.dirs.archives | default(value="a") }}/',
+            '友链': '/{{ site.taxonomies.dirs.friends | default(value="f") }}/', '友情链接': '/{{ site.taxonomies.dirs.friends | default(value="f") }}/',
+            '分类': '{% if site.taxonomies.categories and site.taxonomies.categories != "/" %}{{ site.taxonomies.categories }}{% else %}/cat{% endif %}/', '标签': '{{ site.taxonomies.tags | default(value="/tag") }}/',
+            '作品': '/{{ site.taxonomies.dirs.works | default(value="w") }}/', '出版': '/{{ site.taxonomies.dirs.works | default(value="w") }}/', '图书': '/{{ site.taxonomies.dirs.works | default(value="w") }}/', '书': '/{{ site.taxonomies.dirs.works | default(value="w") }}/', '著作': '/{{ site.taxonomies.dirs.works | default(value="w") }}/',
+            '闲言': '/{{ site.taxonomies.dirs.tweets | default(value="t") }}/', '碎语': '/{{ site.taxonomies.dirs.tweets | default(value="t") }}/',
             '搜索': '/search.html',
             '首页': '/',
-            'home': '/', 'about': '/about.html', 'projects': '/projects/',
-            'columns': '/columns/', 'works': '/works/', 'archives': '/archives/',
-            'friends': '/friends/', 'tags': '/tags/',
-            'categories': '/categories/'
+            'home': '/', 'about': '{{ site.taxonomies.about | default(value="/about.html") }}', 'projects': '/{{ site.taxonomies.dirs.projects | default(value="p") }}/',
+            'columns': '/{{ site.taxonomies.dirs.columns | default(value="c") }}/', 'works': '/{{ site.taxonomies.dirs.works | default(value="w") }}/', 'archives': '/{{ site.taxonomies.dirs.archives | default(value="a") }}/',
+            'friends': '/{{ site.taxonomies.dirs.friends | default(value="f") }}/', 'tags': '{{ site.taxonomies.tags | default(value="/tag") }}/',
+            'categories': '{% if site.taxonomies.categories and site.taxonomies.categories != "/" %}{{ site.taxonomies.categories }}{% else %}/cat{% endif %}/'
         };
         var exact = [];
         var fuzzy = [];

@@ -21,17 +21,16 @@
     </div>
     
     <!-- 所有标签 - 圆形标签样式 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
         <h2 class="text-2xl font-semibold text-gray-900 mb-6">所有标签</h2>
         <div class="flex flex-wrap gap-3">
-            {% for tag in all_tags %}
-            <a href="/tags/{{ tag.name }}/" 
-               class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-full hover:bg-primary-100 hover:text-primary-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+            {% for tag in all_tags | sort(attribute="name") %}
+            <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag.name }}/" class="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-primary-100 hover:text-primary-800 transition-colors duration-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                 </svg>
                 {{ tag.name }}
-                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">
                     {{ tag.count }}
                 </span>
             </a>
@@ -40,19 +39,18 @@
     </div>
     
     <!-- 热门标签 -->
-    {% set popular_tags = all_tags | sort(attribute="count", reverse=true) | slice(end=8) %}
+    {% set popular_tags = all_tags | sort(attribute="count") | reverse | slice(end=8) %}
     {% if popular_tags | length > 0 %}
-    <div class="bg-gray-50 rounded-lg p-8">
+    <div class="bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl border border-primary-100 p-8">
         <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">热门标签</h2>
         <div class="flex flex-wrap justify-center gap-3">
             {% for tag in popular_tags %}
-            <a href="/tags/{{ tag.name }}/" 
-               class="inline-flex items-center px-6 py-3 bg-white border-2 border-primary-200 text-primary-700 font-medium rounded-full hover:bg-primary-50 hover:border-primary-300 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+            <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag.name }}/" class="inline-flex items-center px-6 py-3 rounded-full bg-white border-2 border-primary-200 text-primary-700 font-medium hover:bg-primary-50 hover:border-primary-300 transition-colors duration-200 shadow-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                 </svg>
                 {{ tag.name }}
-                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                     {{ tag.count }}
                 </span>
             </a>

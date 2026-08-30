@@ -5,7 +5,7 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <nav class="mb-6 text-sm text-gray-500">
-        <a href="/friends/" class="hover:text-primary-700">友情链接</a>
+        <a href="/{{ site.taxonomies.dirs.friends | default(value='f') }}/" class="hover:text-primary-700">友情链接</a>
         <span class="mx-1">/</span>
         <span>{{ page.title }}</span>
     </nav>

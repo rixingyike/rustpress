@@ -50,7 +50,12 @@
             {% endif %}
 
             <div class="p-6 flex-1 flex flex-col">
-                <h2 class="text-xl font-bold text-moss-ink mb-2">{{ doc.title }}</h2>
+                <h2 class="text-xl font-bold text-moss-ink mb-2">
+                    {% if doc.draft %}
+                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1.5 select-none">草稿</span>
+                    {% endif %}
+                    {{ doc.title }}
+                </h2>
                 <div class="text-mist-green text-sm mb-4 flex-1">
                     {{ doc.description | default(value="暂无描述") | truncate(length=100) }}
                 </div>

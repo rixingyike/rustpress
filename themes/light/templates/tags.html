@@ -25,7 +25,7 @@
         <h2 class="text-2xl font-semibold text-moss-ink mb-6">所有标签</h2>
         <div class="flex flex-wrap gap-3">
             {% for tag in all_tags | sort(attribute="name") %}
-            <a href="/tags/{{ tag.name }}/" class="inline-flex items-center px-4 py-2 bg-air-bg text-moss-ink font-medium hover:bg-primary-100 hover:text-cyber-mint transition-colors duration-200">
+            <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag.name }}/" class="inline-flex items-center px-4 py-2 bg-air-bg text-moss-ink font-medium hover:bg-primary-100 hover:text-cyber-mint transition-colors duration-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                 </svg>
@@ -45,7 +45,7 @@
         <h2 class="text-2xl font-semibold text-moss-ink mb-6 text-center">热门标签</h2>
         <div class="flex flex-wrap justify-center gap-3">
             {% for tag in popular_tags %}
-            <a href="/tags/{{ tag.name }}/" class="inline-flex items-center px-6 py-3 bg-white border-2 border-primary-200 text-primary-700 font-medium hover:bg-primary-50 hover:border-primary-300 transition-colors duration-200">
+            <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag.name }}/" class="inline-flex items-center px-6 py-3 bg-white border-2 border-primary-200 text-primary-700 font-medium hover:bg-primary-50 hover:border-primary-300 transition-colors duration-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                 </svg>

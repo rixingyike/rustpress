@@ -37,6 +37,9 @@
             {% endif %}
             <div class="flex-1">
                 <h2 class="text-xl font-bold text-moss-ink mb-2">
+                    {% if work.draft %}
+                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1.5 select-none">草稿</span>
+                    {% endif %}
                     {% if work.url_path %}
                     <a href="{{ work.url_path }}" class="hover:text-cyber-mint transition-colors">{{ work.title }}</a>
                     {% else %}

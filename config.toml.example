@@ -1,11 +1,13 @@
 [site]
-name = "一树仑"
+name = "艺述论"
 description = "一花一世界，一树一菩提。"
 author = "jsmn"
 base_url = "http://localhost:1111"
 logo = "/static/images/avatar.png"
 # 在RSS中公开显示的域名
 domain = "https://yishulun.com"
+# 开发与测试环境域名列表（包含这些域名时：展示草稿标识、首页显示短动态发布框）
+dev_domains = ["dev.yishulun.com", "localhost", "127.0.0.1", "0.0.0.0", "::1"]
 icp_license = "京ICP备14007000号-8"
 start_year = 2002
 
@@ -50,26 +52,6 @@ posts_per_page = 8
 [tags]
 posts_per_page = 8
 
-# 广告位设置
-[ads]
-# 广告位1：Header广告
-ad1_image = "/static/images/book-wegame.png"
-ad1_link = "https://item.jd.com/13630053.html"
-ad1_title = "微信小游戏开发"
-ad1_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
-
-# 广告位2：侧边栏顶部广告（原推荐阅读位置）
-ad2_image = "/static/images/book-wegame.png"
-ad2_link = "https://item.jd.com/13630053.html"
-ad2_title = "微信小游戏开发"
-ad2_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
-
-# 广告位3：侧边栏底部广告（原支持我们位置）
-ad3_image = "/static/images/book-wegame.png"
-ad3_link = "https://item.jd.com/13630053.html"
-ad3_title = "微信小游戏开发"
-ad3_description = "学习微信小游戏开发技术，掌握游戏开发全流程"
-
 # 功能开关
 [features]
 search = true
@@ -82,21 +64,10 @@ sitemap = true
 [analytics]
 google_id = "G-8N64Q25EK9"
 
-# Google Ads 配置
-[ads.google]
-client_id = "ca-pub-2139303336591479"
-
-# 评论（giscus）配置
+# 评论与点赞互动系统配置
 [comments]
 enabled = true
 repo = "rixingyike/yishulun.com_discus"
-repo_id = "R_kgDOKRUETQ"
-category = "General"
-category_id = "DIC_kwDOKRUETc4CZMWK"
-mapping = "pathname"
-theme = "preferred_color_scheme"
-lang = "zh-CN"
-strict = "1"    # 严格 origin 验证
 github_client_id = "0cdfd84658051b0f7de6"
 
 # 导航菜单
@@ -107,32 +78,32 @@ weight = 1
 
 [[menu.main]]
 name = "归档"
-url = "/archives/"
+url = "/a/"
 weight = 2
 
 [[menu.main]]
 name = "分类"
-url = "/categories.html"
+url = "/cat/"
 weight = 3
 
 [[menu.main]]
 name = "标签"
-url = "/tags.html"
+url = "/tag/"
 weight = 4
 
 [[menu.main]]
-name = "文档"
-url = "/docs.html"
+name = "专栏"
+url = "/c/"
 weight = 5
 
 [[menu.main]]
 name = "友链"
-url = "/friends.html"
+url = "/f/"
 weight = 6
 
 [[menu.main]]
 name = "项目"
-url = "/projects.html"
+url = "/p/"
 weight = 7
 
 [[menu.main]]
@@ -141,6 +112,17 @@ url = "/about.html"
 weight = 8
 
 [taxonomies]
-category = "categories"
-tag = "tags"
+tweets = "/t"         # 推文（短内容）
+columns = "/c"        # 专栏（系列文章）
+
+categories = "/cat"   # 分类
+tags = "/tag"         # 标签
+
+projects = "/p"       # 个人项目
+works = "/w"          # 作品集
+
+archives = "/a"       # 历史归档
+friends = "/f"        # 友情链接
+about = "/about.html" # 作者简介
+
 

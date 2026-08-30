@@ -200,17 +200,13 @@
                 {% for post in related_posts | slice(end=5) %}
                 <div class="p-4 hover:bg-gray-50 transition-colors">
                     <h4 class="text-sm font-medium mb-1">
-                        {% if post.categories and post.categories | length > 0 %}
-                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html"
+                        <a href="{% if post.url %}{{ post.url }}{% elif post.categories and post.categories | length > 0 %}{{ post.categories | join(sep='/') }}/{{ post.slug }}.html{% else %}{{ post.slug }}.html{% endif %}"
                             class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                            {% if post.draft %}
+                            <span class="inline-flex items-center px-1 py-0.2 text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1 select-none">草稿</span>
+                            {% endif %}
                             {{ post.title | default(value=post.slug) }}
                         </a>
-                        {% else %}
-                        <a href="{{ post.slug }}.html"
-                            class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
-                            {{ post.title | default(value=post.slug) }}
-                        </a>
-                        {% endif %}
                     </h4>
                     {% if post.date_ymd %}
                     <p class="text-xs text-gray-500">{{ post.date_ymd }}</p>
@@ -231,17 +227,13 @@
                 {% for post in site.sidebar.hot_posts | slice(end=5) %}
                 <div class="p-4 hover:bg-gray-50 transition-colors">
                     <h4 class="text-sm font-medium mb-1">
-                        {% if post.categories and post.categories | length > 0 %}
-                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html"
+                        <a href="{% if post.url %}{{ post.url }}{% elif post.categories and post.categories | length > 0 %}{{ post.categories | join(sep='/') }}/{{ post.slug }}.html{% else %}{{ post.slug }}.html{% endif %}"
                             class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                            {% if post.draft %}
+                            <span class="inline-flex items-center px-1 py-0.2 text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1 select-none">草稿</span>
+                            {% endif %}
                             {{ post.title | default(value=post.slug) }}
                         </a>
-                        {% else %}
-                        <a href="{{ post.slug }}.html"
-                            class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
-                            {{ post.title | default(value=post.slug) }}
-                        </a>
-                        {% endif %}
                     </h4>
                     {% if post.date_ymd %}
                     <p class="text-xs text-gray-500">{{ post.date_ymd }}</p>
@@ -262,17 +254,13 @@
                 {% for post in posts | slice(end=5) %}
                 <div class="p-4 hover:bg-gray-50 transition-colors">
                     <h4 class="text-sm font-medium mb-1">
-                        {% if post.categories and post.categories | length > 0 %}
-                        <a href="{{ post.categories | join(sep='/') }}/{{ post.slug }}.html"
+                        <a href="{% if post.url %}{{ post.url }}{% elif post.categories and post.categories | length > 0 %}{{ post.categories | join(sep='/') }}/{{ post.slug }}.html{% else %}{{ post.slug }}.html{% endif %}"
                             class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
+                            {% if post.draft %}
+                            <span class="inline-flex items-center px-1 py-0.2 text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1 select-none">草稿</span>
+                            {% endif %}
                             {{ post.title | default(value=post.slug) }}
                         </a>
-                        {% else %}
-                        <a href="{{ post.slug }}.html"
-                            class="text-gray-900 hover:text-primary-600 transition-colors line-clamp-2">
-                            {{ post.title | default(value=post.slug) }}
-                        </a>
-                        {% endif %}
                     </h4>
                     {% if post.date_ymd %}
                     <p class="text-xs text-gray-500">{{ post.date_ymd }}</p>
@@ -293,7 +281,7 @@
         <div class="card-body">
             <div class="flex flex-wrap gap-2">
                 {% for tag in site.sidebar.hot_tags | slice(end=20) %}
-                <a href="/tags/{{ tag.name }}/"
+                <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag.name }}/"
                     class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
                     {{ tag.name }}
                     <span class="ml-1 text-xs text-gray-500">{{ tag.count }}</span>
@@ -310,7 +298,7 @@
         <div class="card-body">
             <div class="flex flex-wrap gap-2">
                 {% for tag in all_tags | slice(end=20) %}
-                <a href="/tags/{{ tag.name }}/"
+                <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag.name }}/"
                     class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-800 transition-colors">
                     {{ tag.name }}
                     <span class="ml-1 text-xs text-gray-500">{{ tag.count }}</span>
@@ -331,7 +319,7 @@
             <div class="divide-y divide-gray-200">
                 {% for category in site.sidebar.hot_categories | slice(end=8) %}
                 <div class="p-3">
-                    <a href="/{{ category.name }}/"
+                    <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/"
                         class="flex items-center justify-between text-gray-700 hover:text-primary-600 transition-colors">
                         <span class="text-sm font-medium">{{ category.name }}</span>
                         <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ category.count |
@@ -351,7 +339,7 @@
             <div class="divide-y divide-gray-200">
                 {% for category in all_categories | slice(end=8) %}
                 <div class="p-3">
-                    <a href="/{{ category.name }}/"
+                    <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}/{{ category.name }}/"
                         class="flex items-center justify-between text-gray-700 hover:text-primary-600 transition-colors">
                         <span class="text-sm font-medium">{{ category.name }}</span>
                         <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ category.count |

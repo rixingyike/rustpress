@@ -9,10 +9,10 @@
     <header class="mb-8">
         <!-- 面包屑导航 -->
         <nav class="mb-4 text-xs text-gray-400 flex items-center space-x-1.5 select-none">
-            <a href="/archives/" class="hover:text-cyber-mint transition-colors">归档</a>
+            <a href="/{{ site.taxonomies.dirs.archives | default(value='a') }}/" class="hover:text-cyber-mint transition-colors">归档</a>
             <span class="text-gray-300">/</span>
             {% if month %}
-                <a href="/archives/{{ year }}/" class="hover:text-cyber-mint transition-colors">{{ year }}年</a>
+                <a href="/{{ site.taxonomies.dirs.archives | default(value='a') }}/{{ year }}/" class="hover:text-cyber-mint transition-colors">{{ year }}年</a>
                 <span class="text-gray-300">/</span>
                 <span class="text-gray-500">{{ month }}月</span>
             {% else %}
@@ -39,7 +39,7 @@
             <div class="mb-8">
                 <div class="space-y-10">
                 {% for post in posts | sort(attribute="date_ymd") | reverse %}
-                    {% if post.categories and "tweets" in post.categories %}
+                    {% if post.categories and ("tweets" in post.categories or "tweet" in post.categories) %}
                     <!-- 闲言推文样式（与首页一致） -->
                     <article class="pb-10">
                         {% if post.categories and post.categories | length > 0 %}
@@ -55,16 +55,16 @@
                                     <span class="text-gray-300">/</span>
                                     {% endif %}
                                     {% set_global show_sep = true %}
-                                    {% if cat == "tweets" %}
-                                        <a href="/tweets/" class="hover:text-cyber-mint transition-colors">闲言</a>
-                                    {% elif cat == "friends" %}
-                                        <a href="/friends/" class="hover:text-cyber-mint transition-colors">友情链接</a>
-                                    {% elif cat == "projects" %}
-                                        <a href="/projects/" class="hover:text-cyber-mint transition-colors">项目</a>
-                                    {% elif cat == "works" %}
-                                        <a href="/works/" class="hover:text-cyber-mint transition-colors">著作</a>
+                                    {% if cat == "tweets" or cat == "tweet" %}
+                                        <a href="/{{ site.taxonomies.dirs.tweets | default(value='t') }}/" class="hover:text-cyber-mint transition-colors">闲言</a>
+                                    {% elif cat == "friends" or cat == "friend" %}
+                                        <a href="/{{ site.taxonomies.dirs.friends | default(value='f') }}/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+                                    {% elif cat == "projects" or cat == "project" %}
+                                        <a href="/{{ site.taxonomies.dirs.projects | default(value='p') }}/" class="hover:text-cyber-mint transition-colors">项目</a>
+                                    {% elif cat == "works" or cat == "work" %}
+                                        <a href="/{{ site.taxonomies.dirs.works | default(value='w') }}/" class="hover:text-cyber-mint transition-colors">著作</a>
                                     {% else %}
-                                        <a href="{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
+                                        <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -73,9 +73,14 @@
                         <div class="flex items-center space-x-3 mb-3">
                             <img src="{{ site.author.avatar | default(value='/static/images/avatar.png') | safe }}" class="w-9 h-9 object-cover" alt="Avatar">
                             <div>
+                            <div class="flex items-center space-x-1.5">
                                 <span class="font-semibold text-moss-ink text-sm">{{ site.author.name | default(value='作者') }}</span>
-                                <a href="{{ post.url | default(value='#') }}" class="block text-[12px] text-mist-green hover:text-cyber-mint mt-0.5">{{ post.date | default(value=post.date_ymd) }}</a>
+                                {% if post.draft %}
+                                <span class="inline-flex items-center px-1.5 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded select-none">草稿</span>
+                                {% endif %}
                             </div>
+                            <a href="{{ post.url | default(value='#') }}" class="block text-[12px] text-mist-green hover:text-cyber-mint mt-0.5">{{ post.date | default(value=post.date_ymd) }}</a>
+                        </div>
                         </div>
                         <div class="prose prose-sm text-moss-ink leading-relaxed">
                             {{ post.content | safe }}
@@ -90,7 +95,7 @@
                         {% if post.tags %}
                         <div class="flex flex-wrap gap-2 mt-3 select-none">
                             {% for tag in post.tags %}
-                            <a href="/tags/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
+                            <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -134,25 +139,25 @@
                                     <span class="text-gray-300">/</span>
                                     {% endif %}
                                     {% set_global show_sep = true %}
-                                    {% if cat == "columns" or cat == "s" %}
-                                        <a href="/columns/" class="hover:text-cyber-mint transition-colors">专栏</a>
-                                    {% elif cat == "tweets" %}
-                                        <a href="/tweets/" class="hover:text-cyber-mint transition-colors">闲言</a>
-                                    {% elif cat == "friends" %}
-                                        <a href="/friends/" class="hover:text-cyber-mint transition-colors">友情链接</a>
-                                    {% elif cat == "projects" %}
-                                        <a href="/projects/" class="hover:text-cyber-mint transition-colors">项目</a>
-                                    {% elif cat == "works" %}
-                                        <a href="/works/" class="hover:text-cyber-mint transition-colors">著作</a>
+                                    {% if cat == "columns" or cat == "column" or cat == "s" %}
+                                        <a href="/{{ site.taxonomies.dirs.columns | default(value='c') }}/" class="hover:text-cyber-mint transition-colors">专栏</a>
+                                    {% elif cat == "tweets" or cat == "tweet" %}
+                                        <a href="/{{ site.taxonomies.dirs.tweets | default(value='t') }}/" class="hover:text-cyber-mint transition-colors">闲言</a>
+                                    {% elif cat == "friends" or cat == "friend" %}
+                                        <a href="/{{ site.taxonomies.dirs.friends | default(value='f') }}/" class="hover:text-cyber-mint transition-colors">友情链接</a>
+                                    {% elif cat == "projects" or cat == "project" %}
+                                        <a href="/{{ site.taxonomies.dirs.projects | default(value='p') }}/" class="hover:text-cyber-mint transition-colors">项目</a>
+                                    {% elif cat == "works" or cat == "work" %}
+                                        <a href="/{{ site.taxonomies.dirs.works | default(value='w') }}/" class="hover:text-cyber-mint transition-colors">著作</a>
                                     {% else %}
-                                        {% if loop.index == 2 and (post.categories[0] == "columns" or post.categories[0] == "s") %}
+                                        {% if loop.index == 2 and (post.categories[0] == "columns" or post.categories[0] == "column" or post.categories[0] == "s") %}
                                             {% if post.column_title %}
-                                                <a href="/columns/{{ cat }}/" class="hover:text-cyber-mint transition-colors">{{ post.column_title }}</a>
+                                                <a href="/{{ site.taxonomies.dirs.columns | default(value='c') }}/{{ cat }}/" class="hover:text-cyber-mint transition-colors">{{ post.column_title }}</a>
                                             {% else %}
-                                                <a href="/columns/{{ cat }}/" class="hover:text-cyber-mint transition-colors">专栏内容</a>
+                                                <a href="/{{ site.taxonomies.dirs.columns | default(value='c') }}/{{ cat }}/" class="hover:text-cyber-mint transition-colors">专栏内容</a>
                                             {% endif %}
                                         {% else %}
-                                            <a href="{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
+                                            <a href="{% if site.taxonomies.categories and site.taxonomies.categories != '/' %}{{ site.taxonomies.categories }}{% endif %}{{ cat_url }}" class="hover:text-cyber-mint transition-colors">{{ cat }}</a>
                                         {% endif %}
                                     {% endif %}
                                 {% endif %}
@@ -161,6 +166,9 @@
                         {% endif %}
                         <h2 class="text-xl font-semibold mb-2">
                             <a href="{{ post.url | default(value='#') }}" class="text-moss-ink hover:text-cyber-mint transition-colors">
+                                {% if post.draft %}
+                                <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 rounded mr-1.5 align-middle select-none">草稿</span>
+                                {% endif %}
                                 {{ post.title | default(value=post.slug) }}
                             </a>
                         </h2>
@@ -181,7 +189,7 @@
                         {% if post.tags %}
                         <div class="flex flex-wrap gap-2 mt-3 select-none">
                             {% for tag in post.tags %}
-                            <a href="/tags/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
+                            <a href="{{ site.taxonomies.tags | default(value='/tags') }}/{{ tag }}/" class="text-xs text-mist-green hover:text-cyber-mint">#{{ tag }}</a>
                             {% endfor %}
                         </div>
                         {% endif %}

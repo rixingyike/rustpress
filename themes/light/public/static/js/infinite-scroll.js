@@ -18,6 +18,17 @@
     if (allLoaded) return null;
     var nextPage = currentPage - 1;
     if (nextPage < 1) return null;
+    var basePath = container.getAttribute('data-base-path');
+    if (!basePath) {
+      var locPath = window.location.pathname;
+      if (locPath.endsWith('.html')) {
+        locPath = locPath.substring(0, locPath.lastIndexOf('/'));
+      }
+      basePath = locPath.replace(/\/+$/, '');
+    }
+    if (basePath && basePath !== '/' && basePath !== '') {
+      return basePath + '/index' + nextPage + '.html';
+    }
     return '/index' + nextPage + '.html';
   }
 
