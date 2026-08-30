@@ -45,22 +45,18 @@ jobs:
       - name: Build site with RustPress
         run: rustpress -m source build -o public
 
-      # 部署到外部仓库（适用于源码私有、展示页公开的场景）
-      # Deploy to an external repository (suitable for private source and public display pages).
+      - name: Run Tests
+        run: cargo test
+
+      # 部署到外部仓库（仅在配置了 Secrets Token 时执行）
       - name: Deploy to external repository
+        if: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN != '' }}
         uses: cpina/github-action-push-to-another-repository@v1.7.2
         env:
-          # 需要在 GitHub Secrets 中配置此 Token (PAT)，需具备目标仓库权限
-          # This Token (PAT) needs to be configured in GitHub Secrets with permissions for the destination repository.
           API_TOKEN_GITHUB: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
         with:
-          # 构建产物所在目录
           source-directory: public/
-          # 目标 GitHub 用户名或组织名
           destination-github-username: rixingyike
-          # 目标仓库名
           destination-repository-name: rixingyike.github.io
-          # 提交者邮箱
           user-email: 9830131@qq.com
-          # 目标分支
           target-branch: "main"
