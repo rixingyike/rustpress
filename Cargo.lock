@@ -2232,7 +2232,7 @@ dependencies = [
 
 [[package]]
 name = "rustpress"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "aes-gcm",
  "anyhow",
