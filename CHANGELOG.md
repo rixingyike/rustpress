@@ -1,5 +1,14 @@
 ## [Unreleased] - 2026-08-31
 
+- chore: pre-release auto commit 2026-08-31T20:49:49+08:00
+- ci: simplify rustpress workflow to standard rust CI
+- ci: add condition check and test step in deploy.yml
+- fix: sync base.html, columns.html and source/config.toml for draft badges
+
+---
+
+## [Unreleased] - 2026-08-31
+
 - ci: simplify rustpress workflow to standard rust CI
 - ci: add condition check and test step in deploy.yml
 - fix: sync base.html, columns.html and source/config.toml for draft badges
