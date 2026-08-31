@@ -114,8 +114,8 @@ impl Generator {
             copy_dir_recursive(&theme_static_dir, output_dir)?;
         }
 
-        // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（覆盖原有顶层 assets 与根层非 md 的拷贝策略）
-        crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir)?;
+        // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（并在配置了分类法别名时同步复制到别名目录）
+        crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir, Some(&self.config.taxonomies_config()))?;
 
         // 列出所有文章（根据环境决定是否包含草稿）
         let posts = PostParser::list_posts_with_config(md_dir, self.should_include_drafts(), Some(&self.config))?;
@@ -1516,8 +1516,8 @@ impl Generator {
             copy_dir_recursive(&theme_static_dir, output_dir)?;
         }
 
-        // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（增量模式也执行，以便更新附件）
-        crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir)?;
+        // 递归复制源目录下的所有非 Markdown 且非隐藏文件，保持相对路径（增量模式也执行，并在配置了分类法别名时同步复制到别名目录）
+        crate::utils::copy_non_md_recursive_preserve_paths(md_dir, output_dir, Some(&self.config.taxonomies_config()))?;
 
         // 列出所有文章（用于派生页计算，根据环境决定是否包含草稿）
         let posts = PostParser::list_posts_with_config(md_dir, self.should_include_drafts(), Some(&self.config))?;

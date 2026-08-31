@@ -6,6 +6,13 @@ use std::path::Path;
 
 #[test]
 fn test_config_dev_and_test_domains() {
+    let saved_dev = std::env::var("dev").ok();
+    let saved_drafts = std::env::var("RUSTPRESS_INCLUDE_DRAFTS").ok();
+    unsafe {
+        std::env::remove_var("dev");
+        std::env::remove_var("RUSTPRESS_INCLUDE_DRAFTS");
+    }
+
     // 1. 测试正式环境域名 -> 不包含草稿
     let prod_toml = r#"
     [site]
@@ -48,6 +55,15 @@ fn test_config_dev_and_test_domains() {
     "#;
     let config = Config { data: toml::from_str(ip_toml).unwrap() };
     assert!(config.is_dev_or_test_domain());
+
+    unsafe {
+        if let Some(v) = saved_dev {
+            std::env::set_var("dev", v);
+        }
+        if let Some(v) = saved_drafts {
+            std::env::set_var("RUSTPRESS_INCLUDE_DRAFTS", v);
+        }
+    }
 }
 
 #[test]
@@ -106,6 +122,62 @@ fn test_template_renders_draft_badge() -> Result<(), Box<dyn std::error::Error>>
     let _ = fs::remove_file(&draft_post_path);
 
     assert!(html.contains("草稿"), "Rendered post should contain draft badge");
+
+    Ok(())
+}
+
+#[test]
+fn test_template_renders_livereload_script_only_for_dev_domain() -> Result<(), Box<dyn std::error::Error>> {
+    let workspace_root = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
+    let source_dir = Path::new(&workspace_root).join("source");
+
+    let saved_dev = std::env::var("dev").ok();
+    let saved_env = std::env::var("env").ok();
+    let saved_env_upper = std::env::var("ENV").ok();
+    let saved_serve = std::env::var("RUSTPRESS_SERVE_MODE").ok();
+    let saved_drafts = std::env::var("RUSTPRESS_INCLUDE_DRAFTS").ok();
+    unsafe {
+        std::env::remove_var("dev");
+        std::env::remove_var("env");
+        std::env::remove_var("ENV");
+        std::env::remove_var("RUSTPRESS_SERVE_MODE");
+        std::env::remove_var("RUSTPRESS_INCLUDE_DRAFTS");
+    }
+
+    // 1. 生产环境配置（yishulun.com）-> 绝不包含 live_reload 脚本
+    let prod_toml = r#"
+    [site]
+    name = "Prod Site"
+    description = "Prod Desc"
+    author = "Tester"
+    domain = "https://yishulun.com"
+    base_url = "https://yishulun.com"
+    "#;
+    let prod_config = Config { data: toml::from_str(prod_toml)? };
+    let prod_engine = TemplateEngine::new(prod_config, &source_dir)?;
+    let prod_posts = PostParser::list_posts_with_options(&source_dir, false)?;
+    let prod_html = prod_engine.render_index(&prod_posts, &[], &serde_json::json!({}))?;
+    assert!(!prod_html.contains("/_rustpress/live_reload"), "生产环境 HTML 绝对不能包含 live_reload 脚本");
+
+    // 2. 测试/本地开发环境（dev.yishulun.com / localhost）-> 包含 live_reload 脚本
+    let dev_toml = r#"
+    [site]
+    name = "Dev Site"
+    description = "Dev Desc"
+    author = "Tester"
+    domain = "https://dev.yishulun.com"
+    base_url = "http://localhost:1111"
+    "#;
+    let dev_config = Config { data: toml::from_str(dev_toml)? };
+    let dev_engine = TemplateEngine::new(dev_config, &source_dir)?;
+    let dev_html = dev_engine.render_index(&prod_posts, &[], &serde_json::json!({}))?;
+    assert!(dev_html.contains("/_rustpress/live_reload"), "开发/测试环境 HTML 必须包含 live_reload 脚本");
+
+    unsafe {
+        if let Some(v) = saved_dev {
+            std::env::set_var("dev", v);
+        }
+    }
 
     Ok(())
 }

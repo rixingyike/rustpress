@@ -451,8 +451,9 @@ impl TemplateEngine {
         let is_pushpen = std::env::var("dev").map(|v| v == "pushpen").unwrap_or(false);
         context.insert("is_pushpen", &is_pushpen);
 
-        // 插入是否为开发或测试域名标识
-        let is_dev_domain = self.config.is_dev_or_test_domain();
+        // 插入是否为开发或测试域名标识（包含开发服务器运行模式）
+        let is_serve_mode = std::env::var("RUSTPRESS_SERVE_MODE").map(|v| v == "1").unwrap_or(false);
+        let is_dev_domain = self.config.is_dev_or_test_domain() || is_serve_mode;
         context.insert("is_dev_domain", &is_dev_domain);
 
         context

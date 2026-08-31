@@ -146,7 +146,7 @@ impl Config {
                 return true;
             }
         }
-        if let Ok(val) = std::env::var("dev") {
+        if let Ok(val) = std::env::var("dev").or_else(|_| std::env::var("env")).or_else(|_| std::env::var("ENV")) {
             if val == "pushpen" || val == "1" || val.eq_ignore_ascii_case("true") {
                 return true;
             }

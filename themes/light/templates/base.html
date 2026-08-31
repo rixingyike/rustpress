@@ -35,6 +35,43 @@
             }
         });
     </script>
+    <!-- 仅在开发/测试域名下启用的实时热重载 (Live Reload) -->
+    {% if is_dev_domain %}
+    <script>
+        (function () {
+            var host = window.location.hostname;
+            var devDomains = {{ site.dev_domains | default(value="[]") | json_encode() | safe }};
+            var isDev = host === 'localhost' ||
+                        host === '127.0.0.1' ||
+                        host === '0.0.0.0' ||
+                        host === '::1' ||
+                        host.startsWith('dev.') ||
+                        host.startsWith('test.') ||
+                        host.startsWith('staging.') ||
+                        (Array.isArray(devDomains) && devDomains.some(function(d) { return d && host.indexOf(d) !== -1; }));
+            if (!isDev || !window.EventSource) return;
+
+            var es = null;
+            function connectLiveReload() {
+                if (es) {
+                    es.close();
+                }
+                es = new EventSource('/_rustpress/live_reload');
+                es.onmessage = function (e) {
+                    if (e.data === 'reload') {
+                        console.log('[RustPress] 检测到内容变更，正在自动刷新页面...');
+                        window.location.reload();
+                    }
+                };
+                es.onerror = function () {
+                    es.close();
+                    setTimeout(connectLiveReload, 2000);
+                };
+            }
+            connectLiveReload();
+        })();
+    </script>
+    {% endif %}
 </head>
 
 <body class="bg-air-bg text-moss-ink font-sans">

@@ -1,3 +1,11 @@
+## [Unreleased] - 2026-08-31
+
+- ci: simplify rustpress workflow to standard rust CI
+- ci: add condition check and test step in deploy.yml
+- fix: sync base.html, columns.html and source/config.toml for draft badges
+
+---
+
 ## [Unreleased] - 2026-08-30
 
 - docs: update README with concise advantages, demo and documentation links

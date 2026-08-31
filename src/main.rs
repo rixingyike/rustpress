@@ -242,6 +242,9 @@ fn dev_site_hotreload(
     _incremental: bool,
 ) -> Result<()> {
     println!("开发模式（hotreload）启动中...");
+    unsafe {
+        std::env::set_var("RUSTPRESS_SERVE_MODE", "1");
+    }
 
     // 先全量构建生成聚合页（归档/分类/标签/RSS等），同时初始化静态资源与 CSS
     build_dev_site(md_dir, output_dir, config_file, false)?;

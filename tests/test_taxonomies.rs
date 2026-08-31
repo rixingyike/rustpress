@@ -102,3 +102,84 @@ fn test_other_taxonomies_routing() {
     let url = PostParser::compute_post_url(&["tech".to_string(), "rust".to_string()], "hello", &tax);
     assert_eq!(url, "/tech/rust/hello.html");
 }
+
+#[test]
+fn test_taxonomy_assets_copying() {
+    use std::fs;
+    let ts = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+    let base = std::env::temp_dir().join(format!("rustpress_test_assets_{}", ts));
+    let src_dir = base.join("src");
+    let out_dir = base.join("public");
+
+    let col_assets = src_dir.join("columns/rustpress/assets");
+    fs::create_dir_all(&col_assets).unwrap();
+    fs::write(col_assets.join("screenshot.png"), b"fake_png_data").unwrap();
+
+    let tweet_assets = src_dir.join("tweets/2026/08/assets");
+    fs::create_dir_all(&tweet_assets).unwrap();
+    fs::write(tweet_assets.join("photo.jpg"), b"fake_jpg_data").unwrap();
+
+    let mut tax = TaxonomiesConfig::default();
+    tax.columns = "/c".to_string();
+    tax.tweets = "/t".to_string();
+
+    rustpress::utils::copy_non_md_recursive_preserve_paths(&src_dir, &out_dir, Some(&tax)).unwrap();
+
+    // 1. Columns assets: both /columns/rustpress/assets/ and /c/rustpress/assets/ exist
+    assert!(out_dir.join("columns/rustpress/assets/screenshot.png").exists());
+    assert!(out_dir.join("c/rustpress/assets/screenshot.png").exists());
+
+    // 2. Tweets assets: both /tweets/2026/08/assets/ and /t/2026/08/assets/ exist
+    assert!(out_dir.join("tweets/2026/08/assets/photo.jpg").exists());
+    assert!(out_dir.join("t/2026/08/assets/photo.jpg").exists());
+
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
+fn test_tweet_and_post_image_paths_normalization() {
+    let ts = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+    let src_dir = std::env::temp_dir().join(format!("rustpress_test_norm_{}", ts));
+    let tweet_file = src_dir.join("tweets/2026/08/20260828143000.md");
+    std::fs::create_dir_all(tweet_file.parent().unwrap()).unwrap();
+
+    let tweet_content = r#"---
+date: "2026-08-28 14:30:00"
+layout: tweet
+images:
+  - "/tweets/2026/08/assets/abs.jpg"
+  - "assets/rel.jpg"
+  - "./assets/dot_rel.jpg"
+  - "https://images.unsplash.com/photo-1.jpg"
+  - "http://example.com/photo-2.jpg"
+  - "//cdn.example.com/photo-3.jpg"
+---
+
+测试闲言
+"#;
+
+    let mut tax = TaxonomiesConfig::default();
+    tax.tweets = "/t".to_string();
+
+    let post_val = PostParser::parse_post_with_taxonomies(tweet_content, &tweet_file, &src_dir, &tax)
+        .unwrap()
+        .expect("Post should be parsed");
+
+    let images = post_val.get("images").and_then(|v| v.as_array()).expect("images array");
+    let image_strings: Vec<&str> = images.iter().filter_map(|v| v.as_str()).collect();
+
+    assert_eq!(
+        image_strings,
+        vec![
+            "/tweets/2026/08/assets/abs.jpg",
+            "/tweets/2026/08/assets/rel.jpg",
+            "/tweets/2026/08/assets/dot_rel.jpg",
+            "https://images.unsplash.com/photo-1.jpg",
+            "http://example.com/photo-2.jpg",
+            "//cdn.example.com/photo-3.jpg",
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(src_dir);
+}
+

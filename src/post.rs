@@ -224,19 +224,29 @@ impl PostParser {
                             }
                         }
 
-                        // 识别书籍目录：在 docs/ 下且 README.md 的 layout 为 doc
+                        // 识别书籍与专栏目录：在 docs/ 或 columns/ 下且 README.md 的 layout 为 doc 或 columns
                         let cats = Self::extract_categories_from_path(path, content_dir);
-                        if cats.len() == 2 && cats[0] == "docs" {
-                            if let Some("doc") = post_data.get("layout").and_then(|v| v.as_str()) {
+                        if cats.len() == 2 && (cats[0] == "docs" || cats[0] == "columns" || cats[0] == "column") {
+                            let layout = post_data.get("layout").and_then(|v| v.as_str());
+                            if matches!(layout, Some("doc" | "columns" | "column")) {
                                 if let Some(parent) = path.parent() {
                                     let mut cover_path = post_data.get("cover").and_then(|v| v.as_str()).map(|s| s.to_string());
                                     
                                     // 1. 如果手动设置了封面且是相对路径，转换为站点绝对路径
                                     if let Some(cp) = cover_path.as_mut() {
-                                        if !cp.starts_with('/') && !cp.starts_with("http") {
+                                        let trimmed = cp.trim();
+                                        if !trimmed.starts_with('/')
+                                            && !trimmed.starts_with("http://")
+                                            && !trimmed.starts_with("https://")
+                                            && !trimmed.starts_with("//")
+                                            && !trimmed.starts_with("data:")
+                                        {
                                             if let Ok(rel_dir) = parent.strip_prefix(content_dir) {
-                                                *cp = format!("/{}", rel_dir.join(&cp).to_string_lossy());
+                                                let clean = trimmed.trim_start_matches("./");
+                                                *cp = format!("/{}", rel_dir.join(clean).to_string_lossy());
                                             }
+                                        } else {
+                                            *cp = trimmed.to_string();
                                         }
                                     }
 
@@ -337,7 +347,7 @@ impl PostParser {
     }
 
     /// 尝试从源目录或项目根解析 TaxonomiesConfig
-    fn resolve_taxonomies_from_dir<P: AsRef<Path>>(md_dir: P) -> crate::config::TaxonomiesConfig {
+    pub fn resolve_taxonomies_from_dir<P: AsRef<Path>>(md_dir: P) -> crate::config::TaxonomiesConfig {
         let md_dir = md_dir.as_ref();
         let paths = [
             md_dir.join("config.toml"),
@@ -715,17 +725,24 @@ impl PostParser {
                 }
             }
 
-            // 标准化图片路径：相对路径转为基于分类目录的绝对路径
+            // 标准化图片路径：相对路径转为基于分类目录的绝对路径；绝对路径与外部 URL 保持原样
             let base_path = if !categories.is_empty() {
                 format!("/{}/", categories.join("/"))
             } else {
                 String::new()
             };
             let normalize_path = |s: &str| -> String {
-                if s.starts_with('/') || s.starts_with("http") {
-                    s.to_string()
+                let trimmed = s.trim();
+                if trimmed.starts_with('/')
+                    || trimmed.starts_with("http://")
+                    || trimmed.starts_with("https://")
+                    || trimmed.starts_with("//")
+                    || trimmed.starts_with("data:")
+                {
+                    trimmed.to_string()
                 } else {
-                    format!("{}{}", base_path, s)
+                    let clean = trimmed.trim_start_matches("./");
+                    format!("{}{}", base_path, clean)
                 }
             };
             // 处理数组字段：images, screenshots

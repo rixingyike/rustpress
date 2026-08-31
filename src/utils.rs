@@ -567,16 +567,18 @@ pub fn copy_root_non_md_non_hidden<P: AsRef<Path>, Q: AsRef<Path>>(
     Ok(())
 }
 
-/// 递归复制 `md_dir` 下的所有非 Markdown 且非隐藏文件到 `output_dir`，保持相对路径不变
+/// 递归复制 `md_dir` 下的所有非 Markdown 且非隐藏文件到 `output_dir`
 ///
-/// 示例：
-/// - source/CNAME -> public/CNAME
-/// - source/assets/img.png -> public/assets/img.png
-/// - source/foo/assets/logo.jpg -> public/foo/assets/logo.jpg
-/// - 跳过以 '.' 开头的隐藏文件与所有 .md 文件
+/// 复制行为：
+/// 1. 默认保持源码相对路径（如 source/columns/rustpress/assets/img.png -> public/columns/rustpress/assets/img.png）
+/// 2. 若文件位于分类法目录（如 columns, projects, works, friends, tweets），
+///    且该分类法配置了别名路径（如 columns -> /c, projects -> /p 等），
+///    同步复制一份到别名路径（如 public/c/rustpress/assets/img.png），
+///    确保 Markdown 中使用相对路径（如 assets/img.png）在编译后的各层级页面中均能正确加载。
 pub fn copy_non_md_recursive_preserve_paths<P: AsRef<Path>, Q: AsRef<Path>>(
     md_dir: P,
     output_dir: Q,
+    taxonomies: Option<&crate::config::TaxonomiesConfig>,
 ) -> Result<()> {
     use std::fs;
     let md_dir = md_dir.as_ref();
@@ -588,6 +590,15 @@ pub fn copy_non_md_recursive_preserve_paths<P: AsRef<Path>, Q: AsRef<Path>>(
         fs::create_dir_all(output_dir)
             .map_err(|e| Error::Other(format!("无法创建输出目录 {:?}: {}", output_dir, e)))?;
     }
+
+    let default_taxonomies;
+    let tax_cfg = match taxonomies {
+        Some(t) => t,
+        None => {
+            default_taxonomies = crate::post::PostParser::resolve_taxonomies_from_dir(md_dir);
+            &default_taxonomies
+        }
+    };
 
     for entry in WalkDir::new(md_dir).into_iter().filter_map(|e| e.ok()) {
         let src_path = entry.path();
@@ -620,6 +631,58 @@ pub fn copy_non_md_recursive_preserve_paths<P: AsRef<Path>, Q: AsRef<Path>>(
                     src_path, dst_path, e
                 ))
             })?;
+
+            // 映射并复制到分类法别名路径
+            let mut components = rel.components();
+            if let Some(std::path::Component::Normal(first_os)) = components.next() {
+                if let Some(top_cat) = first_os.to_str() {
+                    let is_taxonomy = matches!(
+                        top_cat,
+                        "columns"
+                            | "column"
+                            | "projects"
+                            | "project"
+                            | "works"
+                            | "work"
+                            | "friends"
+                            | "friend"
+                            | "tweets"
+                            | "tweet"
+                            | "short"
+                    );
+                    if is_taxonomy {
+                        let tax_prefix = tax_cfg.get_prefix(top_cat);
+                        let tax_dir = tax_prefix.trim_matches('/');
+                        let sub_path: std::path::PathBuf = components.as_path().to_path_buf();
+                        if !sub_path.as_os_str().is_empty() {
+                            let mapped_dst = if !tax_dir.is_empty() {
+                                if tax_dir != top_cat {
+                                    Some(output_dir.join(tax_dir).join(&sub_path))
+                                } else {
+                                    None
+                                }
+                            } else {
+                                // tax_prefix 为根 "/"
+                                Some(output_dir.join(&sub_path))
+                            };
+
+                            if let Some(mapped_dst) = mapped_dst {
+                                if let Some(parent) = mapped_dst.parent() {
+                                    fs::create_dir_all(parent).map_err(|e| {
+                                        Error::Other(format!("无法创建父目录 {:?}: {}", parent, e))
+                                    })?;
+                                }
+                                fs::copy(src_path, &mapped_dst).map_err(|e| {
+                                    Error::Other(format!(
+                                        "无法复制别名文件 {:?} -> {:?}: {}",
+                                        src_path, mapped_dst, e
+                                    ))
+                                })?;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     Ok(())

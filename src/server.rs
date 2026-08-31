@@ -37,6 +37,7 @@ impl DevServer {
         output_dir: P,
         config: Option<&Config>,
         md_dir: Option<PathBuf>,
+        reload_tx: Option<tokio::sync::broadcast::Sender<()>>,
         shutdown: impl std::future::Future<Output = ()> + Send + 'static,
     ) -> Result<()> {
         let output_dir = output_dir.as_ref().to_path_buf();
@@ -53,6 +54,37 @@ impl DevServer {
         } else {
             Router::new()
         };
+
+        // Live Reload SSE 路由（仅在热重载开发服务器模式下注册）
+        if let Some(tx) = reload_tx {
+            use axum::response::sse::{Event, KeepAlive, Sse};
+            use futures_util::stream;
+            use std::convert::Infallible;
+
+            let sse_tx = tx.clone();
+            app = app.route(
+                "/_rustpress/live_reload",
+                axum::routing::get(move || {
+                    let rx = sse_tx.subscribe();
+                    let stream = stream::unfold(rx, |mut rx| async move {
+                        loop {
+                            match rx.recv().await {
+                                Ok(()) => return Some((Ok::<Event, Infallible>(Event::default().data("reload")), rx)),
+                                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                                    return Some((Ok::<Event, Infallible>(Event::default().data("reload")), rx));
+                                }
+                                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                                    return None;
+                                }
+                            }
+                        }
+                    });
+                    async move {
+                        Sse::new(stream).keep_alive(KeepAlive::default())
+                    }
+                }),
+            );
+        }
 
         // Pushpen tweet 发表 API
         app = app.route(
@@ -102,8 +134,17 @@ impl DevServer {
         let config = Config::from_file(&config_path)?;
         let generator = crate::generator::Generator::new(config.clone(), &md_dir)?;
         
-        // 首次构建
-        generator.build(&md_dir, &output_dir)?;
+        // 首次构建（若输出目录为空）
+        let is_first_build = if !output_dir.exists() {
+            true
+        } else {
+            std::fs::read_dir(&output_dir)
+                .map(|mut rd| rd.next().is_none())
+                .unwrap_or(true)
+        };
+        if is_first_build {
+            generator.build(&md_dir, &output_dir)?;
+        }
 
         // 2. 准备文件监听
         let (tx, mut rx) = mpsc::channel(100);
@@ -154,8 +195,11 @@ impl DevServer {
             });
         }
         
+        let (reload_tx, _) = tokio::sync::broadcast::channel::<()>(16);
+        let reload_tx_clone = reload_tx.clone();
+
         tokio::select! {
-            res = Self::serve(port, &output_dir, Some(&config), Some(md_dir.clone()), shutdown) => res,
+            res = Self::serve(port, &output_dir, Some(&config), Some(md_dir.clone()), Some(reload_tx_clone), shutdown) => res,
             _ = async {
                 while let Some(_) = rx.recv().await {
                     tokio::time::sleep(Duration::from_millis(200)).await;
@@ -169,6 +213,7 @@ impl DevServer {
                             } else {
                                 let _ = crate::utils::log_build_info(&md_dir);
                                 println!("自动重构完成！");
+                                let _ = reload_tx.send(());
                             }
                         }
                     }
@@ -191,7 +236,7 @@ impl DevServer {
             .build()
             .map_err(|e| Error::Server(format!("无法创建异步运行时: {}", e)))?;
 
-        rt.block_on(Self::serve(port, output_dir, config_owned.as_ref(), None, std::future::pending()))
+        rt.block_on(Self::serve(port, output_dir, config_owned.as_ref(), None, None, std::future::pending()))
     }
 }
 
