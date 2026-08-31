@@ -1,18 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# AUTO_COMMIT=1 bash publish_to_crates.sh
-
-# RustPress 发布脚本（更简单、自动）
+# RustPress 发布脚本（自动发布至 crates.io & 同步 Git 标签）
 # 功能：
+# - 自动配置 Cargo / Rust 工具链环境
+# - 生成变更日志并在 CHANGELOG.md 头部更新
 # - 使用 cargo-release 提升版本号（默认 patch）
-# - 发布到 crates.io（需本机已登录或设置 CARGO_REGISTRY_TOKEN）
+# - 发布到 crates.io（需本地已登录或设置 CARGO_REGISTRY_TOKEN）
 # - 将提交与标签推送到 Git 远端
-# 默认参数：LEVEL=patch, TAG_PREFIX=v, REMOTE=origin
+#
+# 常用用法：
+#   bash publish-to-crates.sh                    # 升级 patch 版本并发布
+#   LEVEL=minor bash publish-to-crates.sh        # 升级 minor 版本并发布
+#   SKIP_PUBLISH=1 bash publish-to-crates.sh     # 仅打 tag 并推送到 Git，跳过 crates.io
 
-# 发布参数
-# 说明：默认不清理 .gitignore 指定的文件，以保留本地预览输出（如 public/）和测试目录（如 testblog/）。
-# 如需清理可在运行时设置 CLEAN_IGNORED=1（保留列表由 PRESERVE_IGNORED 控制）。
+# 1. 确保 Rust / Cargo 环境变量就绪
+if [[ -f "$HOME/.cargo/env" ]]; then
+  # shellcheck source=/dev/null
+  source "$HOME/.cargo/env" 2>/dev/null || true
+fi
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# 2. 发布参数配置
 LEVEL="${LEVEL:-patch}"
 REMOTE="${REMOTE:-origin}"
 TAG_PREFIX="${TAG_PREFIX:-v}"
@@ -29,33 +38,50 @@ echo ":: 严格要求干净工作区: ${STRICT_CLEAN}"
 echo ":: 自动提交未跟踪/改动文件: ${AUTO_COMMIT}"
 echo ":: 跳过 crates.io 发布: ${SKIP_PUBLISH}"
 
-# Ensure we are at repo root
+# 3. 检查仓库根目录
 if [[ ! -f "Cargo.toml" ]]; then
   echo "错误: 请在包含 Cargo.toml 的仓库根目录运行此脚本" >&2
   exit 1
 fi
 
-# Check branch policy (aligns with release.toml allow-branch)
+# 4. 检查分支策略
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$branch" != "main" && "$branch" != "master" ]]; then
-  echo "错误: 当前分支 '$branch' 不允许（需在 main 或 master 分支）" >&2
+  echo "错误: 当前分支 '$branch' 不允许发布（需在 main 或 master 分支）" >&2
   exit 1
 fi
 
-# 检查 crates.io 发布凭据（仅当不跳过发布时）
+# 5. 检查 Rust & cargo-release 工具链
+if ! command -v cargo &>/dev/null; then
+  echo "错误: 未找到 cargo 命令。请确保已安装 Rust 工具链。" >&2
+  exit 1
+fi
+
+if ! cargo release --help &>/dev/null; then
+  echo ":: 未检测到 cargo-release，正在自动安装..."
+  cargo install cargo-release
+fi
+
+# 6. 检查 Git 用户身份（避免未配置用户名邮箱时报错）
+if [[ -z "$(git config user.name 2>/dev/null || true)" ]]; then
+  git config user.name "金石碼农"
+fi
+if [[ -z "$(git config user.email 2>/dev/null || true)" ]]; then
+  git config user.email "jinshimanong@gmail.com"
+fi
+
+# 7. 检查 crates.io 发布凭据（仅当不跳过发布时）
 if [[ "$SKIP_PUBLISH" != "1" ]]; then
   CARGO_HOME_DIR="${CARGO_HOME:-$HOME/.cargo}"
   has_token="0"
-  # 环境变量方式
   if [[ -n "${CARGO_REGISTRY_TOKEN:-}" ]]; then
     has_token="1"
   fi
-  # 文件方式（兼容新的 credentials.toml 与旧的 credentials）
   if [[ -f "${CARGO_HOME_DIR}/credentials" || -f "${CARGO_HOME_DIR}/credentials.toml" ]]; then
     has_token="1"
   fi
   if [[ "$has_token" != "1" ]]; then
-    echo "错误: 未检测到 crates.io 凭据。请运行 'cargo login'（推荐从 stdin 输入 token）或导出 CARGO_REGISTRY_TOKEN。" >&2
+    echo "错误: 未检测到 crates.io 凭据。请运行 'cargo login' 或导出 CARGO_REGISTRY_TOKEN。" >&2
     echo "提示: 可设置 SKIP_PUBLISH=1 仅做版本、标签与推送。" >&2
     exit 1
   fi
@@ -83,43 +109,50 @@ ensure_clean_worktree() {
   fi
 }
 
-# Generate Changelog
+# 8. 生成/更新变更日志 (CHANGELOG.md)
 echo ":: 生成变更日志 (CHANGELOG.md)..."
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-if [ -z "$LAST_TAG" ]; then
-  LOGS=$(git log --pretty=format:"- %s")
+if [[ -z "$LAST_TAG" ]]; then
+  LOGS=$(git log --pretty=format:"- %s" | grep -v "chore: pre-release auto commit" | grep -v "chore: Release" || true)
 else
-  LOGS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s")
+  LOGS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"- %s" | grep -v "chore: pre-release auto commit" | grep -v "chore: Release" || true)
 fi
 
-TODAY=$(date +%Y-%m-%d)
-TEMP_CHANGELOG=$(mktemp)
-echo "## [Unreleased] - $TODAY" > "$TEMP_CHANGELOG"
-echo "" >> "$TEMP_CHANGELOG"
-echo "$LOGS" >> "$TEMP_CHANGELOG"
-echo "" >> "$TEMP_CHANGELOG"
-echo "---" >> "$TEMP_CHANGELOG"
-echo "" >> "$TEMP_CHANGELOG"
+if [[ -n "$LOGS" ]]; then
+  TODAY=$(date +%Y-%m-%d)
+  TEMP_CHANGELOG=$(mktemp)
+  echo "## [Unreleased] - $TODAY" > "$TEMP_CHANGELOG"
+  echo "" >> "$TEMP_CHANGELOG"
+  echo "$LOGS" >> "$TEMP_CHANGELOG"
+  echo "" >> "$TEMP_CHANGELOG"
+  echo "---" >> "$TEMP_CHANGELOG"
+  echo "" >> "$TEMP_CHANGELOG"
 
-if [ -f CHANGELOG.md ]; then
-  cat CHANGELOG.md >> "$TEMP_CHANGELOG"
+  if [[ -f CHANGELOG.md ]]; then
+    cat CHANGELOG.md >> "$TEMP_CHANGELOG"
+  fi
+  mv "$TEMP_CHANGELOG" CHANGELOG.md
+  echo ":: CHANGELOG.md 更新完成"
+else
+  echo ":: 无新增提交日志，保持 CHANGELOG.md"
 fi
-mv "$TEMP_CHANGELOG" CHANGELOG.md
-echo ":: CHANGELOG.md 更新完成"
 
 ensure_clean_worktree
 
-# Show current version
+# 9. 执行 cargo-release
 current_version=$(sed -n 's/^version[ ]*=[ ]*"\([^"]*\)"/\1/p' Cargo.toml | head -n 1 || true)
 echo ":: 当前 Cargo.toml 版本: ${current_version:-unknown}"
-echo ":: 开始运行 cargo-release（将发布到 crates.io 并推送到 Git）"
-# 构建 release 参数
-# 移除 --no-push，让 cargo-release 处理推送
-release_flags=("$LEVEL" --execute --registry crates-io)
+echo ":: 开始运行 cargo-release（提升版本、发布 crates.io 并推送到 Git）..."
+
+release_flags=("$LEVEL" --execute)
 if [[ "$NO_CONFIRM" == "1" ]]; then
   release_flags+=(--no-confirm)
 fi
 if [[ "$SKIP_PUBLISH" == "1" ]]; then
   release_flags+=(--no-publish)
 fi
+
 cargo release "${release_flags[@]}"
+
+echo ":: 发布成功！"
+

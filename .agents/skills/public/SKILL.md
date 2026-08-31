@@ -9,7 +9,7 @@ description: 发布新 tag 并发布 Rust 包到 crates.io。当用户请求 "/p
 
 ## 核心机制
 
-仓库根目录下已内置完备的自动化发布脚本 [publish_to_crates.sh](file:///workspace/rustpress/publish_to_crates.sh)。它通过 `cargo-release` 链式完成：生成变更日志 -> 提升版本 -> 提交并打标签 -> 推送远程 Git -> 发布 crates.io。
+仓库根目录下已内置完备的自动化发布脚本 [publish-to-crates.sh](file:///workspace/rustpress/publish-to-crates.sh)。它通过 `cargo-release` 链式完成：生成变更日志 -> 提升版本 -> 提交并打标签 -> 推送远程 Git -> 发布 crates.io。
 
 ## 使用步骤
 
@@ -21,13 +21,13 @@ description: 发布新 tag 并发布 Rust 包到 crates.io。当用户请求 "/p
    - 引导用户在宿主开发机终端（或者在具备 Rust 工具链的环境中）运行以下命令：
      ```bash
      # 1. 默认升级修订版本号（patch）并发布至 crates.io
-     bash publish_to_crates.sh
+     ./publish-to-crates.sh
      
      # 2. 升级次要版本号（minor）并自动提交未暂存改动
-     LEVEL=minor AUTO_COMMIT=1 bash publish_to_crates.sh
+     LEVEL=minor bash publish-to-crates.sh
      
      # 3. 仅提升版本、标记并推送 Git Tag，跳过 crates.io 发布
-     SKIP_PUBLISH=1 bash publish_to_crates.sh
+     SKIP_PUBLISH=1 bash publish-to-crates.sh
      ```
 
 3. **脚本自动化逻辑**：

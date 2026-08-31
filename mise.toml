@@ -1,6 +1,7 @@
 [tools]
-rust = { version = "1.85", os = ["macos"] }
+rust = "1.85"
 node = "22"
+
 
 [tasks.dev]
 description = "启动开发模式（先编译二进制再启动，避免增量编译死循环）"
